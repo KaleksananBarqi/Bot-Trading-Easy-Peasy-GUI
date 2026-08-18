@@ -1,10 +1,6 @@
 # 🤖 Easy Peasy Trading Bot: AI Vision, Logic & Web GUI Control Center
 
 <div align="center">
-  <img width="1919" height="940" alt="Easy Peasy Trading Bot Web Dashboard" src="https://github.com/user-attachments/assets/0f9d5322-015d-45bc-8029-6ac10fbe55b0" />
-
-  <br />
-  <br />
 
   ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
   ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
@@ -79,10 +75,6 @@ Antarmuka web interaktif lokal berbasis **FastAPI** dengan desain cyber-dark gla
 Akses Dashboard: http://localhost:8000
 Jalankan Server: python run_web.py
 ```
-
-<div align="center">
-  <img width="1392" height="935" alt="Trading Bot Terminal & Sentiment Monitor" src="https://github.com/user-attachments/assets/fc443b1f-f7f8-4d60-b217-bf9886549505" />
-</div>
 
 ### 🎛️ Fitur-Fitur Utama Web GUI:
 
