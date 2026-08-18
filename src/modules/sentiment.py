@@ -16,6 +16,7 @@ class SentimentAnalyzer:
         self.last_news = []       # Backward compat: mixed news
         self.raw_news = []        # Berita mentah (unfiltered)
         self.macro_news_cache = [] # Cache khusus berita makro
+        self.cache_file = "data_cache/sentiment_history.json"
 
         # Optimization: Pre-compute keyword lookups for O(1) access
         self._exact_keywords = {}
@@ -39,12 +40,44 @@ class SentimentAnalyzer:
         
         # [NEW] Storage untuk hasil analisa AI (Cache)
         self.analyzed_result = None
+        self._load_cache()
+
+    def _load_cache(self):
+        import os
+        if os.path.exists(self.cache_file):
+            try:
+                with open(self.cache_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if isinstance(data, list) and len(data) > 0:
+                        self.analyzed_result = data[-1]
+            except Exception as e:
+                logger.error(f"Error loading sentiment cache: {e}")
 
     def save_analysis(self, result: dict):
-        """Simpan hasil analisa AI yang sudah matang."""
+        """Simpan hasil analisa AI yang sudah matang dan tambahkan ke history."""
+        import os
         self.analyzed_result = result
         # Tambahkan timestamp agar tahu kapan terakhir update
         self.analyzed_result['last_updated'] = datetime.now(timezone.utc).timestamp()
+        
+        history = []
+        if os.path.exists(self.cache_file):
+            try:
+                with open(self.cache_file, 'r', encoding='utf-8') as f:
+                    history = json.load(f)
+            except Exception:
+                pass
+        
+        history.append(self.analyzed_result)
+        # Keep only the last 50 entries to prevent infinite growth
+        if len(history) > 50:
+            history = history[-50:]
+            
+        try:
+            with open(self.cache_file, 'w', encoding='utf-8') as f:
+                json.dump(history, f, indent=2)
+        except Exception as e:
+            logger.error(f"Error saving sentiment cache: {e}")
         
     def get_analysis(self) -> Optional[dict]:
         """Ambil hasil analisa AI yang tersimpan."""

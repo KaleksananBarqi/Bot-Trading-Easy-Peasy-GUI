@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Peasy Bot - Advanced Dashboard</title>
+    <link rel="stylesheet" href="static/style.css">
+    <!-- Google Fonts for Modern Look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-box">
+                    <span class="logo-icon">▲</span>
+                </div>
+                <div class="logo-text">
+                    <h1>EASY PEASY</h1>
+                    <small>QUANT ENGINE v2.0</small>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-target="dashboard">
+                    <i class="icon">⊞</i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-target="sentiment">
+                    <i class="icon">⚡</i> Market Sentiment
+                </a>
+                <a href="#" class="nav-item" data-target="positions">
+                    <i class="icon">📊</i> Trade Positions
+                </a>
+                <a href="#" class="nav-item" data-target="config">
+                    <i class="icon">⚙️</i> Configuration
+                </a>
+                <a href="#" class="nav-item" data-target="logs">
+                    <i class="icon">📋</i> System Logs
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div id="status-indicator" class="status-offline">
+                    <span class="pulse"></span> 
+                    <div class="status-details">
+                        <span id="status-text">SYSTEM OFFLINE</span>
+                        <small id="uptime-text">Waiting for ignition...</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Dashboard Page -->
+            <section id="dashboard" class="page active">
+                <div class="page-header">
+                    <h2>Engine Control Center</h2>
+                    <p class="subtitle">System Overview and Engine Control</p>
+                </div>
+                
+                <div class="control-panel">
+                    <div class="panel-box glass">
+                        <h3><span class="neon-dot"></span> ENGINE_CONTROL</h3>
+                        <p class="panel-desc">Start or stop the trading background process.</p>
+                        <div class="button-group">
+                            <button id="btn-start" class="btn btn-primary">START ENGINE</button>
+                            <button id="btn-stop" class="btn btn-danger" disabled>HALT ENGINE</button>
+                        </div>
+                        <p id="control-msg" class="sys-msg"></p>
+                    </div>
+
+                    <div class="panel-box glass">
+                        <h3>SYSTEM_STATS</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">CPU USAGE</span>
+                                <span class="stat-value" id="cpu-stat">--%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">MEM USAGE</span>
+                                <span class="stat-value" id="mem-stat">--MB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-preview glass">
+                    <div class="terminal-header">
+                        <div class="window-controls">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="term-title">live_feed.log</span>
+                    </div>
+                    <div class="terminal-body" id="dashboard-terminal">
+                        <div class="log-line">System ready. Waiting for engine start...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Market Sentiment Page -->
+            <section id="sentiment" class="page">
+                <div class="page-header">
+                    <h2>AI Market Sentiment</h2>
+                    <p class="subtitle">Real-time analysis powered by NLP and On-Chain metrics</p>
+                </div>
+                
+                <div class="sentiment-grid">
+                    <div class="sentiment-card glass hero-card">
+                        <h3>Overall Score</h3>
+                        <div class="score-display">
+                            <span id="sentiment-score" class="huge-score">--</span>
+                            <span id="sentiment-mood" class="mood-text">WAITING DATA</span>
+                        </div>
+                        <p class="market-phase">Phase: <span id="market-phase">--</span></p>
+                    </div>
+                    
+                    <div class="sentiment-card glass">
+                        <h3>Market Drivers</h3>
+                        <ul id="sentiment-drivers" class="drivers-list">
+                            <li>Loading data...</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sentiment-card glass wide-card">
+                        <h3>Sentiment History</h3>
+                        <div class="chart-container">
+                            <canvas id="sentimentChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="sentiment-card glass wide-card summary-card">
+                        <h3>AI Summary & Risk</h3>
+                        <p id="sentiment-summary" class="summary-text">No data available yet.</p>
+                        <div class="risk-box">
+                            <strong>Risk Assessment:</strong> <span id="sentiment-risk">--</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trade Positions Page -->
+            <section id="positions" class="page">
+                <div class="page-header">
+                    <h2>Active Trade Positions</h2>
+                    <p class="subtitle">Real-time monitoring of open trades and safety nets</p>
+                </div>
+                
+                <div class="table-container glass">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Size</th>
+                                <th>Entry Price</th>
+                                <th>Unrealized PnL</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positions-tbody">
+                            <tr>
+                                <td colspan="6" class="text-center">Loading positions...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Configuration Page -->
+            <section id="config" class="page">
+                <div class="page-header flex-between">
+                    <div>
+                        <h2>System Configuration</h2>
+                        <p class="subtitle">Edit parameters visually</p>
+                    </div>
+                    <div class="config-actions">
+                        <button id="btn-save-env" class="btn btn-warning" style="display: none;">SAVE .ENV</button>
+                        <button id="btn-save-config" class="btn btn-success">SAVE JSON SETTINGS</button>
+                        <span id="config-save-msg" class="sys-msg"></span>
+                    </div>
+                </div>
+                
+                <div class="config-container glass">
+                    <!-- Config Tabs -->
+                    <div class="config-tabs">
+                        <button class="tab-btn active" data-tab="tab-env">🔑 Environment (.env)</button>
+                        <button class="tab-btn" data-tab="tab-system">System & Exec</button>
+                        <button class="tab-btn" data-tab="tab-trailing">Risk & Trailing</button>
+                        <button class="tab-btn" data-tab="tab-ai">AI Models</button>
+                        <button class="tab-btn" data-tab="tab-tech">Technicals</button>
+                        <button class="tab-btn" data-tab="tab-data">Data & News</button>
+                        <button class="tab-btn" data-tab="tab-coins">Coins List</button>
+                        <button class="tab-btn" data-tab="tab-raw">Raw JSON</button>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content-area form-content-scroll">
+                        
+                        <!-- TAB: Environment (.env) Variables -->
+                        <div id="tab-env" class="config-tab-pane active">
+                            <div class="env-header-card">
+                                <div>
+                                    <h3 class="section-title" style="margin-bottom: 4px;">🔑 Environment Variables (.env)</h3>
+                                    <p class="panel-desc">Kelola API Keys, Telegram Notifications, AI Provider, dan MongoDB URI secara aman.</p>
+                                </div>
+                                <button id="btn-save-env-inner" class="btn btn-warning">💾 SIMPAN .ENV</button>
+                            </div>
+
+                            <div class="env-status-grid" id="env-status-badges">
+                                <div class="env-badge" id="badge-binance"><span>Binance API</span> <small>Checking...</small></div>
+                                <div class="env-badge" id="badge-telegram"><span>Telegram Bot</span> <small>Checking...</small></div>
+                                <div class="env-badge" id="badge-ai"><span>AI Provider</span> <small>Checking...</small></div>
+                                <div class="env-badge" id="badge-mongo"><span>MongoDB</span> <small>Checking...</small></div>
+                            </div>
+
+                            <h3 class="section-title">1. Binance Futures Credentials</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>BINANCE_API_KEY (Live)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-BINANCE_API_KEY" placeholder="Live API Key...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-BINANCE_API_KEY">👁️</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>BINANCE_SECRET_KEY (Live)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-BINANCE_SECRET_KEY" placeholder="Live Secret Key...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-BINANCE_SECRET_KEY">👁️</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>BINANCE_TESTNET_KEY (Demo)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-BINANCE_TESTNET_KEY" placeholder="Testnet API Key...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-BINANCE_TESTNET_KEY">👁️</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>BINANCE_TESTNET_SECRET (Demo)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-BINANCE_TESTNET_SECRET" placeholder="Testnet Secret Key...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-BINANCE_TESTNET_SECRET">👁️</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">2. Telegram Notification Alerts</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group">
+                                    <label>TELEGRAM_TOKEN (Main)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-TELEGRAM_TOKEN" placeholder="123456:ABC-DEF...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-TELEGRAM_TOKEN">👁️</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>TELEGRAM_CHAT_ID</label>
+                                    <input type="text" id="env-TELEGRAM_CHAT_ID" placeholder="-100xxxxxxx or userId">
+                                </div>
+                                <div class="form-group">
+                                    <label>TELEGRAM_MESSAGE_THREAD_ID (Optional)</label>
+                                    <input type="text" id="env-TELEGRAM_MESSAGE_THREAD_ID" placeholder="Topic Thread ID">
+                                </div>
+                                <div class="form-group">
+                                    <label>TELEGRAM_TOKEN_SENTIMENT (Optional)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-TELEGRAM_TOKEN_SENTIMENT" placeholder="Khusus notif sentimen...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-TELEGRAM_TOKEN_SENTIMENT">👁️</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>TELEGRAM_CHAT_ID_SENTIMENT (Optional)</label>
+                                    <input type="text" id="env-TELEGRAM_CHAT_ID_SENTIMENT" placeholder="Chat ID sentimen">
+                                </div>
+                                <div class="form-group">
+                                    <label>THREAD_ID_SENTIMENT (Optional)</label>
+                                    <input type="text" id="env-TELEGRAM_MESSAGE_THREAD_ID_SENTIMENT" placeholder="Thread ID sentimen">
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">3. AI & Data Intelligence APIs</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>AI_API_KEY (OpenRouter / AI Provider)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-AI_API_KEY" placeholder="sk-or-v1-...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-AI_API_KEY">👁️</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>CMC_API_KEY (CoinMarketCap F&G)</label>
+                                    <div class="input-password-group">
+                                        <input type="password" id="env-CMC_API_KEY" placeholder="CMC API Key...">
+                                        <button type="button" class="btn-toggle-pwd" data-target="env-CMC_API_KEY">👁️</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">4. Database (MongoDB)</h3>
+                            <div class="form-group">
+                                <label>MONGO_URI (Connection String)</label>
+                                <input type="text" id="env-MONGO_URI" placeholder="mongodb://localhost:27017/ atau mongodb+srv://...">
+                                <small class="text-muted" style="margin-top: 4px; display: block;">Format standar lokal: <code>mongodb://localhost:27017/</code> atau URI MongoDB Atlas.</small>
+                            </div>
+                        </div>
+
+                        <!-- TAB: System & Execution -->
+                        <div id="tab-system" class="config-tab-pane">
+                            <h3 class="section-title">General Environment</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Demo Mode</label><label class="switch"><input type="checkbox" id="cfg-PAKAI_DEMO"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>DB Name</label><input type="text" id="cfg-MONGO_DB_NAME"></div>
+                                <div class="form-group"><label>Collection Name</label><input type="text" id="cfg-MONGO_COLLECTION_NAME"></div>
+                                <div class="form-group"><label>Concurrency Limit</label><input type="number" id="cfg-CONCURRENCY_LIMIT"></div>
+                                <div class="form-group"><label>API Req Timeout</label><input type="number" id="cfg-API_REQUEST_TIMEOUT"></div>
+                                <div class="form-group"><label>API Recv Window</label><input type="number" id="cfg-API_RECV_WINDOW"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">Loops & Delays (Seconds)</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Loop Sleep Delay</label><input type="number" id="cfg-LOOP_SLEEP_DELAY"></div>
+                                <div class="form-group"><label>Error Sleep Delay</label><input type="number" id="cfg-ERROR_SLEEP_DELAY"></div>
+                                <div class="form-group"><label>Safety Monitor Int</label><input type="number" id="cfg-SAFETY_MONITOR_INTERVAL"></div>
+                                <div class="form-group"><label>Loop Skip Delay</label><input type="number" id="cfg-LOOP_SKIP_DELAY"></div>
+                                <div class="form-group"><label>Cooldown if Profit</label><input type="number" id="cfg-COOLDOWN_IF_PROFIT"></div>
+                                <div class="form-group"><label>Cooldown if Loss</label><input type="number" id="cfg-COOLDOWN_IF_LOSS"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">Trade Execution Sizing & Limits</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Enable Market Orders</label><label class="switch"><input type="checkbox" id="cfg-ENABLE_MARKET_ORDERS"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Limit Expiry (s)</label><input type="number" id="cfg-LIMIT_ORDER_EXPIRY_SECONDS"></div>
+                                <div class="form-group"><label>SL/TP Retries</label><input type="number" id="cfg-ORDER_SLTP_RETRIES"></div>
+                                <div class="form-group"><label>Retry Delay (s)</label><input type="number" id="cfg-ORDER_SLTP_RETRY_DELAY"></div>
+                                <div class="form-group"><label>Max Positions/Cat</label><input type="number" id="cfg-MAX_POSITIONS_PER_CATEGORY"></div>
+                                <div class="form-group"><label>Risk Per Trade (%)</label><input type="number" id="cfg-RISK_PERCENT_PER_TRADE" step="0.1"></div>
+                                <div class="form-group"><label>Default Amount USDT</label><input type="number" id="cfg-DEFAULT_AMOUNT_USDT"></div>
+                                <div class="form-group"><label>Min Order USDT</label><input type="number" id="cfg-MIN_ORDER_USDT"></div>
+                                <div class="form-group"><label>Default Leverage</label><input type="number" id="cfg-DEFAULT_LEVERAGE"></div>
+                                <div class="form-group"><label>Margin Type</label><input type="text" id="cfg-DEFAULT_MARGIN_TYPE"></div>
+                                <div class="form-group"><label>Use Dynamic Size</label><label class="switch"><input type="checkbox" id="cfg-USE_DYNAMIC_SIZE"><span class="slider"></span></label></div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Risk & Trailing -->
+                        <div id="tab-trailing" class="config-tab-pane">
+                            <h3 class="section-title">Trailing Stop Loss</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Enable Trailing Stop</label><label class="switch"><input type="checkbox" id="cfg-ENABLE_TRAILING_STOP"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Use Native Trailing</label><label class="switch"><input type="checkbox" id="cfg-USE_NATIVE_TRAILING"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Activation Delay (s)</label><input type="number" id="cfg-TRAILING_ACTIVATION_DELAY"></div>
+                                <div class="form-group"><label>Activation Threshold</label><input type="number" id="cfg-TRAILING_ACTIVATION_THRESHOLD" step="0.01"></div>
+                                <div class="form-group"><label>Callback Rate (%)</label><input type="number" id="cfg-TRAILING_CALLBACK_RATE" step="0.001"></div>
+                                <div class="form-group"><label>Min Profit Lock</label><input type="number" id="cfg-TRAILING_MIN_PROFIT_LOCK" step="0.001"></div>
+                                <div class="form-group"><label>SL Update Cooldown</label><input type="number" id="cfg-TRAILING_SL_UPDATE_COOLDOWN"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">Default Sl/TP Logic</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Default SL %</label><input type="number" id="cfg-DEFAULT_SL_PERCENT" step="0.001"></div>
+                                <div class="form-group"><label>Default TP %</label><input type="number" id="cfg-DEFAULT_TP_PERCENT" step="0.001"></div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: AI Models -->
+                        <div id="tab-ai" class="config-tab-pane">
+                            <h3 class="section-title">AI Master Settings</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Master Model Name</label><input type="text" id="cfg-AI_MODEL_NAME"></div>
+                                <div class="form-group"><label>Temperature</label><input type="number" id="cfg-AI_TEMPERATURE" step="0.1"></div>
+                                <div class="form-group"><label>Confidence Threshold</label><input type="number" id="cfg-AI_CONFIDENCE_THRESHOLD"></div>
+                                <div class="form-group"><label>App Title</label><input type="text" id="cfg-AI_APP_TITLE"></div>
+                                <div class="form-group" style="grid-column: span 2;"><label>App URL</label><input type="text" id="cfg-AI_APP_URL"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">AI Reasoning</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Enable Reasoning</label><label class="switch"><input type="checkbox" id="cfg-AI_REASONING_ENABLED"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Exclude Reasoning</label><label class="switch"><input type="checkbox" id="cfg-AI_REASONING_EXCLUDE"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Log Reasoning</label><label class="switch"><input type="checkbox" id="cfg-AI_LOG_REASONING"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Reasoning Effort</label><input type="text" id="cfg-AI_REASONING_EFFORT"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">Sentiment & Vision Modules</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Enable Sentiment</label><label class="switch"><input type="checkbox" id="cfg-ENABLE_SENTIMENT_ANALYSIS"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Sentiment Model</label><input type="text" id="cfg-AI_SENTIMENT_MODEL"></div>
+                                <div class="form-group"><label>Analysis Interval</label><input type="text" id="cfg-SENTIMENT_ANALYSIS_INTERVAL"></div>
+                                <div class="form-group"><label>Update Interval</label><input type="text" id="cfg-SENTIMENT_UPDATE_INTERVAL"></div>
+                                
+                                <div class="form-group"><label>Enable Vision (Pattern)</label><label class="switch"><input type="checkbox" id="cfg-USE_PATTERN_RECOGNITION"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>Vision Model</label><input type="text" id="cfg-AI_VISION_MODEL"></div>
+                                <div class="form-group"><label>Vision Temp</label><input type="number" id="cfg-AI_VISION_TEMPERATURE" step="0.1"></div>
+                                <div class="form-group"><label>Vision Max Tokens</label><input type="number" id="cfg-AI_VISION_MAX_TOKENS"></div>
+                                <div class="form-group"><label>Pattern Max Retries</label><input type="number" id="cfg-PATTERN_MAX_RETRIES"></div>
+                                <div class="form-group"><label>Pattern Min Analysis Len</label><input type="number" id="cfg-PATTERN_MIN_ANALYSIS_LENGTH"></div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Technicals -->
+                        <div id="tab-tech" class="config-tab-pane">
+                            <h3 class="section-title">Timeframes</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Exec TF</label><input type="text" id="cfg-TIMEFRAME_EXEC"></div>
+                                <div class="form-group"><label>Setup TF</label><input type="text" id="cfg-TIMEFRAME_SETUP"></div>
+                                <div class="form-group"><label>Trend TF</label><input type="text" id="cfg-TIMEFRAME_TREND"></div>
+                                <div class="form-group"><label>Limit Exec</label><input type="number" id="cfg-LIMIT_EXEC"></div>
+                                <div class="form-group"><label>Limit Setup</label><input type="number" id="cfg-LIMIT_SETUP"></div>
+                                <div class="form-group"><label>Limit Trend</label><input type="number" id="cfg-LIMIT_TREND"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">Oscillators & Moving Averages</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>EMA Trend Major</label><input type="number" id="cfg-EMA_TREND_MAJOR"></div>
+                                <div class="form-group"><label>EMA Fast</label><input type="number" id="cfg-EMA_FAST"></div>
+                                <div class="form-group"><label>EMA Slow</label><input type="number" id="cfg-EMA_SLOW"></div>
+                                
+                                <div class="form-group"><label>RSI Period</label><input type="number" id="cfg-RSI_PERIOD"></div>
+                                <div class="form-group"><label>RSI Oversold</label><input type="number" id="cfg-RSI_OVERSOLD"></div>
+                                <div class="form-group"><label>RSI Overbought</label><input type="number" id="cfg-RSI_OVERBOUGHT"></div>
+                                <div class="form-group"><label>RSI Deep OS</label><input type="number" id="cfg-RSI_DEEP_OVERSOLD"></div>
+                                <div class="form-group"><label>RSI Deep OB</label><input type="number" id="cfg-RSI_DEEP_OVERBOUGHT"></div>
+                                
+                                <div class="form-group"><label>StochRSI Len</label><input type="number" id="cfg-STOCHRSI_LEN"></div>
+                                <div class="form-group"><label>StochRSI K</label><input type="number" id="cfg-STOCHRSI_K"></div>
+                                <div class="form-group"><label>StochRSI D</label><input type="number" id="cfg-STOCHRSI_D"></div>
+                                
+                                <div class="form-group"><label>MACD Fast</label><input type="number" id="cfg-MACD_FAST"></div>
+                                <div class="form-group"><label>MACD Slow</label><input type="number" id="cfg-MACD_SLOW"></div>
+                                <div class="form-group"><label>MACD Signal</label><input type="number" id="cfg-MACD_SIGNAL"></div>
+                                <div class="form-group"><label>ADX Period</label><input type="number" id="cfg-ADX_PERIOD"></div>
+                                <div class="form-group"><label>Min Bars Mkt Struct</label><input type="number" id="cfg-MIN_BARS_MARKET_STRUCTURE"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">Volatility & Micro-Structure</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>BB Length</label><input type="number" id="cfg-BB_LENGTH"></div>
+                                <div class="form-group"><label>BB StdDev</label><input type="number" id="cfg-BB_STD" step="0.1"></div>
+                                <div class="form-group"><label>Vol MA Period</label><input type="number" id="cfg-VOL_MA_PERIOD"></div>
+                                <div class="form-group"><label>Vol Spike Multiplier</label><input type="number" id="cfg-VOLUME_SPIKE_MULTIPLIER" step="0.1"></div>
+                                
+                                <div class="form-group"><label>ATR Period</label><input type="number" id="cfg-ATR_PERIOD"></div>
+                                <div class="form-group"><label>ATR SL Multiplier</label><input type="number" id="cfg-ATR_MULTIPLIER_SL" step="0.1"></div>
+                                <div class="form-group"><label>ATR TP1 Multiplier</label><input type="number" id="cfg-ATR_MULTIPLIER_TP1" step="0.1"></div>
+                                <div class="form-group"><label>Trap Safety SL</label><input type="number" id="cfg-TRAP_SAFETY_SL" step="0.1"></div>
+                                
+                                <div class="form-group"><label>Orderbook Range %</label><input type="number" id="cfg-ORDERBOOK_RANGE_PERCENT" step="0.01"></div>
+                                <div class="form-group"><label>Wick Reject Min Ratio</label><input type="number" id="cfg-WICK_REJECTION_MIN_BODY_RATIO" step="0.01"></div>
+                                <div class="form-group"><label>Wick Reject Min Ref</label><input type="number" id="cfg-WICK_REJECTION_MIN_BODY_REF" step="0.00000001"></div>
+                                <div class="form-group"><label>Wick Reject Mult</label><input type="number" id="cfg-WICK_REJECTION_MULTIPLIER" step="0.1"></div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Data Sources (News, Whales, BTC) -->
+                        <div id="tab-data" class="config-tab-pane">
+                            <h3 class="section-title">BTC Correlation & Whales</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Use BTC Correlation</label><label class="switch"><input type="checkbox" id="cfg-USE_BTC_CORRELATION"><span class="slider"></span></label></div>
+                                <div class="form-group"><label>BTC EMA Period</label><input type="number" id="cfg-BTC_EMA_PERIOD"></div>
+                                <div class="form-group"><label>Corr Threshold BTC</label><input type="number" id="cfg-CORRELATION_THRESHOLD_BTC" step="0.1"></div>
+                                <div class="form-group"><label>Corr Period</label><input type="number" id="cfg-CORRELATION_PERIOD"></div>
+                                
+                                <div class="form-group"><label>Whale Threshold USDT</label><input type="number" id="cfg-WHALE_THRESHOLD_USDT"></div>
+                                <div class="form-group"><label>Whale Hist Limit</label><input type="number" id="cfg-WHALE_HISTORY_LIMIT"></div>
+                                <div class="form-group"><label>Whale Dedup Window</label><input type="number" id="cfg-WHALE_DEDUP_WINDOW_SECONDS"></div>
+                                <div class="form-group"><label>Stable Inflow Thresh %</label><input type="number" id="cfg-STABLECOIN_INFLOW_THRESHOLD_PERCENT" step="0.01"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <h3 class="section-title">News Parameters</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Max Per Source</label><input type="number" id="cfg-NEWS_MAX_PER_SOURCE"></div>
+                                <div class="form-group"><label>Max Total News</label><input type="number" id="cfg-NEWS_MAX_TOTAL"></div>
+                                <div class="form-group"><label>Retention Limit</label><input type="number" id="cfg-NEWS_RETENTION_LIMIT"></div>
+                                <div class="form-group"><label>Max Age Hours</label><input type="number" id="cfg-NEWS_MAX_AGE_HOURS"></div>
+                                <div class="form-group"><label>Coin Specific Min</label><input type="number" id="cfg-NEWS_COIN_SPECIFIC_MIN"></div>
+                                <div class="form-group"><label>BTC News Max</label><input type="number" id="cfg-NEWS_BTC_MAX"></div>
+                                <div class="form-group"><label>Macro News Max</label><input type="number" id="cfg-NEWS_MACRO_MAX"></div>
+                            </div>
+                            <div class="divider"></div>
+
+                            <div class="form-grid">
+                                <div>
+                                    <h3 class="section-title">RSS Feed URLs</h3>
+                                    <div class="list-manager">
+                                        <div class="list-container" id="rss-list-container"></div>
+                                        <div class="list-adder">
+                                            <input type="text" id="new-rss-url" placeholder="https://...">
+                                            <button id="btn-add-rss" class="btn btn-primary btn-sm">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="section-title">Macro Keywords</h3>
+                                    <div class="list-manager">
+                                        <div class="list-container" id="macro-list-container"></div>
+                                        <div class="list-adder">
+                                            <input type="text" id="new-macro-kw" placeholder="inflation, fed...">
+                                            <button id="btn-add-macro" class="btn btn-primary btn-sm">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Coins List -->
+                        <div id="tab-coins" class="config-tab-pane">
+                            <div class="coins-manager">
+                                <div class="coins-header flex-between">
+                                    <h4>Monitored Coins</h4>
+                                    <button id="btn-add-coin" class="btn btn-outline btn-sm">+ Add Coin</button>
+                                </div>
+                                <div id="coins-list-container" class="coins-grid">
+                                    <!-- Dinamis dirender via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: Raw JSON (Fallback) -->
+                        <div id="tab-raw" class="config-tab-pane">
+                            <p class="text-muted" style="margin-bottom: 10px;">Direct edit configuration JSON object.</p>
+                            <textarea id="json-editor" spellcheck="false" class="code-editor"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Logs Page -->
+            <section id="logs" class="page">
+                <div class="page-header">
+                    <h2>System Logs</h2>
+                    <p class="subtitle">Real-time Trading & Process Logs</p>
+                </div>
+                
+                <div class="terminal-full glass">
+                    <div class="terminal-header">
+                        <div class="window-controls">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="term-title">system.log</span>
+                    </div>
+                    <div class="terminal-body" id="full-terminal">
+                        <div class="log-line">Initializing log stream connection...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="coin-modal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3 id="modal-coin-title">Add / Edit Coin</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body form-grid">
+                <div class="form-group">
+                    <label>Symbol (e.g., BTC/USDT)</label>
+                    <input type="text" id="modal-coin-symbol">
+                </div>
+                <div class="form-group">
+                    <label>Category (e.g., KING, ALTS, MEME)</label>
+                    <input type="text" id="modal-coin-category">
+                </div>
+                <div class="form-group">
+                    <label>Leverage</label>
+                    <input type="number" id="modal-coin-leverage" value="10">
+                </div>
+                <div class="form-group">
+                    <label>Amount (USDT)</label>
+                    <input type="number" id="modal-coin-amount" value="10">
+                </div>
+                <div class="form-group">
+                    <label>BTC Correlated</label>
+                    <label class="switch">
+                        <input type="checkbox" id="modal-coin-btc-corr">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Keywords (comma separated)</label>
+                    <input type="text" id="modal-coin-keywords" placeholder="bitcoin, btc">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-coin" class="btn btn-primary">Save Coin</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/app.js"></script>
+</body>
+</html>

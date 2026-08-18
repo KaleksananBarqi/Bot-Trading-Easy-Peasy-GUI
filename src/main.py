@@ -608,7 +608,14 @@ async def main():
 
     # 5. MAIN TRADING LOOP
     ticker_idx = 0
+    from web_app.api import bot_control_flag
+    
     while True:
+        if bot_control_flag.SHOULD_STOP:
+            logger.info("🛑 Menerima sinyal STOP dari Web Dashboard. Menghentikan bot...")
+            bot_control_flag.SHOULD_STOP = False # Reset
+            break
+            
         try:
             # --- STEP 0: PERIODIC UPDATE SCHEDULER ---
             _run_periodic_updates(scheduler_state)

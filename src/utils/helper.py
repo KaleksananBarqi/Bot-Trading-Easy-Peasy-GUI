@@ -73,72 +73,19 @@ logger = setup_logger()
 # ==========================================
 async def kirim_tele(pesan: str, alert: bool = False, channel: str = 'default') -> None:
     """
-    Kirim pesan ke Telegram.
-    :param channel: 'default' (Sinyal Utama) atau 'sentiment' (Analisa Berita)
+    Log pesan lokal (Telegram sudah dihapus karena menggunakan Local Web Dashboard).
     """
-    try:
-        prefix = "⚠️ <b>SYSTEM ALERT</b>\n" if alert else ""
-        
-        # Tentukan Token & ChatID berdasarkan channel
-        bot_token = config.TELEGRAM_TOKEN
-        chat_id = config.TELEGRAM_CHAT_ID
-        
-        if channel == 'sentiment':
-            if config.TELEGRAM_TOKEN_SENTIMENT and config.TELEGRAM_CHAT_ID_SENTIMENT:
-                bot_token = config.TELEGRAM_TOKEN_SENTIMENT
-                chat_id = config.TELEGRAM_CHAT_ID_SENTIMENT
-            else:
-                # Fallback atau skip jika credentials sentimen tidak ada
-                logger.warning("⚠️ Credentials Sentiment Telegram kosong, menggunakan default channel.")
-                # Kita bisa memilih untuk tetap kirim ke default atau return.
-                # Sesuai request user: "beda untuk dikirimnya". Jika kosong, lebih aman tetap kirim (fallback) atau log error.
-                # Mari kita gunakan fallback ke default agar info tidak hilang, tapi beri log warning.
-        
-        data = {
-            'chat_id': chat_id, 
-            'text': f"{prefix}{pesan}", 
-            'parse_mode': 'HTML'
-        }
-        
-        # Message Thread ID logic
-        if channel == 'default' and config.TELEGRAM_MESSAGE_THREAD_ID:
-            data['message_thread_id'] = config.TELEGRAM_MESSAGE_THREAD_ID
-        elif channel == 'sentiment' and config.TELEGRAM_MESSAGE_THREAD_ID_SENTIMENT:
-            data['message_thread_id'] = config.TELEGRAM_MESSAGE_THREAD_ID_SENTIMENT
-            
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        response = await asyncio.to_thread(requests.post, url, data=data, timeout=10)
-        if response.status_code != 200:
-            error_details = response.text
-            logger.error(f"❌ Telegram Send Failed ({channel}) Status {response.status_code}: {error_details}")
-            
-            # Additional Hint for User
-            if response.status_code == 400 and "chat not found" in error_details:
-                logger.warning(f"💡 HINT: Pastikan Bot Token '{bot_token[:5]}...' sudah di-invite ke Chat ID '{chat_id}'!")
-            elif response.status_code == 401:
-                logger.warning(f"💡 HINT: Token Bot mungkin salah atau expired.")
-    except Exception as e:
-        logger.error(f"❌ Telegram Exception: {e}")
+    prefix = "⚠️ [SYSTEM ALERT] " if alert else "[INFO] "
+    # Format agar lebih mudah dibaca di local web log tanpa tag HTML
+    pesan_bersih = pesan.replace("<b>", "").replace("</b>", "").replace("<i>", "").replace("</i>", "")
+    logger.info(f"{prefix}{channel.upper()}: {pesan_bersih}")
 
 def kirim_tele_sync(pesan):
     """
-    Fungsi khusus untuk kirim notif saat bot mati/crash.
-    Menggunakan requests biasa (blocking) agar pesan pasti terkirim sebelum process kill.
+    Log pesan secara sinkronous (Telegram sudah dihapus).
     """
-    try:
-        url = f"https://api.telegram.org/bot{config.TELEGRAM_TOKEN}/sendMessage"
-        data = {
-            'chat_id': config.TELEGRAM_CHAT_ID, 
-            'text': pesan, 
-            'parse_mode': 'HTML'
-        }
-        if config.TELEGRAM_MESSAGE_THREAD_ID:
-            data['message_thread_id'] = config.TELEGRAM_MESSAGE_THREAD_ID
-        # Timeout 5 detik agar bot tidak hang selamanya jika internet mati
-        requests.post(url, data=data, timeout=5) 
-        print("✅ Notifikasi Telegram terkirim (Sync).")
-    except Exception as e:
-        print(f"❌ Gagal kirim notif exit: {e}")
+    pesan_bersih = pesan.replace("<b>", "").replace("</b>", "").replace("<i>", "").replace("</i>", "")
+    print(f"✅ [SYNC LOG]: {pesan_bersih}")
 
 # ==========================================
 # FORMATTING TOOLS
