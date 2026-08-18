@@ -622,7 +622,12 @@ class MarketDataManager:
                                 amount_usdt = price * qty
                                 side = "SELL" if payload['m'] else "BUY" # m=True means the maker was a buyer, so the aggressor was a seller (SELL trade).
                                 if amount_usdt >= config.WHALE_THRESHOLD_USDT:
-                                    callback_whale(symbol, amount_usdt, side)
+                                    if asyncio.iscoroutinefunction(callback_whale):
+                                        await callback_whale(symbol, amount_usdt, side)
+                                    else:
+                                        res = callback_whale(symbol, amount_usdt, side)
+                                        if asyncio.iscoroutine(res):
+                                            await res
                             
                             elif evt == '24hrMiniTicker':
                                 # [NEW] Realtime Price Handler for Trailing Stop

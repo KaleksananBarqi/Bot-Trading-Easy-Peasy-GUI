@@ -73,5 +73,20 @@
     ],
     "risk_assessment": "MEDIUM - Pasar berpotensi bergerak volatil dan sideways karena belum ada konfirmasi arus modal besar; risiko meningkat apabila tekanan makro memicu pelemahan likuiditas dan penjualan lanjutan.",
     "last_updated": 1787066006.144874
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Arus smart money belum menunjukkan arah yang dapat dipercaya: inflow stablecoin netral dan tidak ada aktivitas whale signifikan, sehingga belum terlihat akumulasi maupun distribusi. Fear & Greed Index di level 42 juga netral, sementara headline bercampur antara katalis institusional, pengetatan suplai Ethereum, dan peringatan risiko keamanan serta ketidakpastian regulasi.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada pembelian atau penjualan whale yang signifikan",
+      "Sentimen retail netral dengan berita fundamental dan risiko regulasi yang saling berimbang"
+    ],
+    "risk_assessment": "MEDIUM - Tidak ada konfirmasi arus modal besar untuk mendukung tren bullish atau bearish, sehingga pasar berpotensi bergerak sideways dan mudah mengalami volatilitas akibat berita.",
+    "last_updated": 1787067623.674226
   }
 ]

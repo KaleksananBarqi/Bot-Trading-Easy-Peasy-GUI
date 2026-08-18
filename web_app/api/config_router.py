@@ -89,6 +89,15 @@ def update_json_config(data: ConfigUpdate):
     try:
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data.config, f, indent=2)
+            
+        # Hot-reload MongoManager agar sinkron jika MONGO_COLLECTION_NAME diubah
+        try:
+            from src.modules.mongo_manager import MongoManager
+            if MongoManager._instance is not None:
+                MongoManager().reload_config()
+        except Exception:
+            pass
+            
         return {"status": "success", "message": "Konfigurasi JSON berhasil disimpan!"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

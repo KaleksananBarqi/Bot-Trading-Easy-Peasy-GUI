@@ -1,5 +1,6 @@
 
 import os
+import sys
 import time
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
@@ -61,9 +62,59 @@ class MongoManager:
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
             logger.error(f"❌ MongoDB Connection Failed: {e}")
             return False
+    def reload_config(self):
+        """Reload konfigurasi MongoDB dari config.py dan switch collection jika berubah."""
+        try:
+            global config
+            import importlib
+            if "src.config" in sys.modules:
+                import src.config
+                config = importlib.reload(src.config)
+            elif "config" in sys.modules:
+                import config
+                config = importlib.reload(config)
+            
+            new_db_name = getattr(config, 'MONGO_DB_NAME', self.db_name)
+            new_collection_name = getattr(config, 'MONGO_COLLECTION_NAME', self.collection_name)
+            
+            if new_db_name != self.db_name and self.client:
+                self.db_name = new_db_name
+                self.db = self.client[self.db_name]
+                logger.info(f"🔄 MongoDB DB Name switched to: {self.db_name}")
+                
+            if new_collection_name != self.collection_name:
+                self.switch_collection(new_collection_name)
         except Exception as e:
-            logger.error(f"❌ MongoDB Error: {e}")
+            logger.warning(f"⚠️ Failed to reload MongoManager config: {e}")
+
+    def switch_collection(self, collection_name: str) -> bool:
+        """Mengganti target trades_collection secara dinamis."""
+        if not collection_name or not isinstance(collection_name, str):
             return False
+        try:
+            self.collection_name = collection_name.strip()
+            if self.db is not None:
+                self.trades_collection = self.db[self.collection_name]
+                self._setup_indexes()
+                logger.info(f"🔄 MongoDB Collection switched to: {self.collection_name}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Failed to switch MongoDB collection: {e}")
+            return False
+
+    def get_available_trade_collections(self) -> list:
+        """Mengambil daftar semua collection di database MongoDB saat ini."""
+        try:
+            if self.db is None:
+                if not self.connect():
+                    return [self.collection_name]
+            all_cols = self.db.list_collection_names()
+            if self.collection_name not in all_cols:
+                all_cols.append(self.collection_name)
+            return sorted(list(set(all_cols)))
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to list MongoDB collections: {e}")
+            return [self.collection_name]
 
     def _setup_indexes(self):
         """Setup standard indexes for performance."""
@@ -118,12 +169,15 @@ class MongoManager:
         'exit_type'
     })
 
-    MONGO_OPERATORS = frozenset({
+    SAFE_VALUE_OPERATORS = frozenset({
+        '$gt', '$gte', '$lt', '$lte', '$ne', '$eq', '$in', '$nin', '$exists'
+    })
+
+    DANGEROUS_OPERATORS = frozenset({
         '$where', '$function', '$expr', '$text', '$search', '$meta',
         '$near', '$nearSphere', '$geometry', '$maxDistance', '$minDistance',
-        '$all', '$elemMatch', '$exists', '$in', '$nin', '$not', '$or',
-        '$and', '$nor', '$regex', '$options', '$slice', '$size',
-        '$gt', '$gte', '$lt', '$lte', '$ne', '$eq'
+        '$all', '$elemMatch', '$not', '$or', '$and', '$nor', '$regex',
+        '$options', '$slice', '$size'
     })
 
     @staticmethod
@@ -132,19 +186,26 @@ class MongoManager:
             return {}
         sanitized = {}
         for key, value in filter_query.items():
-            if key.startswith('$'):
-                logger.warning(f"⚠️ Rejected MongoDB operator in filter: {key}")
+            if str(key).startswith('$'):
+                logger.warning(f"⚠️ Rejected MongoDB root operator in filter: {key}")
                 continue
             if key not in MongoManager.ALLOWED_FILTER_FIELDS:
                 logger.warning(f"⚠️ Rejected unknown field in filter: {key}")
                 continue
             if isinstance(value, dict):
-                for op in value.keys():
-                    if op in MongoManager.MONGO_OPERATORS:
-                        logger.warning(f"⚠️ Rejected MongoDB operator in filter value: {op}")
-                        break
-                else:
-                    sanitized[key] = value
+                valid_dict = {}
+                is_safe = True
+                for op, op_val in value.items():
+                    if str(op).startswith('$'):
+                        if op not in MongoManager.SAFE_VALUE_OPERATORS or op in MongoManager.DANGEROUS_OPERATORS:
+                            logger.warning(f"⚠️ Rejected MongoDB operator in filter value: {op}")
+                            is_safe = False
+                            break
+                        valid_dict[op] = op_val
+                    else:
+                        valid_dict[op] = op_val
+                if is_safe:
+                    sanitized[key] = valid_dict
             else:
                 sanitized[key] = value
         return sanitized

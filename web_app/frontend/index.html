@@ -182,6 +182,12 @@
                     </div>
                     <div class="history-controls">
                         <div class="filter-group">
+                            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(0, 242, 254, 0.05); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0, 242, 254, 0.2);">
+                                <span style="font-size: 0.75rem; color: var(--neon-cyan); font-weight: 700;">📦 COLLECTION:</span>
+                                <select id="hist-filter-collection" class="select-filter" style="min-width: 140px; font-weight: bold; border-color: rgba(0, 242, 254, 0.4); color: var(--text-main);">
+                                    <!-- Diisi secara dinamis dari API -->
+                                </select>
+                            </div>
                             <select id="hist-filter-days" class="select-filter">
                                 <option value="0">All Time</option>
                                 <option value="7">Last 7 Days</option>
@@ -441,7 +447,7 @@
                             <div class="form-group">
                                 <label>MONGO_URI (Connection String)</label>
                                 <input type="text" id="env-MONGO_URI" placeholder="mongodb://localhost:27017/ atau mongodb+srv://...">
-                                <small class="text-muted" style="margin-top: 4px; display: block;">Format standar lokal: <code>mongodb://localhost:27017/</code> atau URI MongoDB Atlas.</small>
+                                <small class="text-muted" style="margin-top: 4px; display: block;">Format standar: <code>mongodb://localhost:27017/</code> atau URI MongoDB Atlas. Pengaturan DB Name & Collection Name dapat diatur di tab <strong>System & Exec</strong>.</small>
                             </div>
                         </div>
 
@@ -479,11 +485,17 @@
 
                         <!-- TAB: System & Execution -->
                         <div id="tab-system" class="config-tab-pane">
-                            <h3 class="section-title">General Environment</h3>
+                            <h3 class="section-title">General Environment & Database Journal</h3>
                             <div class="form-grid-3">
                                 <div class="form-group"><label>Demo Mode</label><label class="switch"><input type="checkbox" id="cfg-PAKAI_DEMO"><span class="slider"></span></label></div>
-                                <div class="form-group"><label>DB Name</label><input type="text" id="cfg-MONGO_DB_NAME"></div>
-                                <div class="form-group"><label>Collection Name</label><input type="text" id="cfg-MONGO_COLLECTION_NAME"></div>
+                                <div class="form-group"><label>DB Name</label><input type="text" id="cfg-MONGO_DB_NAME" placeholder="bot_trading_easy_peasy"></div>
+                                <div class="form-group">
+                                    <label style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Collection Name</span>
+                                        <button type="button" id="btn-set-current-month-col" style="background: none; border: none; color: var(--neon-cyan); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline;" title="Set format trades_MM_YYYY berdasarkan bulan sekarang">📅 Bulan Ini</button>
+                                    </label>
+                                    <input type="text" id="cfg-MONGO_COLLECTION_NAME" placeholder="trades_08_2026">
+                                </div>
                                 <div class="form-group"><label>Concurrency Limit</label><input type="number" id="cfg-CONCURRENCY_LIMIT"></div>
                                 <div class="form-group"><label>API Req Timeout</label><input type="number" id="cfg-API_REQUEST_TIMEOUT"></div>
                                 <div class="form-group"><label>API Recv Window</label><input type="number" id="cfg-API_RECV_WINDOW"></div>

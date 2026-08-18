@@ -26,6 +26,14 @@ class TestAPIAnalytics(unittest.TestCase):
     def setUpClass(cls):
         cls.client = TestClient(app)
 
+    def setUp(self):
+        from src.modules.mongo_manager import MongoManager
+        MongoManager._instance = None
+
+    def tearDown(self):
+        from src.modules.mongo_manager import MongoManager
+        MongoManager._instance = None
+
     @patch("src.modules.mongo_manager.MongoManager.connect", return_value=True)
     @patch("src.modules.mongo_manager.MongoManager.get_trades")
     def test_analytics_endpoint_with_trades(self, mock_get_trades, mock_connect):

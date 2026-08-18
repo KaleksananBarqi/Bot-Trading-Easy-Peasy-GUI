@@ -31,7 +31,8 @@ class QuantAnalyticsEngine:
         symbol: Optional[str] = None,
         strategy: Optional[str] = None,
         side: Optional[str] = None,
-        limit: int = 5000
+        limit: int = 5000,
+        collection_name: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Mengambil raw trades dari MongoDB berdasarkan filter.
@@ -42,7 +43,11 @@ class QuantAnalyticsEngine:
             strategy: Filter strategi (opsional)
             side: Filter side BUY/SELL (opsional)
             limit: Maksimum data yang diambil
+            collection_name: Target MongoDB collection (opsional)
         """
+        if collection_name:
+            self.mongo.switch_collection(collection_name)
+
         filter_query = {}
         
         if days > 0:

@@ -17,12 +17,17 @@ last_bot_error = None
 # Path ke root directory & file log
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC_DIR = os.path.join(ROOT_DIR, "src")
-LOG_FILE = os.path.join(SRC_DIR, "bot_trading.log")
 
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
+
+try:
+    from src import config
+    LOG_FILE = getattr(config, 'LOG_FILENAME', os.path.join(SRC_DIR, "bot_trading.log"))
+except Exception:
+    LOG_FILE = os.path.join(SRC_DIR, "bot_trading.log")
 
 class BotStatus(BaseModel):
     status: str

@@ -600,6 +600,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Helper: Set MongoDB Collection format to current month (trades_MM_YYYY)
+    const btnSetCurrentMonth = document.getElementById('btn-set-current-month-col');
+    if (btnSetCurrentMonth) {
+        btnSetCurrentMonth.addEventListener('click', () => {
+            const now = new Date();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            const autoCol = `trades_${mm}_${yyyy}`;
+            const inputCol = document.getElementById('cfg-MONGO_COLLECTION_NAME');
+            if (inputCol) {
+                inputCol.value = autoCol;
+                updateRawJSON();
+            }
+        });
+    }
+
     if (btnSaveConfig) {
         btnSaveConfig.addEventListener('click', async () => {
             const saveMsg = document.getElementById('config-save-msg');
@@ -620,6 +636,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 currentConfig = finalConfig;
+                // Refresh trade collections selector jika halaman history aktif
+                if (typeof loadTradeCollections === 'function') {
+                    loadTradeCollections(true);
+                }
             } catch (e) {
                 if (saveMsg) {
                     saveMsg.textContent = "❌ Format JSON Tidak Valid / Gagal Simpan";
@@ -845,11 +865,40 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentHistPage = 1;
     let cachedTradesList = [];
     let filterOptionsLoaded = false;
+    let tradeCollectionsLoaded = false;
+
+    async function loadTradeCollections(force = false) {
+        if (tradeCollectionsLoaded && !force) return;
+        const colSelect = document.getElementById('hist-filter-collection');
+        if (!colSelect) return;
+        try {
+            const res = await fetch('/api/data/trades/collections');
+            const data = await res.json();
+            if (data.status === 'success') {
+                const currentSelected = colSelect.value || data.active_collection || (currentConfig.MONGO_COLLECTION_NAME || 'trades_08_2026');
+                colSelect.innerHTML = '';
+                const collections = data.collections || [data.active_collection];
+                collections.forEach(col => {
+                    const opt = document.createElement('option');
+                    opt.value = col;
+                    opt.textContent = col;
+                    if (col === currentSelected) opt.selected = true;
+                    colSelect.appendChild(opt);
+                });
+                tradeCollectionsLoaded = true;
+            }
+        } catch (e) {
+            console.error("Failed to load trade collections", e);
+        }
+    }
 
     async function loadTradeFilterOptions() {
         if (filterOptionsLoaded) return;
         try {
-            const res = await fetch('/api/data/trades/filters');
+            const col = document.getElementById('hist-filter-collection')?.value || '';
+            let url = '/api/data/trades/filters';
+            if (col) url += `?collection=${encodeURIComponent(col)}`;
+            const res = await fetch(url);
             const data = await res.json();
             if (data.status === 'success') {
                 const symSelect = document.getElementById('hist-filter-symbol');
@@ -890,13 +939,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const symbol = document.getElementById('hist-filter-symbol')?.value || 'ALL';
         const strategy = document.getElementById('hist-filter-strategy')?.value || 'ALL';
         const result = document.getElementById('hist-filter-result')?.value || 'ALL';
-        return { days, symbol, strategy, result };
+        const collection = document.getElementById('hist-filter-collection')?.value || '';
+        return { days, symbol, strategy, result, collection };
     }
 
     async function fetchTradeAnalytics() {
         try {
-            const { days, symbol, strategy } = getHistoryFilterParams();
-            const res = await fetch(`/api/data/trades/analytics?days=${days}&symbol=${symbol}&strategy=${strategy}`);
+            const { days, symbol, strategy, collection } = getHistoryFilterParams();
+            let url = `/api/data/trades/analytics?days=${days}&symbol=${symbol}&strategy=${strategy}`;
+            if (collection) url += `&collection=${encodeURIComponent(collection)}`;
+            const res = await fetch(url);
             const result = await res.json();
             
             if (result.status !== 'success') return;
@@ -1221,8 +1273,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchTradeHistory(page = 1) {
         try {
             currentHistPage = page;
-            const { days, symbol, strategy, result } = getHistoryFilterParams();
-            const res = await fetch(`/api/data/trades/history?page=${page}&limit=20&days=${days}&symbol=${symbol}&strategy=${strategy}&result=${result}`);
+            const { days, symbol, strategy, result, collection } = getHistoryFilterParams();
+            let url = `/api/data/trades/history?page=${page}&limit=20&days=${days}&symbol=${symbol}&strategy=${strategy}&result=${result}`;
+            if (collection) url += `&collection=${encodeURIComponent(collection)}`;
+            const res = await fetch(url);
             const data = await res.json();
 
             const tbody = document.getElementById('history-tbody');
@@ -1380,6 +1434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadTradeHistoryAndAnalytics(resetPage = true) {
         if (resetPage) currentHistPage = 1;
+        await loadTradeCollections();
         await loadTradeFilterOptions();
         await Promise.all([
             fetchTradeAnalytics(),
@@ -1389,6 +1444,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // History Event Listeners
     document.getElementById('btn-refresh-history')?.addEventListener('click', () => loadTradeHistoryAndAnalytics(true));
+    document.getElementById('hist-filter-collection')?.addEventListener('change', () => {
+        filterOptionsLoaded = false;
+        loadTradeHistoryAndAnalytics(true);
+    });
     document.getElementById('hist-filter-days')?.addEventListener('change', () => loadTradeHistoryAndAnalytics(true));
     document.getElementById('hist-filter-symbol')?.addEventListener('change', () => loadTradeHistoryAndAnalytics(true));
     document.getElementById('hist-filter-strategy')?.addEventListener('change', () => loadTradeHistoryAndAnalytics(true));
@@ -1423,6 +1482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initialization & Polling ---
     checkBotStatus();
     fetchSystemStats();
+    connectLogStream();
     setInterval(checkBotStatus, 4000);
     setInterval(fetchSystemStats, 3000);
     

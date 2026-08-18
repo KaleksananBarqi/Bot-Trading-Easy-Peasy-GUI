@@ -114,16 +114,42 @@ def get_system_stats():
         return {"status": "error", "message": str(e)}
 
 
+from typing import List, Dict, Any, Optional
+
 # ==============================================================================
 # TRADE HISTORY & QUANT ANALYTICS ENDPOINTS
 # ==============================================================================
+
+@router.get("/trades/collections")
+def get_trade_collections():
+    """
+    Mengambil daftar seluruh collection di database MongoDB saat ini dan active collection.
+    """
+    try:
+        from src.modules.mongo_manager import MongoManager
+        mongo = MongoManager()
+        cols = mongo.get_available_trade_collections()
+        return {
+            "status": "success",
+            "active_collection": mongo.collection_name,
+            "collections": cols
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "active_collection": "trades_08_2026",
+            "collections": ["trades_08_2026"],
+            "message": str(e)
+        }
+
 
 @router.get("/trades/analytics")
 def get_trades_analytics(
     days: int = 0,
     symbol: str = "ALL",
     strategy: str = "ALL",
-    side: str = "ALL"
+    side: str = "ALL",
+    collection: Optional[str] = None
 ):
     """
     Mengambil kalkulasi metrik kuantitatif lengkap (EV, Calmar, Sharpe, Sortino, SQN, Max Drawdown)
@@ -136,7 +162,8 @@ def get_trades_analytics(
             days=days,
             symbol=symbol if symbol != "ALL" else None,
             strategy=strategy if strategy != "ALL" else None,
-            side=side if side != "ALL" else None
+            side=side if side != "ALL" else None,
+            collection_name=collection
         )
         metrics = engine.calculate_metrics(raw_trades)
         return metrics
@@ -153,7 +180,8 @@ def get_trades_history(
     result: str = "ALL",
     days: int = 0,
     sort_by: str = "timestamp",
-    ascending: bool = False
+    ascending: bool = False,
+    collection: Optional[str] = None
 ):
     """
     Mengambil data riwayat trade dari MongoDB dengan pagination dan filter.
@@ -162,6 +190,8 @@ def get_trades_history(
         from src.modules.mongo_manager import MongoManager
         from datetime import datetime, timedelta
         mongo = MongoManager()
+        if collection:
+            mongo.switch_collection(collection)
         
         filter_query = {}
         if days > 0:
@@ -183,7 +213,6 @@ def get_trades_history(
         total_pages = max(1, (total_items + limit - 1) // limit)
         
         # Ambil trades dengan filter dan sorting
-        # MongoManager get_trades mengambil list, lalu kita lakukan slice untuk pagination
         all_matched = mongo.get_trades(
             filter_query=filter_query,
             sort_by=sort_by,
@@ -223,13 +252,15 @@ def get_trades_history(
 
 
 @router.get("/trades/filters")
-def get_trade_filter_options():
+def get_trade_filter_options(collection: Optional[str] = None):
     """
     Mengambil daftar koin dan strategi unik yang tercatat di database untuk opsi dropdown filter.
     """
     try:
         from src.modules.mongo_manager import MongoManager
         mongo = MongoManager()
+        if collection:
+            mongo.switch_collection(collection)
         trades = mongo.get_trades(limit=2000)
         
         symbols = sorted(list(set(t.get('symbol') for t in trades if t.get('symbol'))))
