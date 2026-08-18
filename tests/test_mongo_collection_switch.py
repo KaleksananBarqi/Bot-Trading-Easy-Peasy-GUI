@@ -45,6 +45,19 @@ class TestMongoCollectionSwitch(unittest.TestCase):
         self.assertIn("trades_09_2026", cols)
 
     @patch("src.modules.mongo_manager.MongoManager.connect", return_value=True)
+    def test_switch_collection_guard_same_name(self, mock_connect):
+        """Memastikan switch_collection dengan nama yang sama tidak mengeksekusi _setup_indexes ulang."""
+        mongo = MongoManager()
+        mongo.db = MagicMock()
+        mongo.trades_collection = MagicMock()
+        mongo.collection_name = "trades_08_2026"
+        
+        with patch.object(mongo, "_setup_indexes") as mock_setup:
+            result = mongo.switch_collection("trades_08_2026")
+            self.assertTrue(result)
+            mock_setup.assert_not_called()
+
+    @patch("src.modules.mongo_manager.MongoManager.connect", return_value=True)
     def test_quant_analytics_collection_switch(self, mock_connect):
         """Memastikan QuantAnalyticsEngine meneruskan parameter collection_name ke MongoManager."""
         mongo = MongoManager()

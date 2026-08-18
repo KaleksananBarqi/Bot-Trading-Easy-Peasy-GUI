@@ -91,8 +91,15 @@ class MongoManager:
         """Mengganti target trades_collection secara dinamis."""
         if not collection_name or not isinstance(collection_name, str):
             return False
+        
+        clean_name = collection_name.strip()
+        
+        # Guard: Jika nama collection sama dan trades_collection sudah aktif, lewati
+        if self.collection_name == clean_name and self.trades_collection is not None:
+            return True
+
         try:
-            self.collection_name = collection_name.strip()
+            self.collection_name = clean_name
             if self.db is not None:
                 self.trades_collection = self.db[self.collection_name]
                 self._setup_indexes()
