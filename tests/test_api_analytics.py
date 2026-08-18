@@ -17,6 +17,7 @@ if ROOT_DIR not in sys.path:
 os.environ["MONGO_URI"] = "mongodb://localhost:27017/test_db"
 
 from fastapi.testclient import TestClient
+# pyrefly: ignore [missing-import]
 from web_app.main import app
 
 

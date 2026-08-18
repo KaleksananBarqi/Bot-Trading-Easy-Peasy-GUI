@@ -480,6 +480,8 @@ class MarketDataManager:
         tasks = []
         
         async def fetch_pair(symbol):
+            if not symbol or not isinstance(symbol, str) or not symbol.strip():
+                return
             try:
                 # 1. Fetch OHLCV
                 bars_exec_raw = await self.exchange.fetch_ohlcv(symbol, config.TIMEFRAME_EXEC, limit=config.LIMIT_EXEC)
@@ -520,10 +522,13 @@ class MarketDataManager:
 
         # Batch fetch
         for coin in config.DAFTAR_KOIN:
-            tasks.append(fetch_pair(coin['symbol']))
+            sym = coin.get('symbol') if isinstance(coin, dict) else getattr(coin, 'symbol', None)
+            if sym and str(sym).strip():
+                tasks.append(fetch_pair(sym))
             
-        if not any(k['symbol'] == config.BTC_SYMBOL for k in config.DAFTAR_KOIN):
-             tasks.append(fetch_pair(config.BTC_SYMBOL))
+        btc_sym = getattr(config, 'BTC_SYMBOL', 'BTC/USDT') or 'BTC/USDT'
+        if not any((k.get('symbol') if isinstance(k, dict) else getattr(k, 'symbol', None)) == btc_sym for k in config.DAFTAR_KOIN):
+             tasks.append(fetch_pair(btc_sym))
              
         await asyncio.gather(*tasks)
         self._update_btc_trend()

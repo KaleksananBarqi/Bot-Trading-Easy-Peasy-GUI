@@ -116,8 +116,12 @@ class AIBrain:
         if not self.client:
             return None
 
+        if not prompt_text or not prompt_text.strip():
+            logger.warning("⚠️ Sentiment Analysis skipped: Prompt text is empty.")
+            return None
+
         # Tentukan Model: Gunakan config khusus jika ada, jika tidak fallback ke default model
-        target_model = getattr(config, 'AI_SENTIMENT_MODEL', self.model_name)
+        target_model = getattr(config, 'AI_SENTIMENT_MODEL', self.model_name) or self.model_name
         
         try:
             completion = await self.client.chat.completions.create(
@@ -127,7 +131,10 @@ class AIBrain:
                 temperature=0.3 
             )
             
-            raw_text = completion.choices[0].message.content
+            raw_text = completion.choices[0].message.content or ""
+            if not raw_text.strip():
+                logger.warning(f"⚠️ Sentiment Analysis received empty response from {target_model}")
+                return None
             
             # Cleaning JSON
             match = re.search(r"\{.*\}", raw_text, re.DOTALL)
@@ -136,11 +143,15 @@ class AIBrain:
                 decision_json = json.loads(cleaned_text)
             else:
                 cleaned_text = raw_text.replace('```json', '').replace('```', '').strip()
+                if not cleaned_text:
+                    logger.warning(f"⚠️ Sentiment Analysis response contains no valid text after cleaning: {raw_text}")
+                    return None
                 decision_json = json.loads(cleaned_text)
                 
             logger.info(f"🧠 Sentiment Analysis Done via {target_model}")
             return decision_json
 
         except Exception as e:
-            logger.error(f"❌ Sentiment Analysis Failed: {e}")
+            raw_snippet = raw_text[:200] if 'raw_text' in locals() and raw_text else "None"
+            logger.error(f"❌ Sentiment Analysis Failed: {e}. Raw Text snippet: {raw_snippet}")
             return None

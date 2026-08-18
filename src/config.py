@@ -21,7 +21,10 @@ if os.path.exists(_GUI_CONFIG_PATH):
 
 def _cfg(key: str, default):
     """Ambil nilai config: prioritaskan override dari GUI, fallback ke default."""
-    return _GUI_OVERRIDE.get(key, default)
+    val = _GUI_OVERRIDE.get(key, default)
+    if val is None or (isinstance(val, str) and not val.strip() and default != ""):
+        return default
+    return val
 
 # ==============================================================================
 # LEGENDA: 
