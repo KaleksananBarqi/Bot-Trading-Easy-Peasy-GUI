@@ -47,12 +47,12 @@
   "ORDER_SLTP_RETRY_DELAY": 2,
   "COOLDOWN_IF_PROFIT": 3600,
   "COOLDOWN_IF_LOSS": 7200,
-  "TIMEFRAME_TREND": "4h",
-  "LIMIT_TREND": 500,
-  "TIMEFRAME_SETUP": "1h",
+  "TIMEFRAME_TREND": "1d",
+  "LIMIT_TREND": 200,
+  "TIMEFRAME_SETUP": "4h",
   "LIMIT_SETUP": 100,
-  "TIMEFRAME_EXEC": "15m",
-  "LIMIT_EXEC": 300,
+  "TIMEFRAME_EXEC": "1h",
+  "LIMIT_EXEC": 100,
   "EMA_TREND_MAJOR": 50,
   "EMA_FAST": 7,
   "EMA_SLOW": 21,
@@ -114,6 +114,17 @@
       "keywords": [
         "bitcoin",
         "btc"
+      ]
+    },
+    {
+      "symbol": "HYPE/USDT",
+      "category": "ALTS",
+      "leverage": 10,
+      "amount": 10,
+      "margin_type": "isolated",
+      "btc_corr": false,
+      "keywords": [
+        "HYPE"
       ]
     }
   ],

@@ -13,5 +13,50 @@
     ],
     "risk_assessment": "MEDIUM - Arah pasar belum terkonfirmasi oleh aliran modal besar, sementara risiko makro dari harga minyak, inflasi, suku bunga, serta berita keamanan kripto dapat meningkatkan volatilitas.",
     "last_updated": 1787063551.616423
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Arus smart money belum memberikan arah yang meyakinkan: inflow stablecoin berada pada level netral dan tidak terdeteksi aktivitas whale signifikan. Ini menunjukkan belum ada akumulasi agresif maupun distribusi besar, sehingga sinyal institusional masih menunggu katalis yang lebih kuat.\n\nSentimen retail juga netral dengan Fear & Greed Index di 41. Berita terkait regulasi, tokenisasi, ETF, dan kemitraan memberi dukungan fundamental, tetapi isu penipuan, penegakan hukum, serta ketidakpastian kebijakan The Fed menciptakan keseimbangan. Tidak terdapat divergensi kuat antara smart money dan retail; kondisi pasar paling mungkin choppy dengan risiko pergerakan dua arah.",
+    "key_drivers": [
+      "Inflow stablecoin netral dan tidak ada aktivitas whale signifikan, menandakan minimnya komitmen modal besar",
+      "Fear & Greed Index 41 serta berita regulasi, makro, ETF, dan penegakan hukum menghasilkan sentimen yang berimbang"
+    ],
+    "risk_assessment": "MEDIUM - Arah pasar belum terkonfirmasi oleh smart money, sehingga harga rentan terhadap volatilitas dan false breakout akibat katalis makro atau berita individual aset.",
+    "last_updated": 1787064125.961961
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Smart money belum menunjukkan arah yang tegas: arus masuk stablecoin netral dan tidak ada aktivitas whale signifikan. Karena itu, belum terdapat bukti kuat untuk akumulasi maupun distribusi. Sentimen retail juga netral dengan Fear & Greed di 41, tetapi headline makro mengenai kenaikan minyak, pelemahan saham, dan ketidakpastian geopolitik menambah tekanan risiko.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada aktivitas whale signifikan, sehingga belum ada konfirmasi pembelian atau penjualan institusional",
+      "Fear & Greed berada di level netral, sementara risiko makro dan geopolitik dapat meningkatkan volatilitas jangka pendek"
+    ],
+    "risk_assessment": "MEDIUM - Arah pasar belum terkonfirmasi oleh smart money, tetapi tekanan makro, kenaikan harga minyak, dan lemahnya pasar saham berpotensi memicu volatilitas serta pergerakan harga yang tidak konsisten",
+    "last_updated": 1787064343.730192
+  },
+  {
+    "analysis": "Smart Money belum menunjukkan arus beli atau jual yang signifikan: inflow stablecoin netral dan aktivitas whale juga netral. Sentimen publik berada di area netral dengan bias hati-hati, sementara berita makro cenderung risk-off akibat kenaikan minyak dan meredupnya harapan penyelesaian konflik Timur Tengah.",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 43,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Tidak terdapat divergensi kuat antara Smart Money dan retail karena keduanya belum menunjukkan posisi ekstrem. Narasi altcoin bersifat campuran dan terfragmentasi, sedangkan tekanan makro membatasi minat terhadap aset berisiko.\n\nKondisi pasar paling tepat diklasifikasikan sebagai CHOPPY dengan bias defensif. Tanpa peningkatan inflow stablecoin atau akumulasi whale, reli jangka pendek belum memiliki konfirmasi Smart Money dan berisiko menjadi pergerakan berbasis headline.",
+    "key_drivers": [
+      "Inflow stablecoin dan aktivitas whale netral sehingga belum ada konfirmasi akumulasi atau distribusi",
+      "Kenaikan harga minyak dan ketidakpastian geopolitik menciptakan tekanan risk-off pada pasar"
+    ],
+    "risk_assessment": "MEDIUM - Sinyal Smart Money tidak menunjukkan tekanan jual besar, tetapi lemahnya konfirmasi pembelian dan risiko geopolitik meningkatkan kemungkinan volatilitas serta false breakout.",
+    "last_updated": 1787065226.432481
   }
 ]
