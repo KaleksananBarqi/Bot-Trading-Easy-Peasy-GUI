@@ -1,8 +1,18 @@
+import os
+import sys
+
+# Pastikan ROOT_DIR dan SRC_DIR ada di sys.path
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.join(ROOT_DIR, "src")
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from web_app.api import config_router, bot_router, data_router
-import os
 
 app = FastAPI(title="Easy Peasy Bot Web Dashboard")
 

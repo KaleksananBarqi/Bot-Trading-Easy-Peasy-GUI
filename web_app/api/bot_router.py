@@ -16,7 +16,13 @@ last_bot_error = None
 
 # Path ke root directory & file log
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-LOG_FILE = os.path.join(ROOT_DIR, "bot_trading.log")
+SRC_DIR = os.path.join(ROOT_DIR, "src")
+LOG_FILE = os.path.join(SRC_DIR, "bot_trading.log")
+
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
 
 class BotStatus(BaseModel):
     status: str
@@ -25,6 +31,12 @@ def run_bot_in_thread():
     global bot_running, last_bot_error
     try:
         last_bot_error = None
+        # Pastikan sys.path memiliki root dan src
+        if ROOT_DIR not in sys.path:
+            sys.path.insert(0, ROOT_DIR)
+        if SRC_DIR not in sys.path:
+            sys.path.insert(0, SRC_DIR)
+
         # Reload environment variables dari .env
         env_path = os.path.join(ROOT_DIR, ".env")
         if os.path.exists(env_path):
@@ -91,14 +103,32 @@ def stop_bot():
     return {"status": "success", "message": "Sinyal stop dikirim ke bot."}
 
 async def log_generator(request: Request):
-    """Generator untuk SSE log streaming dengan proteksi disconnect dan cancelation."""
+    """Generator untuk SSE log streaming dengan proteksi disconnect, cancelation, dan initial history."""
     try:
         if not os.path.exists(LOG_FILE):
             with open(LOG_FILE, 'a', encoding='utf-8') as f:
                 f.write("Log file created.\n")
 
         with open(LOG_FILE, "r", encoding="utf-8", errors="replace") as f:
-            # Pindah ke akhir file (tail mode)
+            # Baca chunk terakhir agar dashboard langsung menampilkan riwayat log awal
+            f.seek(0, os.SEEK_END)
+            file_size = f.tell()
+            read_size = min(file_size, 32768)  # Baca hingga 32 KB terakhir
+            if read_size > 0:
+                f.seek(max(0, file_size - read_size), os.SEEK_SET)
+                initial_chunk = f.read()
+                initial_lines = initial_chunk.splitlines()
+                # Jika potongan tidak dari awal file, buang baris pertama (mungkin terpotong)
+                if file_size > read_size and initial_lines:
+                    initial_lines.pop(0)
+                
+                # Kirim maksimal 80 baris terakhir
+                for line in initial_lines[-80:]:
+                    clean_line = line.rstrip("\r\n")
+                    if clean_line:
+                        yield f"data: {clean_line}\n\n"
+
+            # Posisikan ke akhir file untuk tailing realtime
             f.seek(0, os.SEEK_END)
             while True:
                 # Cek jika client menutup koneksi
@@ -112,7 +142,8 @@ async def log_generator(request: Request):
                 
                 # Format SSE: data: <message>\n\n
                 clean_line = line.rstrip("\r\n")
-                yield f"data: {clean_line}\n\n"
+                if clean_line:
+                    yield f"data: {clean_line}\n\n"
     except asyncio.CancelledError:
         # Client disconnect normal
         pass

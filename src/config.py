@@ -242,7 +242,7 @@ API_KEY_DEMO = os.getenv("BINANCE_TESTNET_KEY")
 SECRET_KEY_DEMO = os.getenv("BINANCE_TESTNET_SECRET")
 
 AI_API_KEY = os.getenv("AI_API_KEY")
-AI_BASE_URL = "https://openrouter.ai/api/v1"
+AI_BASE_URL = _cfg('AI_BASE_URL', os.getenv("AI_BASE_URL", "https://openrouter.ai/api/v1"))
 CMC_API_KEY = os.getenv("CMC_API_KEY")
 
 # Performa System Loop

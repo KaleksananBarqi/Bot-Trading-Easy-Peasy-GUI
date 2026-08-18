@@ -7,10 +7,13 @@ import sys
 import os
 import uvicorn
 
-# Pastikan root project ada di sys.path
+# Pastikan root project dan folder src ada di sys.path
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.join(ROOT_DIR, "src")
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
 
 def main():
     print("==================================================")

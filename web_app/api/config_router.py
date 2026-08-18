@@ -18,6 +18,7 @@ DEFAULT_ENV_KEYS = [
     "BINANCE_TESTNET_KEY",
     "BINANCE_TESTNET_SECRET",
     "AI_API_KEY",
+    "AI_BASE_URL",
     "CMC_API_KEY",
     "MONGO_URI"
 ]
@@ -129,6 +130,15 @@ def update_env_config(data: EnvUpdate):
                 
         with open(ENV_FILE, "w", encoding="utf-8") as f:
             f.writelines(new_lines)
+
+        # Sinkronkan juga ke src/.env jika ada agar konsisten di IDE & runtime
+        src_env_path = os.path.join(ROOT_DIR, "src", ".env")
+        if os.path.exists(os.path.dirname(src_env_path)):
+            try:
+                with open(src_env_path, "w", encoding="utf-8") as f_src:
+                    f_src.writelines(new_lines)
+            except Exception:
+                pass
             
         load_dotenv(ENV_FILE, override=True)
         return {"status": "success", "message": "Pengaturan .env berhasil disimpan!"}

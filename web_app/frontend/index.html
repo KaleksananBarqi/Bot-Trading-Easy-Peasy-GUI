@@ -210,7 +210,7 @@
                                 <button id="btn-save-env-inner" class="btn btn-warning">💾 SIMPAN .ENV</button>
                             </div>
 
-                            <div class="env-status-grid" id="env-status-badges">
+                            <div class="env-status-grid" id="status-badges-grid">
                                 <div class="env-badge" id="badge-binance"><span>Binance API</span> <small>Checking...</small></div>
                                 <div class="env-badge" id="badge-ai"><span>AI Provider</span> <small>Checking...</small></div>
                                 <div class="env-badge" id="badge-mongo"><span>MongoDB</span> <small>Checking...</small></div>
@@ -252,13 +252,18 @@
                             <h3 class="section-title">2. AI & Data Intelligence APIs</h3>
                             <div class="form-grid">
                                 <div class="form-group">
+                                    <label>AI_BASE_URL (API Base Endpoint)</label>
+                                    <input type="text" id="env-AI_BASE_URL" placeholder="https://openrouter.ai/api/v1">
+                                    <small class="text-muted" style="margin-top: 4px; display: block;">Default: <code>https://openrouter.ai/api/v1</code> (Bisa diganti OpenAI, Groq, Ollama, DeepSeek, dll).</small>
+                                </div>
+                                <div class="form-group">
                                     <label>AI_API_KEY (OpenRouter / AI Provider)</label>
                                     <div class="input-password-group">
                                         <input type="password" id="env-AI_API_KEY" placeholder="sk-or-v1-...">
                                         <button type="button" class="btn-toggle-pwd" data-target="env-AI_API_KEY">👁️</button>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="grid-column: span 2;">
                                     <label>CMC_API_KEY (CoinMarketCap F&G)</label>
                                     <div class="input-password-group">
                                         <input type="password" id="env-CMC_API_KEY" placeholder="CMC API Key...">
@@ -341,6 +346,11 @@
                         <div id="tab-ai" class="config-tab-pane">
                             <h3 class="section-title">AI Master Settings</h3>
                             <div class="form-grid-3">
+                                <div class="form-group" style="grid-column: span 3;">
+                                    <label>AI Base URL</label>
+                                    <input type="text" id="cfg-AI_BASE_URL" placeholder="https://openrouter.ai/api/v1">
+                                    <small class="text-muted" style="margin-top: 4px; display: block;">Endpoint penyedia model AI (OpenRouter, OpenAI, Groq, Ollama, DeepSeek).</small>
+                                </div>
                                 <div class="form-group"><label>Master Model Name</label><input type="text" id="cfg-AI_MODEL_NAME"></div>
                                 <div class="form-group"><label>Temperature</label><input type="number" id="cfg-AI_TEMPERATURE" step="0.1"></div>
                                 <div class="form-group"><label>Confidence Threshold</label><input type="number" id="cfg-AI_CONFIDENCE_THRESHOLD"></div>

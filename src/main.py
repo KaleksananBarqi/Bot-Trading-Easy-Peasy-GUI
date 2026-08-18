@@ -2,6 +2,7 @@
 
 import asyncio
 import signal
+import threading
 import time
 import html
 from datetime import datetime
@@ -33,7 +34,11 @@ def _handle_sigterm(signum, frame):
     logger.info("🛑 SIGTERM received dari GUI — shutting down gracefully...")
     raise SystemExit(0)
 
-signal.signal(signal.SIGTERM, _handle_sigterm)
+try:
+    if threading.current_thread() is threading.main_thread():
+        signal.signal(signal.SIGTERM, _handle_sigterm)
+except (ValueError, AttributeError):
+    pass
 
 # GLOBAL INSTANCES
 market_data = None

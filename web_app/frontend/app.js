@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Set initial button state for active tab
+    updateConfigActionButtons('tab-env');
+
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const target = btn.getAttribute('data-tab');
@@ -128,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentConfig = {};
     let currentEnv = {};
     const jsonEditor = document.getElementById('json-editor');
-    const formInputs = document.querySelectorAll('[id^="cfg-"]');
-    const envInputs = document.querySelectorAll('[id^="env-"]');
+    const formInputs = document.querySelectorAll('input[id^="cfg-"], select[id^="cfg-"], textarea[id^="cfg-"]');
+    const envInputs = document.querySelectorAll('input[id^="env-"], select[id^="env-"], textarea[id^="env-"]');
 
     async function checkEnvStatus() {
         try {
@@ -167,11 +170,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Populate Dynamic JSON Forms
-            formInputs.forEach(input => {
+            const dynamicFormInputs = document.querySelectorAll('input[id^="cfg-"], select[id^="cfg-"], textarea[id^="cfg-"]');
+            dynamicFormInputs.forEach(input => {
+                if (!input || !input.id) return;
                 const key = input.id.replace('cfg-', '');
                 if (currentConfig[key] !== undefined) {
                     if (input.type === 'checkbox') {
-                        input.checked = currentConfig[key];
+                        input.checked = Boolean(currentConfig[key]);
                     } else {
                         input.value = currentConfig[key];
                     }
@@ -179,7 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Populate .env Forms
-            envInputs.forEach(input => {
+            const dynamicEnvInputs = document.querySelectorAll('input[id^="env-"], select[id^="env-"], textarea[id^="env-"]');
+            dynamicEnvInputs.forEach(input => {
+                if (!input || !input.id) return;
                 const key = input.id.replace('env-', '');
                 if (currentEnv[key] !== undefined) {
                     input.value = currentEnv[key];
@@ -216,9 +223,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const saveMsg = document.getElementById('config-save-msg');
         try {
             const envPayload = {};
-            envInputs.forEach(input => {
+            const activeEnvInputs = document.querySelectorAll('input[id^="env-"], select[id^="env-"], textarea[id^="env-"]');
+            activeEnvInputs.forEach(input => {
+                if (!input || !input.id) return;
                 const key = input.id.replace('env-', '');
-                envPayload[key] = input.value.trim();
+                const rawVal = input.value !== undefined && input.value !== null ? input.value : '';
+                envPayload[key] = String(rawVal).trim();
             });
 
             const res = await fetch('/api/config/env', {
@@ -234,10 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (saveMsg) {
                     saveMsg.textContent = "✅ " + data.message;
                     saveMsg.style.color = 'var(--success)';
-                    setTimeout(() => saveMsg.textContent = '', 3000);
+                    setTimeout(() => {
+                        if (saveMsg.textContent.includes(data.message)) saveMsg.textContent = '';
+                    }, 3000);
                 }
             } else {
-                throw new Error(data.detail || "Gagal menyimpan .env");
+                throw new Error(data.detail || data.message || "Gagal menyimpan .env");
             }
         } catch (e) {
             if (saveMsg) {
@@ -407,17 +419,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateRawJSON() {
-        formInputs.forEach(input => {
+        const activeFormInputs = document.querySelectorAll('input[id^="cfg-"], select[id^="cfg-"], textarea[id^="cfg-"]');
+        activeFormInputs.forEach(input => {
+            if (!input || !input.id) return;
             const key = input.id.replace('cfg-', '');
             const isFloat = input.step && input.step.includes('.');
             
             if (input.type === 'checkbox') {
                 currentConfig[key] = input.checked;
             } else if (input.type === 'number') {
-                currentConfig[key] = isFloat || input.value.includes('.') ? parseFloat(input.value) : parseInt(input.value);
+                const val = input.value !== undefined && input.value !== null ? input.value : '';
+                currentConfig[key] = isFloat || (typeof val === 'string' && val.includes('.')) ? parseFloat(val) : parseInt(val);
                 if(isNaN(currentConfig[key])) currentConfig[key] = 0;
             } else {
-                currentConfig[key] = input.value;
+                currentConfig[key] = input.value !== undefined ? input.value : '';
             }
         });
         if (jsonEditor) jsonEditor.value = JSON.stringify(currentConfig, null, 2);
@@ -617,8 +632,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SSE Logging ---
     const dashboardTerminal = document.getElementById('dashboard-terminal');
     const fullTerminal = document.getElementById('full-terminal');
+    let hasReceivedLog = false;
 
     function appendLog(msg) {
+        if (!hasReceivedLog) {
+            hasReceivedLog = true;
+            if (dashboardTerminal) dashboardTerminal.innerHTML = '';
+            if (fullTerminal) fullTerminal.innerHTML = '';
+        }
+
         let className = 'log-line';
         if (msg.includes('INFO')) className += ' log-info';
         if (msg.includes('WARN')) className += ' log-warn';

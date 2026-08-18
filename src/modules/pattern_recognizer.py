@@ -55,7 +55,10 @@ class PatternRecognizer:
 
             # --- MACD Calculation ---
             # append=True adds columns to df: MACD_12_26_9, MACDh_12_26_9, MACDs_12_26_9
-            import pandas_ta as ta
+            try:
+                import pandas_ta as ta
+            except ImportError:
+                import pandas_ta_classic as ta
             df.ta.macd(fast=config.MACD_FAST, slow=config.MACD_SLOW, signal=config.MACD_SIGNAL, append=True)
             
             # Clean NaN created by indicators
