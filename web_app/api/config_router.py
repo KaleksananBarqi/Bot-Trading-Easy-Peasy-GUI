@@ -17,12 +17,6 @@ DEFAULT_ENV_KEYS = [
     "BINANCE_SECRET_KEY",
     "BINANCE_TESTNET_KEY",
     "BINANCE_TESTNET_SECRET",
-    "TELEGRAM_TOKEN",
-    "TELEGRAM_CHAT_ID",
-    "TELEGRAM_MESSAGE_THREAD_ID",
-    "TELEGRAM_TOKEN_SENTIMENT",
-    "TELEGRAM_CHAT_ID_SENTIMENT",
-    "TELEGRAM_MESSAGE_THREAD_ID_SENTIMENT",
     "AI_API_KEY",
     "CMC_API_KEY",
     "MONGO_URI"
@@ -80,7 +74,6 @@ def get_env_status():
         status = {
             "has_binance_live": bool(env_vars.get("BINANCE_API_KEY") and env_vars.get("BINANCE_SECRET_KEY")),
             "has_binance_testnet": bool(env_vars.get("BINANCE_TESTNET_KEY") and env_vars.get("BINANCE_TESTNET_SECRET")),
-            "has_telegram": bool(env_vars.get("TELEGRAM_TOKEN") and env_vars.get("TELEGRAM_CHAT_ID")),
             "has_ai": bool(env_vars.get("AI_API_KEY")),
             "has_cmc": bool(env_vars.get("CMC_API_KEY")),
             "has_mongo": bool(env_vars.get("MONGO_URI")),

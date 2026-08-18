@@ -13,16 +13,6 @@ SECRET_KEY_LIVE = os.getenv("BINANCE_SECRET_KEY")
 API_KEY_DEMO = os.getenv("BINANCE_TESTNET_KEY")
 SECRET_KEY_DEMO = os.getenv("BINANCE_TESTNET_SECRET")
 
-# Telegram Notifikasi
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-TELEGRAM_MESSAGE_THREAD_ID = os.getenv("TELEGRAM_MESSAGE_THREAD_ID")  # Opsional: untuk Topik/Forum ID
-
-# Telegram Sentimen (Channel Terpisah)
-TELEGRAM_TOKEN_SENTIMENT = os.getenv("TELEGRAM_TOKEN_SENTIMENT")
-TELEGRAM_CHAT_ID_SENTIMENT = os.getenv("TELEGRAM_CHAT_ID_SENTIMENT")
-TELEGRAM_MESSAGE_THREAD_ID_SENTIMENT = os.getenv("TELEGRAM_MESSAGE_THREAD_ID_SENTIMENT")
-
 # 3rd Party APIs
 AI_API_KEY = os.getenv("AI_API_KEY")       # OpenRouter / DeepSeek
 CMC_API_KEY = os.getenv("CMC_API_KEY")     # CoinMarketCap

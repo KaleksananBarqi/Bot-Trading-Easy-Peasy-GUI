@@ -87,11 +87,11 @@ Sistem prompt AI yang cerdas dan adaptif:
 *   **Contextual Hiding**: Jika korelasi BTC rendah, data BTC akan disembunyikan agar AI fokus pada price action independen koin tersebut.
 *   **🔒 Prompt Injection Prevention** *(NEW!)*: Data eksternal dari RSS feeds dibungkus dalam tag `<external_data>` yang aman, dengan instruksi keamanan eksplisit agar AI tidak mengikuti instruksi berbahaya yang mungkin disisipkan dalam berita.
 
-### 6. 📢 Pro-Grade Notifications with ROI
-Notifikasi Telegram yang mendetail:
+### 6. 📢 Pro-Grade Notifications & Real-Time Dashboard
+Notifikasi sistem dan Web GUI Dashboard yang mendetail:
 *   **ROI Calculation**: Menampilkan persentase keuntungan/kerugian berdasarkan modal dan leverage.
 *   **Real-time Updates**: Notifikasi saat order dipasang (Limit), saat terisi (Filled), dan saat menyentuh TP/SL.
-*   **WebSocket-Driven**: Semua notifikasi didorong oleh event WebSocket, bukan polling, untuk kecepatan maksimal.
+*   **WebSocket-Driven**: Semua update data dan chart didorong secara instan oleh event WebSocket.
 
 ### 7. 📰 Smart News Filtering System
 Sistem filter berita cerdas yang memastikan AI hanya menerima informasi relevan:
@@ -293,11 +293,9 @@ Penggunaan `NamedTuple` (seperti `Candle`) untuk merepresentasikan data OHLCV, m
 *   **Git** untuk clone repository
 *   **MongoDB Database**: Connection URI (Localhost atau MongoDB Atlas)
 *   **Akun Binance Futures**: API Key & Secret Key (Enable Futures Trading & Read)
-*   **Telegram Bot**: Token & Chat ID (Untuk notifikasi real-time)
 *   **AI Provider API**: Key dari [OpenRouter](https://openrouter.ai/) atau DeepSeek
 *   **CoinMarketCap API**: Key untuk analisis data fundamental & berita
 *   *(Opsional)* **Binance Testnet**: API Key khusus jika ingin menggunakan uang monopoli
-*   *(Opsional)* **Telegram Channel Khusus**: Token & Chat ID terpisah untuk log analisis sentimen
 
 ---
 
@@ -607,7 +605,7 @@ Bot ini mengimplementasikan beberapa lapisan keamanan:
 | **XSS Protection** | Semua data di dashboard di-escape menggunakan `html.escape()` sebelum rendering |
 | **Config Validation** | MongoDB URI divalidasi format dan scheme-nya saat startup |
 | **Environment Variables** | Semua credential disimpan di `.env`, tidak pernah hardcoded |
-| **Notification Safety** | Rate limiting dan sanitasi pesan Telegram |
+| **Notification Safety** | Sanitasi teks pesan dan integrasi logger lokal/Web GUI |
 
 ---
 

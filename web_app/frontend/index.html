@@ -205,14 +205,13 @@
                             <div class="env-header-card">
                                 <div>
                                     <h3 class="section-title" style="margin-bottom: 4px;">🔑 Environment Variables (.env)</h3>
-                                    <p class="panel-desc">Kelola API Keys, Telegram Notifications, AI Provider, dan MongoDB URI secara aman.</p>
+                                    <p class="panel-desc">Kelola API Keys, AI Provider, dan MongoDB URI secara aman.</p>
                                 </div>
                                 <button id="btn-save-env-inner" class="btn btn-warning">💾 SIMPAN .ENV</button>
                             </div>
 
                             <div class="env-status-grid" id="env-status-badges">
                                 <div class="env-badge" id="badge-binance"><span>Binance API</span> <small>Checking...</small></div>
-                                <div class="env-badge" id="badge-telegram"><span>Telegram Bot</span> <small>Checking...</small></div>
                                 <div class="env-badge" id="badge-ai"><span>AI Provider</span> <small>Checking...</small></div>
                                 <div class="env-badge" id="badge-mongo"><span>MongoDB</span> <small>Checking...</small></div>
                             </div>
@@ -250,42 +249,7 @@
                             </div>
                             <div class="divider"></div>
 
-                            <h3 class="section-title">2. Telegram Notification Alerts</h3>
-                            <div class="form-grid-3">
-                                <div class="form-group">
-                                    <label>TELEGRAM_TOKEN (Main)</label>
-                                    <div class="input-password-group">
-                                        <input type="password" id="env-TELEGRAM_TOKEN" placeholder="123456:ABC-DEF...">
-                                        <button type="button" class="btn-toggle-pwd" data-target="env-TELEGRAM_TOKEN">👁️</button>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>TELEGRAM_CHAT_ID</label>
-                                    <input type="text" id="env-TELEGRAM_CHAT_ID" placeholder="-100xxxxxxx or userId">
-                                </div>
-                                <div class="form-group">
-                                    <label>TELEGRAM_MESSAGE_THREAD_ID (Optional)</label>
-                                    <input type="text" id="env-TELEGRAM_MESSAGE_THREAD_ID" placeholder="Topic Thread ID">
-                                </div>
-                                <div class="form-group">
-                                    <label>TELEGRAM_TOKEN_SENTIMENT (Optional)</label>
-                                    <div class="input-password-group">
-                                        <input type="password" id="env-TELEGRAM_TOKEN_SENTIMENT" placeholder="Khusus notif sentimen...">
-                                        <button type="button" class="btn-toggle-pwd" data-target="env-TELEGRAM_TOKEN_SENTIMENT">👁️</button>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>TELEGRAM_CHAT_ID_SENTIMENT (Optional)</label>
-                                    <input type="text" id="env-TELEGRAM_CHAT_ID_SENTIMENT" placeholder="Chat ID sentimen">
-                                </div>
-                                <div class="form-group">
-                                    <label>THREAD_ID_SENTIMENT (Optional)</label>
-                                    <input type="text" id="env-TELEGRAM_MESSAGE_THREAD_ID_SENTIMENT" placeholder="Thread ID sentimen">
-                                </div>
-                            </div>
-                            <div class="divider"></div>
-
-                            <h3 class="section-title">3. AI & Data Intelligence APIs</h3>
+                            <h3 class="section-title">2. AI & Data Intelligence APIs</h3>
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label>AI_API_KEY (OpenRouter / AI Provider)</label>
@@ -304,7 +268,7 @@
                             </div>
                             <div class="divider"></div>
 
-                            <h3 class="section-title">4. Database (MongoDB)</h3>
+                            <h3 class="section-title">3. Database (MongoDB)</h3>
                             <div class="form-group">
                                 <label>MONGO_URI (Connection String)</label>
                                 <input type="text" id="env-MONGO_URI" placeholder="mongodb://localhost:27017/ atau mongodb+srv://...">

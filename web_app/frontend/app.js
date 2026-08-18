@@ -138,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'success') {
                 const s = data.data;
                 updateBadge('badge-binance', s.has_binance_live || s.has_binance_testnet, s.has_binance_live ? 'Live Set' : (s.has_binance_testnet ? 'Testnet Set' : 'Missing'));
-                updateBadge('badge-telegram', s.has_telegram, s.has_telegram ? 'Connected' : 'Missing');
                 updateBadge('badge-ai', s.has_ai, s.has_ai ? 'Key Active' : 'Missing Key');
                 updateBadge('badge-mongo', s.has_mongo, s.has_mongo ? 'URI Set' : 'Missing URI');
             }

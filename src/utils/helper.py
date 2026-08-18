@@ -2,7 +2,6 @@
 import logging
 import sys
 import os
-import requests
 import asyncio
 from datetime import datetime, timedelta, timezone
 from src import config
@@ -69,23 +68,27 @@ def setup_logger():
 logger = setup_logger()
 
 # ==========================================
-# TELEGRAM NOTIFIER
+# SYSTEM NOTIFIER / LOCAL LOGGER
 # ==========================================
 async def kirim_tele(pesan: str, alert: bool = False, channel: str = 'default') -> None:
     """
-    Log pesan lokal (Telegram sudah dihapus karena menggunakan Local Web Dashboard).
+    Kirim notifikasi ke log sistem lokal & Web Dashboard.
     """
     prefix = "⚠️ [SYSTEM ALERT] " if alert else "[INFO] "
     # Format agar lebih mudah dibaca di local web log tanpa tag HTML
     pesan_bersih = pesan.replace("<b>", "").replace("</b>", "").replace("<i>", "").replace("</i>", "")
     logger.info(f"{prefix}{channel.upper()}: {pesan_bersih}")
 
-def kirim_tele_sync(pesan):
+def kirim_tele_sync(pesan: str) -> None:
     """
-    Log pesan secara sinkronous (Telegram sudah dihapus).
+    Log pesan notifikasi secara sinkronous ke konsol/log.
     """
     pesan_bersih = pesan.replace("<b>", "").replace("</b>", "").replace("<i>", "").replace("</i>", "")
     print(f"✅ [SYNC LOG]: {pesan_bersih}")
+
+# Alias modern
+kirim_notif = kirim_tele
+kirim_notif_sync = kirim_tele_sync
 
 # ==========================================
 # FORMATTING TOOLS

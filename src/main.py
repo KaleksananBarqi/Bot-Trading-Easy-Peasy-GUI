@@ -124,7 +124,7 @@ async def run_sentiment_analysis():
             # Save Analysis to Cache
             sentiment.save_analysis(result)
 
-            # Kirim ke Telegram Channel Sentiment
+            # Log hasil analisis sentimen ke Dashboard / Log
             mood = result.get('overall_sentiment', 'UNKNOWN')
             score = result.get('sentiment_score', 0)
             phase = result.get('market_phase', '-')
@@ -152,7 +152,7 @@ async def run_sentiment_analysis():
                 f"<i>Analisa ini digenerate otomatis oleh AI ({config.AI_SENTIMENT_MODEL})</i>"
             )
             
-            logger.info(f"📤 SENTIMENT TELEGRAM MESSAGE:\n{msg}")
+            logger.info(f"📤 SENTIMENT ALERT MESSAGE:\n{msg}")
             await kirim_tele(msg, channel='sentiment')
             logger.info("✅ Sentiment Report Sent.")
     except Exception as e:
@@ -381,7 +381,7 @@ async def _apply_traditional_filters(symbol, tech_data, coin_cfg):
 async def _prepare_and_execute_trade(symbol, side, tech_data, coin_cfg, ai_decision, 
                                       dual_scenarios, btc_corr, show_btc_context, prompt, reason):
     """
-    Build order parameters, kirim notifikasi Telegram, dan eksekusi entry.
+    Build order parameters, kirim notifikasi sistem/dashboard, dan eksekusi entry.
     Extracted from main loop execution block.
     
     Args:
