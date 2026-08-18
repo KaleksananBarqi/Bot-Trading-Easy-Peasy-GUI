@@ -1,8 +1,27 @@
 import os
+import json
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# ==============================================================================
+# GUI OVERRIDE SUPPORT
+# Membaca gui_config.json yang dihasilkan GUI Control Panel.
+# Jika file tidak ada, semua nilai default di bawah tetap berjalan normal.
+# ==============================================================================
+_GUI_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'gui_config.json')
+_GUI_OVERRIDE: dict = {}
+if os.path.exists(_GUI_CONFIG_PATH):
+    try:
+        with open(_GUI_CONFIG_PATH, 'r', encoding='utf-8') as _f:
+            _GUI_OVERRIDE = json.load(_f)
+    except Exception:
+        pass
+
+def _cfg(key: str, default):
+    """Ambil nilai config: prioritaskan override dari GUI, fallback ke default."""
+    return _GUI_OVERRIDE.get(key, default)
 
 # ==============================================================================
 # LEGENDA: 
@@ -17,7 +36,7 @@ load_dotenv()
 # 1. 🪙 MARKET WATCH (DAFTAR KOIN)
 # ==============================================================================
 # Format: {"symbol": "KOIN/USDT", "category": "KATEGORI", "leverage": X, "amount": Y}
-DAFTAR_KOIN = [
+DAFTAR_KOIN = _cfg('DAFTAR_KOIN', [
     {
         "symbol": "BTC/USDT", 
         "category": "KING", 
@@ -27,42 +46,42 @@ DAFTAR_KOIN = [
         "btc_corr": False,
         "keywords": ["bitcoin", "btc"]
     },
-]
+])
 
 # ==============================================================================
 # 2. 🧠 KECERDASAN BUATAN (AI) & STRATEGI ADAPTIF
 # ==============================================================================
 # Otak Utama (Decision Maker)
-AI_MODEL_NAME = 'arcee-ai/trinity-large-preview:free'
-AI_TEMPERATURE = 0.0             # 0.0 = Logis & Konsisten, 1.0 = Kreatif & Halusinasi
-AI_CONFIDENCE_THRESHOLD = 65     # Minimal keyakinan (%) untuk berani eksekusi
+AI_MODEL_NAME = _cfg('AI_MODEL_NAME', 'arcee-ai/trinity-large-preview:free')
+AI_TEMPERATURE = _cfg('AI_TEMPERATURE', 0.0)             # 0.0 = Logis & Konsisten, 1.0 = Kreatif & Halusinasi
+AI_CONFIDENCE_THRESHOLD = _cfg('AI_CONFIDENCE_THRESHOLD', 65)     # Minimal keyakinan (%) untuk berani eksekusi
 
 # Reasoning (Untuk Model yang Support Reasoning Tokens)
-AI_REASONING_ENABLED = False     # Aktifkan fitur reasoning? (True/False)
-AI_REASONING_EFFORT = 'medium'   # Level effort: 'xhigh', 'high', 'medium', 'low', 'minimal', 'none'
-AI_REASONING_EXCLUDE = False     # True = reasoning tidak ditampilkan di response
-AI_LOG_REASONING = True          # Catat proses reasoning ke log? (True/False)
+AI_REASONING_ENABLED = _cfg('AI_REASONING_ENABLED', False)     # Aktifkan fitur reasoning? (True/False)
+AI_REASONING_EFFORT = _cfg('AI_REASONING_EFFORT', 'medium')   # Level effort: 'xhigh', 'high', 'medium', 'low', 'minimal', 'none'
+AI_REASONING_EXCLUDE = _cfg('AI_REASONING_EXCLUDE', False)     # True = reasoning tidak ditampilkan di response
+AI_LOG_REASONING = _cfg('AI_LOG_REASONING', True)          # Catat proses reasoning ke log? (True/False)
 
 # Identitas Bot
-AI_APP_URL = "https://github.com/KaleksananBarqi/Bot-Trading-Easy-Peasy"
-AI_APP_TITLE = "Bot Trading Easy Peasy"
+AI_APP_URL = _cfg('AI_APP_URL', "https://github.com/KaleksananBarqi/Bot-Trading-Easy-Peasy")
+AI_APP_TITLE = _cfg('AI_APP_TITLE', "Bot Trading Easy Peasy")
 
 # Analisa Berita & Sentimen
-ENABLE_SENTIMENT_ANALYSIS = True          # Aktifkan analisa sentimen berita?
-AI_SENTIMENT_MODEL = 'arcee-ai/trinity-large-preview:free' # Model ekonomis untuk baca berita
-SENTIMENT_ANALYSIS_INTERVAL = '1h'         # Seberapa sering cek sentimen
-SENTIMENT_UPDATE_INTERVAL = '1h'           # Interval update data raw sentimen
-SENTIMENT_PROVIDER = 'RSS_Feed'  # Sumber: 'RSS_Feed'
+ENABLE_SENTIMENT_ANALYSIS = _cfg('ENABLE_SENTIMENT_ANALYSIS', True)          # Aktifkan analisa sentimen berita?
+AI_SENTIMENT_MODEL = _cfg('AI_SENTIMENT_MODEL', 'arcee-ai/trinity-large-preview:free') # Model ekonomis untuk baca berita
+SENTIMENT_ANALYSIS_INTERVAL = _cfg('SENTIMENT_ANALYSIS_INTERVAL', '1h')         # Seberapa sering cek sentimen
+SENTIMENT_UPDATE_INTERVAL = _cfg('SENTIMENT_UPDATE_INTERVAL', '1h')           # Interval update data raw sentimen
+SENTIMENT_PROVIDER = 'RSS_Feed'  # Sumber: 'RSS_Feed' (tidak diubah dari GUI)
 
 # Analisa Visual (Chart Pattern)
-USE_PATTERN_RECOGNITION = True
-AI_VISION_MODEL = 'meta-llama/llama-4-maverick' # Model vision
-AI_VISION_TEMPERATURE = 0.0
-AI_VISION_MAX_TOKENS = 300            # Naikkan untuk mencegah output terpotong
+USE_PATTERN_RECOGNITION = _cfg('USE_PATTERN_RECOGNITION', True)
+AI_VISION_MODEL = _cfg('AI_VISION_MODEL', 'meta-llama/llama-4-maverick') # Model vision
+AI_VISION_TEMPERATURE = _cfg('AI_VISION_TEMPERATURE', 0.0)
+AI_VISION_MAX_TOKENS = _cfg('AI_VISION_MAX_TOKENS', 300)            # Naikkan untuk mencegah output terpotong
 
 # Validasi Pattern Recognition
-PATTERN_MAX_RETRIES = 2               # Berapa kali retry jika output tidak valid
-PATTERN_MIN_ANALYSIS_LENGTH = 50      # Minimal panjang karakter output yang dianggap valid
+PATTERN_MAX_RETRIES = _cfg('PATTERN_MAX_RETRIES', 2)               # Berapa kali retry jika output tidak valid
+PATTERN_MIN_ANALYSIS_LENGTH = _cfg('PATTERN_MIN_ANALYSIS_LENGTH', 50)      # Minimal panjang karakter output yang dianggap valid
 PATTERN_REQUIRED_KEYWORDS = ['BULLISH', 'BEARISH', 'NEUTRAL']  # Minimal satu harus ada
 
 # Data OnChain
@@ -72,35 +91,35 @@ ONCHAIN_PROVIDER = 'DefiLlama'   # Sumber data OnChain
 # 3. 💰 MANAJEMEN RISIKO & MONEY MANAGEMENT
 # ==============================================================================
 # Ukuran Posisi
-USE_DYNAMIC_SIZE = False         # True = Compounding (% saldo), False = Fix USDT
-RISK_PERCENT_PER_TRADE = 3       # Jika Dynamic: Gunakan 3% dari total wallet
-DEFAULT_AMOUNT_USDT = 10         # Jika Static: Gunakan $10 per trade
-MIN_ORDER_USDT = 5               # Minimal order yang diizinkan Binance
+USE_DYNAMIC_SIZE = _cfg('USE_DYNAMIC_SIZE', False)         # True = Compounding (% saldo), False = Fix USDT
+RISK_PERCENT_PER_TRADE = _cfg('RISK_PERCENT_PER_TRADE', 3)       # Jika Dynamic: Gunakan 3% dari total wallet
+DEFAULT_AMOUNT_USDT = _cfg('DEFAULT_AMOUNT_USDT', 10)         # Jika Static: Gunakan $10 per trade
+MIN_ORDER_USDT = _cfg('MIN_ORDER_USDT', 5)               # Minimal order yang diizinkan Binance
 
 # Leverage & Margin
-DEFAULT_LEVERAGE = 10
-DEFAULT_MARGIN_TYPE = 'isolated' # 'isolated' (aman) atau 'cross' (beresiko/gabungan)
-MAX_POSITIONS_PER_CATEGORY = 5   # Batas maksimal koin aktif per kategori (Layer 1, AI, Meme, dll)
+DEFAULT_LEVERAGE = _cfg('DEFAULT_LEVERAGE', 10)
+DEFAULT_MARGIN_TYPE = _cfg('DEFAULT_MARGIN_TYPE', 'isolated') # 'isolated' (aman) atau 'cross' (beresiko/gabungan)
+MAX_POSITIONS_PER_CATEGORY = _cfg('MAX_POSITIONS_PER_CATEGORY', 5)   # Batas maksimal koin aktif per kategori
 
 # Stop Loss (SL) & Take Profit (TP) Defaults
-DEFAULT_SL_PERCENT = 0.015       # 1.5% (Fallback jika ATR gagal)
-DEFAULT_TP_PERCENT = 0.025       # 2.5% (Fallback)
+DEFAULT_SL_PERCENT = _cfg('DEFAULT_SL_PERCENT', 0.015)       # 1.5% (Fallback jika ATR gagal)
+DEFAULT_TP_PERCENT = _cfg('DEFAULT_TP_PERCENT', 0.025)       # 2.5% (Fallback)
 
 # Dynamic SL/TP (ATR Based)
-ATR_PERIOD = 14
-ATR_MULTIPLIER_SL = 1.0         # Jarak SL dari entry (x ATR)
-ATR_MULTIPLIER_TP1 = 3.0         # Target TP (x ATR) -> Risk Reward Ratio Setting
-TRAP_SAFETY_SL = 2.0             # Jarak Safety SL khusus setup Liquidity Hunt
+ATR_PERIOD = _cfg('ATR_PERIOD', 14)
+ATR_MULTIPLIER_SL = _cfg('ATR_MULTIPLIER_SL', 1.0)         # Jarak SL dari entry (x ATR)
+ATR_MULTIPLIER_TP1 = _cfg('ATR_MULTIPLIER_TP1', 3.0)         # Target TP (x ATR) -> Risk Reward Ratio Setting
+TRAP_SAFETY_SL = _cfg('TRAP_SAFETY_SL', 2.0)             # Jarak Safety SL khusus setup Liquidity Hunt
 
 # Pendeteksi Paus (Whale)
-WHALE_THRESHOLD_USDT = 1000000   # Transaksi > $1 Juta ditandai sebagai Whale
-WHALE_HISTORY_LIMIT = 10         # Cek 10 transaksi terakhir
-STABLECOIN_INFLOW_THRESHOLD_PERCENT = 0.05
-WHALE_DEDUP_WINDOW_SECONDS = 5   # Window deduplikasi transaksi whale (detik)
+WHALE_THRESHOLD_USDT = _cfg('WHALE_THRESHOLD_USDT', 1000000)   # Transaksi > $1 Juta ditandai sebagai Whale
+WHALE_HISTORY_LIMIT = _cfg('WHALE_HISTORY_LIMIT', 10)         # Cek 10 transaksi terakhir
+STABLECOIN_INFLOW_THRESHOLD_PERCENT = _cfg('STABLECOIN_INFLOW_THRESHOLD_PERCENT', 0.05)
+WHALE_DEDUP_WINDOW_SECONDS = _cfg('WHALE_DEDUP_WINDOW_SECONDS', 5)   # Window deduplikasi transaksi whale (detik)
 
 # Mekanisme Pendinginan (Anti-FOMO/Anti-Revenge)
-COOLDOWN_IF_PROFIT = 3600        # Jeda trading di koin ini jika PROFIT (detik)
-COOLDOWN_IF_LOSS = 7200          # Jeda trading di koin ini jika LOSS (detik)
+COOLDOWN_IF_PROFIT = _cfg('COOLDOWN_IF_PROFIT', 3600)        # Jeda trading di koin ini jika PROFIT (detik)
+COOLDOWN_IF_LOSS = _cfg('COOLDOWN_IF_LOSS', 7200)          # Jeda trading di koin ini jika LOSS (detik)
 
 
 # ==============================================================================
@@ -110,101 +129,101 @@ COOLDOWN_IF_LOSS = 7200          # Jeda trading di koin ini jika LOSS (detik)
 # ------------------------------------------------------------------------------
 # 4.1 GROUP: TREND (Analisa Tren Besar - Daily/4H)
 # ------------------------------------------------------------------------------
-TIMEFRAME_TREND = '4h'           # Timeframe Tren Utama
-LIMIT_TREND = 500
-EMA_TREND_MAJOR = 50             # EMA Filter Tren (Trend Direction)
-ADX_PERIOD = 14                  # Filter Kekuatan Tren (ADX)
+TIMEFRAME_TREND = _cfg('TIMEFRAME_TREND', '4h')           # Timeframe Tren Utama
+LIMIT_TREND = _cfg('LIMIT_TREND', 500)
+EMA_TREND_MAJOR = _cfg('EMA_TREND_MAJOR', 50)             # EMA Filter Tren (Trend Direction)
+ADX_PERIOD = _cfg('ADX_PERIOD', 14)                  # Filter Kekuatan Tren (ADX)
 
 # ------------------------------------------------------------------------------
 # 4.2 GROUP: SETUP (Pola & Struktur - 1H/4H)
 # ------------------------------------------------------------------------------
-TIMEFRAME_SETUP = '1h'           # Timeframe Pola Chart
-LIMIT_SETUP = 100
-MACD_FAST = 12
-MACD_SLOW = 26
-MACD_SIGNAL = 9
+TIMEFRAME_SETUP = _cfg('TIMEFRAME_SETUP', '1h')           # Timeframe Pola Chart
+LIMIT_SETUP = _cfg('LIMIT_SETUP', 100)
+MACD_FAST = _cfg('MACD_FAST', 12)
+MACD_SLOW = _cfg('MACD_SLOW', 26)
+MACD_SIGNAL = _cfg('MACD_SIGNAL', 9)
 
 # ------------------------------------------------------------------------------
 # 4.3 GROUP: EXECUTION (Momentum & Entry - 15m)
 # ------------------------------------------------------------------------------
-TIMEFRAME_EXEC = '15m'           # Timeframe Eksekusi
-LIMIT_EXEC = 300
+TIMEFRAME_EXEC = _cfg('TIMEFRAME_EXEC', '15m')           # Timeframe Eksekusi
+LIMIT_EXEC = _cfg('LIMIT_EXEC', 300)
 
 # Moving Averages (Crossover & Pullback)
-EMA_FAST = 7
-EMA_SLOW = 21
+EMA_FAST = _cfg('EMA_FAST', 7)
+EMA_SLOW = _cfg('EMA_SLOW', 21)
 
 # Momentum (RSI & Stoch)
-RSI_PERIOD = 14
-RSI_OVERSOLD = 35                # Batas bawah RSI standard
-RSI_OVERBOUGHT = 65              # Batas atas RSI standard
-RSI_DEEP_OVERSOLD = 25           # Oversold Ekstrim (Reversal)
-RSI_DEEP_OVERBOUGHT = 75         # Overbought Ekstrim (Reversal)
+RSI_PERIOD = _cfg('RSI_PERIOD', 14)
+RSI_OVERSOLD = _cfg('RSI_OVERSOLD', 35)                # Batas bawah RSI standard
+RSI_OVERBOUGHT = _cfg('RSI_OVERBOUGHT', 65)              # Batas atas RSI standard
+RSI_DEEP_OVERSOLD = _cfg('RSI_DEEP_OVERSOLD', 25)           # Oversold Ekstrim (Reversal)
+RSI_DEEP_OVERBOUGHT = _cfg('RSI_DEEP_OVERBOUGHT', 75)         # Overbought Ekstrim (Reversal)
 
-STOCHRSI_LEN = 14
-STOCHRSI_K = 3
-STOCHRSI_D = 3
+STOCHRSI_LEN = _cfg('STOCHRSI_LEN', 14)
+STOCHRSI_K = _cfg('STOCHRSI_K', 3)
+STOCHRSI_D = _cfg('STOCHRSI_D', 3)
 
 # Volatility (Bollinger Bands)
-BB_LENGTH = 20
-BB_STD = 2.0
+BB_LENGTH = _cfg('BB_LENGTH', 20)
+BB_STD = _cfg('BB_STD', 2.0)
 
 # Volume Analysis
-VOL_MA_PERIOD = 20
-VOLUME_SPIKE_MULTIPLIER = 1.5    # Volume harus 2x rata-rata untuk konfirmasi sweep
+VOL_MA_PERIOD = _cfg('VOL_MA_PERIOD', 20)
+VOLUME_SPIKE_MULTIPLIER = _cfg('VOLUME_SPIKE_MULTIPLIER', 1.5)    # Volume harus 2x rata-rata untuk konfirmasi sweep
 
 # Order Book Analysis
-ORDERBOOK_RANGE_PERCENT = 0.02   # Kedalaman depth 2%
+ORDERBOOK_RANGE_PERCENT = _cfg('ORDERBOOK_RANGE_PERCENT', 0.02)   # Kedalaman depth 2%
 
 # Wick Rejection Analysis
-WICK_REJECTION_MIN_BODY_RATIO = 0.01       # Fallback: 1% of candle range when body = 0
-WICK_REJECTION_MIN_BODY_REF = 0.00000001   # Minimum body_ref to prevent division by zero
-WICK_REJECTION_MULTIPLIER = 2.0             # Wick must be > 2x Body for valid rejection
+WICK_REJECTION_MIN_BODY_RATIO = _cfg('WICK_REJECTION_MIN_BODY_RATIO', 0.01)       # Fallback: 1% of candle range when body = 0
+WICK_REJECTION_MIN_BODY_REF = _cfg('WICK_REJECTION_MIN_BODY_REF', 0.00000001)   # Minimum body_ref to prevent division by zero
+WICK_REJECTION_MULTIPLIER = _cfg('WICK_REJECTION_MULTIPLIER', 2.0)             # Wick must be > 2x Body for valid rejection
 
 # Market Structure Analysis
-MIN_BARS_MARKET_STRUCTURE = 50             # Minimum bars required for market structure calculation
+MIN_BARS_MARKET_STRUCTURE = _cfg('MIN_BARS_MARKET_STRUCTURE', 50)             # Minimum bars required for market structure calculation
 
 # ------------------------------------------------------------------------------
 # 4.4 GROUP: BITCOIN KING EFFECT (Korelasi)
 # ------------------------------------------------------------------------------
-USE_BTC_CORRELATION = True       # Wajib cek gerak-gerik Bitcoin?
+USE_BTC_CORRELATION = _cfg('USE_BTC_CORRELATION', True)       # Wajib cek gerak-gerik Bitcoin?
 BTC_SYMBOL = 'BTC/USDT'
-BTC_EMA_PERIOD = 50              # EMA Trend Filter Bitcoin
-CORRELATION_THRESHOLD_BTC = 0.8  # Ambang batas korelasi tinggi
-CORRELATION_PERIOD = 30
+BTC_EMA_PERIOD = _cfg('BTC_EMA_PERIOD', 50)              # EMA Trend Filter Bitcoin
+CORRELATION_THRESHOLD_BTC = _cfg('CORRELATION_THRESHOLD_BTC', 0.8)  # Ambang batas korelasi tinggi
+CORRELATION_PERIOD = _cfg('CORRELATION_PERIOD', 30)
 DEFAULT_CORRELATION_HIGH = 0.99
 
 
 # ==============================================================================
 # 5. 🎯 EKSEKUSI ORDER (TRIGGER RULES)
 # ==============================================================================
-ENABLE_MARKET_ORDERS = False      # Izinkan Market Order (False = Limit Only)
-LIMIT_ORDER_EXPIRY_SECONDS = 7200 # Hapus Limit Order jika tak terisi dalam 2 jam
+ENABLE_MARKET_ORDERS = _cfg('ENABLE_MARKET_ORDERS', False)      # Izinkan Market Order (False = Limit Only)
+LIMIT_ORDER_EXPIRY_SECONDS = _cfg('LIMIT_ORDER_EXPIRY_SECONDS', 7200) # Hapus Limit Order jika tak terisi dalam 2 jam
 
 # Trailing Stop Loss (TSL)
-ENABLE_TRAILING_STOP = True           # Aktifkan Trailing Stop? (Master Switch)
-USE_NATIVE_TRAILING = True            # [NEW] Check form Binance (Native) vs Software (Custom)
-TRAILING_ACTIVATION_DELAY = 60        # [NEW] Delay (detik) sebelum pasang Trailing Stop (Native)
+ENABLE_TRAILING_STOP = _cfg('ENABLE_TRAILING_STOP', True)           # Aktifkan Trailing Stop? (Master Switch)
+USE_NATIVE_TRAILING = _cfg('USE_NATIVE_TRAILING', True)            # Check form Binance (Native) vs Software (Custom)
+TRAILING_ACTIVATION_DELAY = _cfg('TRAILING_ACTIVATION_DELAY', 60)        # Delay (detik) sebelum pasang Trailing Stop (Native)
 
-TRAILING_ACTIVATION_THRESHOLD = 0.80  # Aktif saat harga jalan 80% ke TP (Software Mode Only)
-TRAILING_CALLBACK_RATE = 0.001       # Jarak trail
-TRAILING_MIN_PROFIT_LOCK = 0.005      # Kunci minimal profit 0.5% (Software Mode Only)
-TRAILING_SL_UPDATE_COOLDOWN = 3       # Interval update ke exchange
+TRAILING_ACTIVATION_THRESHOLD = _cfg('TRAILING_ACTIVATION_THRESHOLD', 0.80)  # Aktif saat harga jalan 80% ke TP (Software Mode Only)
+TRAILING_CALLBACK_RATE = _cfg('TRAILING_CALLBACK_RATE', 0.001)       # Jarak trail
+TRAILING_MIN_PROFIT_LOCK = _cfg('TRAILING_MIN_PROFIT_LOCK', 0.005)      # Kunci minimal profit 0.5% (Software Mode Only)
+TRAILING_SL_UPDATE_COOLDOWN = _cfg('TRAILING_SL_UPDATE_COOLDOWN', 3)       # Interval update ke exchange
 
 # Native Trailing Stop Limits (Binance Futures)
 NATIVE_TRAILING_MIN_RATE = 0.1       # Minimal 0.1%
 NATIVE_TRAILING_MAX_RATE = 5.0       # Maksimal 5.0%
 
 # Mekanisme Retry & Error Handling
-ORDER_SLTP_RETRIES = 3           # Retry pasang SL/TP max 3 kali
-ORDER_SLTP_RETRY_DELAY = 2       # Jeda retry (detik)
+ORDER_SLTP_RETRIES = _cfg('ORDER_SLTP_RETRIES', 3)           # Retry pasang SL/TP max 3 kali
+ORDER_SLTP_RETRY_DELAY = _cfg('ORDER_SLTP_RETRY_DELAY', 2)       # Jeda retry (detik)
 
 
 # ==============================================================================
 # 6. ⚙️ PENGATURAN SISTEM INFRASTRUKTUR (JARANG DIUBAH)
 # ==============================================================================
 # Environment Selection
-PAKAI_DEMO = True               # False = Real Money, True = Testnet
+PAKAI_DEMO = _cfg('PAKAI_DEMO', True)               # False = Real Money, True = Testnet
 
 # Identitas File
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

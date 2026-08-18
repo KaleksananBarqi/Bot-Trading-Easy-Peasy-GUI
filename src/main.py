@@ -1,8 +1,7 @@
 
 
-
 import asyncio
-
+import signal
 import time
 import html
 from datetime import datetime
@@ -24,6 +23,17 @@ from src.modules.executor import OrderExecutor
 from src.modules.pattern_recognizer import PatternRecognizer
 from src.modules.journal import TradeJournal
 from src.modules.executor_impl.order_callbacks import OrderUpdateHandler
+
+# ==============================================================================
+# GUI SIGTERM HANDLER — untuk graceful shutdown dari GUI subprocess manager
+# ==============================================================================
+def _handle_sigterm(signum, frame):
+    """Handle SIGTERM signal dari GUI saat tombol STOP ditekan."""
+    from src.utils.helper import logger
+    logger.info("🛑 SIGTERM received dari GUI — shutting down gracefully...")
+    raise SystemExit(0)
+
+signal.signal(signal.SIGTERM, _handle_sigterm)
 
 # GLOBAL INSTANCES
 market_data = None

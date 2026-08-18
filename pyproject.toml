@@ -34,7 +34,8 @@ dependencies = [
     "seaborn>=0.13.2",
     "streamlit>=1.30.0",
     "websockets>=16.0",
-    "pymongo>=4.6.1"
+    "pymongo>=4.6.1",
+    "customtkinter>=5.2.2",
 ]
 
 [project.optional-dependencies]
@@ -45,4 +46,4 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*", "config*"]
+include = ["src*", "config*", "gui*"]
