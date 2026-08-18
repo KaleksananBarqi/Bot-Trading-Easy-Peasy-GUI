@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 import aiohttp
 import config
-from src.utils.helper import logger
+from src.utils.helper import logger, create_aiohttp_session
 
 class OnChainAnalyzer:
     def __init__(self):
@@ -64,8 +64,8 @@ class OnChainAnalyzer:
         
         try:
             url = config.DEFILLAMA_STABLECOIN_URL
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=config.API_REQUEST_TIMEOUT)) as resp:
+            async with create_aiohttp_session(timeout_seconds=config.API_REQUEST_TIMEOUT) as session:
+                async with session.get(url) as resp:
                     data = await resp.json()
             
             # Early return if data insufficient

@@ -238,7 +238,11 @@ def _initialize_exchange():
             'recvWindow': config.API_RECV_WINDOW
         }
     })
-    if config.PAKAI_DEMO: exchange.enable_demo_trading(True)
+    if config.PAKAI_DEMO:
+        exchange.enable_demo_trading(True)
+    
+    from src.utils.helper import create_aiohttp_session
+    exchange.session = create_aiohttp_session()
     return exchange
 
 
@@ -737,6 +741,14 @@ async def main():
         except Exception as e:
             logger.error(f"Main Loop Error: {e}")
             await asyncio.sleep(config.ERROR_SLEEP_DELAY)
+
+    # Cleanup resources on graceful exit
+    try:
+        await exchange.close()
+        if hasattr(market_data, 'exchange_public') and market_data.exchange_public:
+            await market_data.exchange_public.close()
+    except Exception:
+        pass
 
 if __name__ == "__main__":
     try:

@@ -7,7 +7,7 @@ import json
 import config
 from datetime import datetime, timezone
 from typing import Optional
-from src.utils.helper import logger
+from src.utils.helper import logger, create_aiohttp_session
 
 class SentimentAnalyzer:
     def __init__(self):
@@ -99,7 +99,7 @@ class SentimentAnalyzer:
         
         try:
             if own_session:
-                session = aiohttp.ClientSession()
+                session = create_aiohttp_session(timeout_seconds=config.API_REQUEST_TIMEOUT)
             
             timeout = aiohttp.ClientTimeout(total=config.API_REQUEST_TIMEOUT)
             
@@ -193,7 +193,7 @@ class SentimentAnalyzer:
         max_total = getattr(config, 'NEWS_MAX_TOTAL', 50)
         
         # Concurrent fetch dengan aiohttp
-        async with aiohttp.ClientSession() as session:
+        async with create_aiohttp_session(timeout_seconds=config.API_REQUEST_TIMEOUT) as session:
             tasks = [
                 self._fetch_single_rss(session, url, max_per_source, max_age_hours) 
                 for url in rss_urls

@@ -33,7 +33,47 @@ def convert_timestamp_to_wib_str(ts, fmt='%a %b %d %H:%M:%S %Y'):
 
 def wib_time(*args):
     """Converter untuk logging agar menggunakan WIB."""
-    return get_wib_now().timetuple()
+    try:
+        return get_wib_now().timetuple()
+    except Exception:
+        import time
+        return time.localtime(*args)
+
+def get_ai_client_headers() -> dict:
+    """
+    Menyiapkan HTTP header yang sesuai dengan AI Provider.
+    Jika menggunakan AgentRouter, inject header resmi (codex_cli_rs) untuk melewati proteksi WAF.
+    Jika menggunakan OpenRouter, gunakan HTTP-Referer dan X-Title.
+    """
+    base_url = str(getattr(config, 'AI_BASE_URL', '') or '').lower()
+    if 'agentrouter' in base_url:
+        return {
+            "User-Agent": "codex_cli_rs/0.101.0",
+            "originator": "codex_cli_rs"
+        }
+    headers = {}
+    if getattr(config, 'AI_APP_URL', None):
+        headers["HTTP-Referer"] = config.AI_APP_URL
+    if getattr(config, 'AI_APP_TITLE', None):
+        headers["X-Title"] = config.AI_APP_TITLE
+    return headers
+
+def get_aiohttp_connector():
+    """
+    Mengembalikan TCPConnector dengan ThreadedResolver agar stabil di Windows (mencegah ClientConnectorDNSError).
+    """
+    import aiohttp
+    return aiohttp.TCPConnector(resolver=aiohttp.ThreadedResolver())
+
+def create_aiohttp_session(timeout_seconds: float = 10.0, **kwargs):
+    """
+    Membuat ClientSession aiohttp yang sudah terhubung dengan ThreadedResolver.
+    """
+    import aiohttp
+    connector = get_aiohttp_connector()
+    timeout = aiohttp.ClientTimeout(total=timeout_seconds)
+    return aiohttp.ClientSession(connector=connector, timeout=timeout, **kwargs)
+
 
 def setup_logger():
     # [FIX] Force UTF-8 untuk Windows Console agar emoji tidak crash

@@ -14,7 +14,7 @@ import config
 from collections import deque
 from typing import NamedTuple
 from scipy.signal import argrelextrema
-from src.utils.helper import logger, kirim_tele, wib_time, parse_timeframe_to_seconds
+from src.utils.helper import logger, kirim_tele, wib_time, parse_timeframe_to_seconds, create_aiohttp_session
 
 # --- NAMED TUPLES FOR TYPE SAFETY ---
 
@@ -429,6 +429,7 @@ class MarketDataManager:
             self.exchange_public = ccxt.binance({
                 'options': {'defaultType': 'future'}
             })
+            self.exchange_public.session = create_aiohttp_session()
         
         # Initialize Store Structure with Deque
         for coin in config.DAFTAR_KOIN:

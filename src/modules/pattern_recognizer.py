@@ -9,7 +9,7 @@ import httpx
 import config
 import matplotlib
 matplotlib.use('Agg') # Force non-interactive backend
-from src.utils.helper import logger
+from src.utils.helper import logger, get_ai_client_headers
 from src.utils.prompt_builder import build_pattern_recognition_prompt
 
 class PatternRecognizer:
@@ -19,14 +19,12 @@ class PatternRecognizer:
         
         # Initialize AI Client for Vision
         if config.USE_PATTERN_RECOGNITION and config.AI_API_KEY:
+            headers = get_ai_client_headers()
             self.client = AsyncOpenAI(
                 base_url=config.AI_BASE_URL,
                 api_key=config.AI_API_KEY,
                 http_client=httpx.AsyncClient(),
-                default_headers={
-                    "HTTP-Referer": config.AI_APP_URL,
-                    "X-Title": config.AI_APP_TITLE,
-                }
+                default_headers=headers
             )
             self.model = config.AI_VISION_MODEL
             logger.info(f"👁️ Pattern Recognizer Initialized: {self.model}")

@@ -2,20 +2,23 @@
 from openai import AsyncOpenAI
 import json
 import config
-from src.utils.helper import logger
+from src.utils.helper import logger, get_ai_client_headers
 import re
 
 class AIBrain:
     def __init__(self):
         if config.AI_API_KEY:
             import httpx
+            headers = get_ai_client_headers()
             self.client = AsyncOpenAI(
                 base_url=config.AI_BASE_URL,
                 api_key=config.AI_API_KEY,
-                http_client=httpx.AsyncClient()
+                http_client=httpx.AsyncClient(),
+                default_headers=headers
             )
             self.model_name = config.AI_MODEL_NAME
-            logger.info(f"🧠 AI Brain Initialized: {self.model_name} via OpenRouter")
+            provider_name = "AgentRouter" if "agentrouter" in str(config.AI_BASE_URL).lower() else "OpenRouter/OpenAI"
+            logger.info(f"🧠 AI Brain Initialized: {self.model_name} via {provider_name}")
             if getattr(config, 'AI_REASONING_ENABLED', False):
                 logger.info(f"🧠 Reasoning Feature ENABLED (Effort: {config.AI_REASONING_EFFORT})")
         else:
@@ -49,10 +52,6 @@ class AIBrain:
         try:
             # Generate Content
             completion = await self.client.chat.completions.create(
-                extra_headers={
-                    "HTTP-Referer": config.AI_APP_URL, 
-                    "X-Title": config.AI_APP_TITLE, 
-                },
                 extra_body=self._build_reasoning_config(),
                 model=self.model_name,
                 messages=[ 
@@ -122,10 +121,6 @@ class AIBrain:
         
         try:
             completion = await self.client.chat.completions.create(
-                extra_headers={
-                    "HTTP-Referer": config.AI_APP_URL, 
-                    "X-Title": config.AI_APP_TITLE, 
-                },
                 model=target_model,
                 messages=[{"role": "user", "content": prompt_text}],
                 # Sentiment boleh lebih kreatif sedikit
