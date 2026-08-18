@@ -17,6 +17,42 @@ class OrderSyncManager:
         self.tracker = tracker
         self.positions = positions
 
+    async def ensure_position_mode(self, hedged: bool = False) -> bool:
+        """
+        Memastikan mode posisi akun di Binance sesuai dengan kebutuhan bot (Default: One-Way Mode / hedged=False).
+        - Menangani respon -4059 ('No need to change') secara aman jika sudah sesuai.
+        - Menangani respon -4068 jika terhalang order/posisi aktif dengan memberi log dan alert solutif.
+        """
+        mode_name = "Hedge Mode (Dual-Side)" if hedged else "One-Way Mode (Single-Side)"
+        try:
+            logger.info(f"⚙️ Memverifikasi Position Mode Binance (Target: {mode_name})...")
+            if hasattr(self.exchange, 'set_position_mode'):
+                await self.exchange.set_position_mode(hedged)
+            else:
+                await self.exchange.fapiPrivatePostPositionSideDual({
+                    'dualSidePosition': 'true' if hedged else 'false'
+                })
+            logger.info(f"✅ Position Mode Binance berhasil disetel ke {mode_name}.")
+            return True
+        except Exception as e:
+            err_msg = str(e).lower()
+            if "no need to change" in err_msg or "-4059" in err_msg:
+                logger.info(f"✅ Position Mode Binance sudah sesuai ({mode_name}).")
+                return True
+            elif "open orders or positions" in err_msg or "-4068" in err_msg:
+                warning_msg = (
+                    f"⚠️ <b>PERINGATAN POSITION MODE BINANCE</b>\n"
+                    f"Akun Binance saat ini belum dalam <b>{mode_name}</b>.\n"
+                    f"Bot tidak dapat mengubahnya otomatis karena ada posisi/order aktif di Binance.\n"
+                    f"👉 <i>Solusi: Tutup order/posisi di Binance, lalu restart bot, atau ubah manual di Binance Futures Preferences -> Position Mode -> One-Way Mode.</i>"
+                )
+                logger.warning(f"⚠️ {warning_msg}")
+                await kirim_tele(warning_msg, alert=True)
+                return False
+            else:
+                logger.warning(f"⚠️ Gagal mengatur Position Mode: {e}")
+                return False
+
     async def sync_pending_orders(self):
         """
         Sync open orders to detect manual cancellations.

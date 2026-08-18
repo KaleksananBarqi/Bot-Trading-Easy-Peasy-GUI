@@ -71,7 +71,7 @@ ENABLE_SENTIMENT_ANALYSIS = _cfg('ENABLE_SENTIMENT_ANALYSIS', True)          # A
 AI_SENTIMENT_MODEL = _cfg('AI_SENTIMENT_MODEL', 'arcee-ai/trinity-large-preview:free') # Model ekonomis untuk baca berita
 SENTIMENT_ANALYSIS_INTERVAL = _cfg('SENTIMENT_ANALYSIS_INTERVAL', '1h')         # Seberapa sering cek sentimen
 SENTIMENT_UPDATE_INTERVAL = _cfg('SENTIMENT_UPDATE_INTERVAL', '1h')           # Interval update data raw sentimen
-SENTIMENT_PROVIDER = 'RSS_Feed'  # Sumber: 'RSS_Feed' (tidak diubah dari GUI)
+SENTIMENT_PROVIDER = _cfg('SENTIMENT_PROVIDER', 'RSS_Feed')  # Sumber: 'RSS_Feed'
 
 # Analisa Visual (Chart Pattern)
 USE_PATTERN_RECOGNITION = _cfg('USE_PATTERN_RECOGNITION', True)
@@ -82,10 +82,10 @@ AI_VISION_MAX_TOKENS = _cfg('AI_VISION_MAX_TOKENS', 300)            # Naikkan un
 # Validasi Pattern Recognition
 PATTERN_MAX_RETRIES = _cfg('PATTERN_MAX_RETRIES', 2)               # Berapa kali retry jika output tidak valid
 PATTERN_MIN_ANALYSIS_LENGTH = _cfg('PATTERN_MIN_ANALYSIS_LENGTH', 50)      # Minimal panjang karakter output yang dianggap valid
-PATTERN_REQUIRED_KEYWORDS = ['BULLISH', 'BEARISH', 'NEUTRAL']  # Minimal satu harus ada
+PATTERN_REQUIRED_KEYWORDS = _cfg('PATTERN_REQUIRED_KEYWORDS', ['BULLISH', 'BEARISH', 'NEUTRAL'])  # Minimal satu harus ada
 
 # Data OnChain
-ONCHAIN_PROVIDER = 'DefiLlama'   # Sumber data OnChain
+ONCHAIN_PROVIDER = _cfg('ONCHAIN_PROVIDER', 'DefiLlama')   # Sumber data OnChain
 
 # ==============================================================================
 # 3. 💰 MANAJEMEN RISIKO & MONEY MANAGEMENT
@@ -117,9 +117,11 @@ WHALE_HISTORY_LIMIT = _cfg('WHALE_HISTORY_LIMIT', 10)         # Cek 10 transaksi
 STABLECOIN_INFLOW_THRESHOLD_PERCENT = _cfg('STABLECOIN_INFLOW_THRESHOLD_PERCENT', 0.05)
 WHALE_DEDUP_WINDOW_SECONDS = _cfg('WHALE_DEDUP_WINDOW_SECONDS', 5)   # Window deduplikasi transaksi whale (detik)
 
-# Mekanisme Pendinginan (Anti-FOMO/Anti-Revenge)
+# Mekanisme Pendinginan (Anti-FOMO/Anti-Revenge) & Circuit Breaker
 COOLDOWN_IF_PROFIT = _cfg('COOLDOWN_IF_PROFIT', 3600)        # Jeda trading di koin ini jika PROFIT (detik)
 COOLDOWN_IF_LOSS = _cfg('COOLDOWN_IF_LOSS', 7200)          # Jeda trading di koin ini jika LOSS (detik)
+MAX_DAILY_LOSS_USDT = _cfg('MAX_DAILY_LOSS_USDT', 0)        # Batas rugi harian dalam USDT (0 = dinonaktifkan)
+MAX_TOTAL_OPEN_POSITIONS = _cfg('MAX_TOTAL_OPEN_POSITIONS', 5) # Batas maksimal seluruh posisi terbuka bersamaan
 
 
 # ==============================================================================
@@ -187,11 +189,11 @@ MIN_BARS_MARKET_STRUCTURE = _cfg('MIN_BARS_MARKET_STRUCTURE', 50)             # 
 # 4.4 GROUP: BITCOIN KING EFFECT (Korelasi)
 # ------------------------------------------------------------------------------
 USE_BTC_CORRELATION = _cfg('USE_BTC_CORRELATION', True)       # Wajib cek gerak-gerik Bitcoin?
-BTC_SYMBOL = 'BTC/USDT'
+BTC_SYMBOL = _cfg('BTC_SYMBOL', 'BTC/USDT')
 BTC_EMA_PERIOD = _cfg('BTC_EMA_PERIOD', 50)              # EMA Trend Filter Bitcoin
 CORRELATION_THRESHOLD_BTC = _cfg('CORRELATION_THRESHOLD_BTC', 0.8)  # Ambang batas korelasi tinggi
 CORRELATION_PERIOD = _cfg('CORRELATION_PERIOD', 30)
-DEFAULT_CORRELATION_HIGH = 0.99
+DEFAULT_CORRELATION_HIGH = _cfg('DEFAULT_CORRELATION_HIGH', 0.99)
 
 
 # ==============================================================================
@@ -211,8 +213,8 @@ TRAILING_MIN_PROFIT_LOCK = _cfg('TRAILING_MIN_PROFIT_LOCK', 0.005)      # Kunci 
 TRAILING_SL_UPDATE_COOLDOWN = _cfg('TRAILING_SL_UPDATE_COOLDOWN', 3)       # Interval update ke exchange
 
 # Native Trailing Stop Limits (Binance Futures)
-NATIVE_TRAILING_MIN_RATE = 0.1       # Minimal 0.1%
-NATIVE_TRAILING_MAX_RATE = 5.0       # Maksimal 5.0%
+NATIVE_TRAILING_MIN_RATE = _cfg('NATIVE_TRAILING_MIN_RATE', 0.1)       # Minimal 0.1%
+NATIVE_TRAILING_MAX_RATE = _cfg('NATIVE_TRAILING_MAX_RATE', 5.0)       # Maksimal 5.0%
 
 # Mekanisme Retry & Error Handling
 ORDER_SLTP_RETRIES = _cfg('ORDER_SLTP_RETRIES', 3)           # Retry pasang SL/TP max 3 kali
@@ -232,8 +234,8 @@ TRACKER_FILENAME = os.path.join(BASE_DIR, 'safety_tracker.json')
 
 # Database (MongoDB)
 MONGO_URI = os.getenv("MONGO_URI")
-MONGO_DB_NAME = "bot_trading_easy_peasy" # Ubah nama database di sini
-MONGO_COLLECTION_NAME = "trades_02_2026" # Ubah nama collection di sini
+MONGO_DB_NAME = _cfg("MONGO_DB_NAME", "bot_trading_easy_peasy") # Ubah nama database di sini
+MONGO_COLLECTION_NAME = _cfg("MONGO_COLLECTION_NAME", "trades_02_2026") # Ubah nama collection di sini
 
 # Credential Loading (Dari .env)
 API_KEY_LIVE = os.getenv("BINANCE_API_KEY")
@@ -246,30 +248,30 @@ AI_BASE_URL = _cfg('AI_BASE_URL', os.getenv("AI_BASE_URL", "https://openrouter.a
 CMC_API_KEY = os.getenv("CMC_API_KEY")
 
 # Performa System Loop
-CONCURRENCY_LIMIT = 20           # Max thread worker
-LOOP_SLEEP_DELAY = 1             # Sleep main loop (detik)
-ERROR_SLEEP_DELAY = 5            # Sleep on error (detik)
-SAFETY_MONITOR_INTERVAL = 60     # Sleep interval safety monitor loop (detik)
-API_REQUEST_TIMEOUT = 10         # Timeout request (detik)
-API_RECV_WINDOW = 10000          # RecvWindow Binance (ms)
-LOOP_SKIP_DELAY = 2              # Delay skip coin
+CONCURRENCY_LIMIT = _cfg('CONCURRENCY_LIMIT', 20)           # Max thread worker
+LOOP_SLEEP_DELAY = _cfg('LOOP_SLEEP_DELAY', 1)             # Sleep main loop (detik)
+ERROR_SLEEP_DELAY = _cfg('ERROR_SLEEP_DELAY', 5)            # Sleep on error (detik)
+SAFETY_MONITOR_INTERVAL = _cfg('SAFETY_MONITOR_INTERVAL', 60)     # Sleep interval safety monitor loop (detik)
+API_REQUEST_TIMEOUT = _cfg('API_REQUEST_TIMEOUT', 10)         # Timeout request (detik)
+API_RECV_WINDOW = _cfg('API_RECV_WINDOW', 10000)          # RecvWindow Binance (ms)
+LOOP_SKIP_DELAY = _cfg('LOOP_SKIP_DELAY', 2)              # Delay skip coin
 
 # External Info / News Sources
-CMC_FNG_URL = "https://pro-api.coinmarketcap.com/v3/fear-and-greed/latest"
-DEFILLAMA_STABLECOIN_URL = "https://stablecoins.llama.fi/stablecoincharts/all"
-WS_URL_FUTURES_LIVE = "wss://fstream.binance.com/stream?streams="
-WS_URL_FUTURES_TESTNET = "wss://stream.binancefuture.com/stream?streams="
-WS_KEEP_ALIVE_INTERVAL = 1800
+CMC_FNG_URL = _cfg('CMC_FNG_URL', "https://pro-api.coinmarketcap.com/v3/fear-and-greed/latest")
+DEFILLAMA_STABLECOIN_URL = _cfg('DEFILLAMA_STABLECOIN_URL', "https://stablecoins.llama.fi/stablecoincharts/all")
+WS_URL_FUTURES_LIVE = _cfg('WS_URL_FUTURES_LIVE', "wss://fstream.binance.com/stream?streams=")
+WS_URL_FUTURES_TESTNET = _cfg('WS_URL_FUTURES_TESTNET', "wss://stream.binancefuture.com/stream?streams=")
+WS_KEEP_ALIVE_INTERVAL = _cfg('WS_KEEP_ALIVE_INTERVAL', 1800)
 
-NEWS_MAX_PER_SOURCE = 15
-NEWS_MAX_TOTAL = 200
-NEWS_RETENTION_LIMIT = 15
-NEWS_MAX_AGE_HOURS = 24
-NEWS_COIN_SPECIFIC_MIN = 6
-NEWS_BTC_MAX = 5
-NEWS_MACRO_MAX = 4
+NEWS_MAX_PER_SOURCE = _cfg('NEWS_MAX_PER_SOURCE', 15)
+NEWS_MAX_TOTAL = _cfg('NEWS_MAX_TOTAL', 200)
+NEWS_RETENTION_LIMIT = _cfg('NEWS_RETENTION_LIMIT', 15)
+NEWS_MAX_AGE_HOURS = _cfg('NEWS_MAX_AGE_HOURS', 24)
+NEWS_COIN_SPECIFIC_MIN = _cfg('NEWS_COIN_SPECIFIC_MIN', 6)
+NEWS_BTC_MAX = _cfg('NEWS_BTC_MAX', 5)
+NEWS_MACRO_MAX = _cfg('NEWS_MACRO_MAX', 4)
 
-RSS_FEED_URLS = [
+RSS_FEED_URLS = _cfg('RSS_FEED_URLS', [
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
     "https://cryptonews.com/news/feed/",
@@ -288,15 +290,17 @@ RSS_FEED_URLS = [
     "https://blockchainmedia.id/feed/",
     "https://cryptopotato.com/tag/solana/feed/",
     "https://news.google.com/rss/search?q=federal+reserve+rates+OR+us+inflation+cpi+OR+global+recession+when:24h&hl=en-US&gl=US&ceid=US:en",
-]
+])
 
-MACRO_KEYWORDS = ["federal reserve", "fed", "fomc", "inflation", "cpi", "recession", "interest rate", "powell", "sec", "crypto regulation"] 
+MACRO_KEYWORDS = _cfg('MACRO_KEYWORDS', ["federal reserve", "fed", "fomc", "inflation", "cpi", "recession", "interest rate", "powell", "sec", "crypto regulation"])
 
 
 # ==============================================================================
 # 7. 📋 DESKRIPSI STRATEGI & PROMPT TEMPLATES (CONSTANTS)
 # ==============================================================================
-AVAILABLE_STRATEGIES = {
+ENABLED_STRATEGIES = _cfg('ENABLED_STRATEGIES', ['LIQUIDITY_REVERSAL_MASTER', 'PULLBACK_CONTINUATION', 'BREAKDOWN_FOLLOW'])
+
+AVAILABLE_STRATEGIES = _cfg('AVAILABLE_STRATEGIES', {
     'LIQUIDITY_REVERSAL_MASTER': (
         "Mencari pembalikan arah di area Pivot (S1/R1) atau Liquidity Sweep. "
     ),
@@ -306,9 +310,9 @@ AVAILABLE_STRATEGIES = {
     'BREAKDOWN_FOLLOW': (
         "Mengikuti breakdown/breakout dari S1/R1 dengan konfirmasi volume. "
     ),
-}
+})
 
-AI_SYSTEM_ROLE = f"""You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.
+DEFAULT_AI_SYSTEM_ROLE = f"""You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.
 
 AVAILABLE STRATEGIES:
 1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1
@@ -378,8 +382,9 @@ C. BREAKOUT SETUP (Follow)
    ✗ Global Trend Filter blocks the trade
    ✗ Conflicting signals (e.g. Bearish Trend but Bullish Divergence weak)
 """
+AI_SYSTEM_ROLE = _cfg('AI_SYSTEM_ROLE', DEFAULT_AI_SYSTEM_ROLE)
 
-PROMPT_BTC_WITH_CONTEXT = """
+DEFAULT_PROMPT_BTC_WITH_CONTEXT = """
 1. 📊 ASSESS MACRO CONTEXT:
    - Market Structure: {market_struct}
    - BTC Trend: {btc_trend}
@@ -392,8 +397,9 @@ PROMPT_BTC_WITH_CONTEXT = """
    | Structure BULLISH + BTC BULLISH | ✅ Didukung macro | ⛔ FORBIDDEN - butuh RSI>{rsi_overbought} + crossover + sweep |
    | Structure & BTC bertentangan | Ambigu - WAIT lebih aman | Ambigu - WAIT lebih aman |
 """
+PROMPT_BTC_WITH_CONTEXT = _cfg('PROMPT_BTC_WITH_CONTEXT', DEFAULT_PROMPT_BTC_WITH_CONTEXT)
 
-PROMPT_BTC_NO_CONTEXT = """
+DEFAULT_PROMPT_BTC_NO_CONTEXT = """
 1. 📊 ASSESS MACRO CONTEXT:
    - Current {timeframe_trend} Market Structure: {market_struct}
    
@@ -408,8 +414,9 @@ PROMPT_BTC_NO_CONTEXT = """
        RSI > {rsi_overbought} + StochRSI K cross below D + sweep R1 + volume > {volume_spike}x avg
      • LONG/BUY = ✅ Didukung macro
 """
+PROMPT_BTC_NO_CONTEXT = _cfg('PROMPT_BTC_NO_CONTEXT', DEFAULT_PROMPT_BTC_NO_CONTEXT)
 
-PROMPT_STRATEGY_SELECTION = """
+DEFAULT_PROMPT_STRATEGY_SELECTION = """
 6. STRATEGY SELECTION (CHOOSE ONE):
    
    A. LIQUIDITY_REVERSAL_MASTER
@@ -436,8 +443,9 @@ PROMPT_STRATEGY_SELECTION = """
    {execution_mode_text}
    - Limit Order: Use pre-calculated entry from EXECUTION SCENARIOS.
 """
+PROMPT_STRATEGY_SELECTION = _cfg('PROMPT_STRATEGY_SELECTION', DEFAULT_PROMPT_STRATEGY_SELECTION)
 
-PROMPT_PATTERN_RECOGNITION = """
+DEFAULT_PROMPT_PATTERN_RECOGNITION = """
 Analyze this {timeframe} chart for {symbol}. {raw_info}
 1. VISUAL PATTERNS: Identify Chart Patterns (e.g. Head & Shoulders, Flags, Wedges, Double Top/Bottom).
 2. MACD DIVERGENCE (Bottom Panel): Look for divergences between Price and MACD Histogram/Lines.
@@ -445,8 +453,9 @@ Analyze this {timeframe} chart for {symbol}. {raw_info}
    - BEARISH DIVERGENCE: Price makes Higher High, MACD makes Lower High -> Signal Reversal DOWN.
 Determine the overall bias (BULLISH/BEARISH/NEUTRAL). Keep it concise (max 3-4 sentences).
 """
+PROMPT_PATTERN_RECOGNITION = _cfg('PROMPT_PATTERN_RECOGNITION', DEFAULT_PROMPT_PATTERN_RECOGNITION)
 
-PROMPT_SENTIMENT_ANALYSIS = """
+DEFAULT_PROMPT_SENTIMENT_ANALYSIS = """
 ROLE: You are an expert Crypto Narrative Analyst & Risk Manager.
 
 TASK: Analyze market data to determine the TRUE market condition by prioritizing SMART MONEY FLOW over RETAIL NOISE.
@@ -497,8 +506,9 @@ OUTPUT FORMAT (JSON ONLY):
   "risk_assessment": "LOW/MEDIUM/HIGH - Reason"
 }}
 """
+PROMPT_SENTIMENT_ANALYSIS = _cfg('PROMPT_SENTIMENT_ANALYSIS', DEFAULT_PROMPT_SENTIMENT_ANALYSIS)
 
-PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT = """
+DEFAULT_PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT = """
 OUTPUT FORMAT (JSON ONLY):
 {{
   "analysis": {{
@@ -514,6 +524,7 @@ OUTPUT FORMAT (JSON ONLY):
   "risk_level": "LOW" | "MEDIUM" | "HIGH"
 }}
 """
+PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT = _cfg('PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT', DEFAULT_PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT)
 
 
 # ==============================================================================

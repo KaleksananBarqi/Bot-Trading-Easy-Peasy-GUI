@@ -112,3 +112,134 @@ def get_system_stats():
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+# ==============================================================================
+# TRADE HISTORY & QUANT ANALYTICS ENDPOINTS
+# ==============================================================================
+
+@router.get("/trades/analytics")
+def get_trades_analytics(
+    days: int = 0,
+    symbol: str = "ALL",
+    strategy: str = "ALL",
+    side: str = "ALL"
+):
+    """
+    Mengambil kalkulasi metrik kuantitatif lengkap (EV, Calmar, Sharpe, Sortino, SQN, Max Drawdown)
+    serta data time series untuk visualisasi grafik.
+    """
+    try:
+        from src.modules.quant_analytics import QuantAnalyticsEngine
+        engine = QuantAnalyticsEngine()
+        raw_trades = engine.fetch_raw_trades(
+            days=days,
+            symbol=symbol if symbol != "ALL" else None,
+            strategy=strategy if strategy != "ALL" else None,
+            side=side if side != "ALL" else None
+        )
+        metrics = engine.calculate_metrics(raw_trades)
+        return metrics
+    except Exception as e:
+        return {"status": "error", "message": f"Gagal menghitung analitik: {str(e)}"}
+
+
+@router.get("/trades/history")
+def get_trades_history(
+    page: int = 1,
+    limit: int = 20,
+    symbol: str = "ALL",
+    side: str = "ALL",
+    result: str = "ALL",
+    days: int = 0,
+    sort_by: str = "timestamp",
+    ascending: bool = False
+):
+    """
+    Mengambil data riwayat trade dari MongoDB dengan pagination dan filter.
+    """
+    try:
+        from src.modules.mongo_manager import MongoManager
+        from datetime import datetime, timedelta
+        mongo = MongoManager()
+        
+        filter_query = {}
+        if days > 0:
+            cutoff_date = (datetime.utcnow() - timedelta(days=days)).isoformat()
+            filter_query['timestamp'] = {'$gte': cutoff_date}
+        if symbol and symbol != "ALL":
+            filter_query['symbol'] = symbol.upper()
+        if side and side != "ALL":
+            filter_query['side'] = side.upper()
+        if result and result != "ALL":
+            filter_query['result'] = result.upper()
+            
+        # Hitung total dokumen yang cocok
+        total_items = mongo.get_trade_count(filter_query)
+        
+        # Hitung total pages
+        page = max(1, page)
+        limit = max(1, min(100, limit))
+        total_pages = max(1, (total_items + limit - 1) // limit)
+        
+        # Ambil trades dengan filter dan sorting
+        # MongoManager get_trades mengambil list, lalu kita lakukan slice untuk pagination
+        all_matched = mongo.get_trades(
+            filter_query=filter_query,
+            sort_by=sort_by,
+            ascending=ascending,
+            limit=5000
+        )
+        
+        start_idx = (page - 1) * limit
+        end_idx = start_idx + limit
+        paginated_trades = all_matched[start_idx:end_idx]
+        
+        # Sanitasi _id menjadi string
+        cleaned_trades = []
+        for t in paginated_trades:
+            doc = dict(t)
+            if '_id' in doc:
+                doc['_id'] = str(doc['_id'])
+            cleaned_trades.append(doc)
+            
+        return {
+            "status": "success",
+            "data": cleaned_trades,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total_items": total_items,
+                "total_pages": total_pages
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Gagal memuat histori transaksi: {str(e)}",
+            "data": [],
+            "pagination": {"page": 1, "limit": limit, "total_items": 0, "total_pages": 1}
+        }
+
+
+@router.get("/trades/filters")
+def get_trade_filter_options():
+    """
+    Mengambil daftar koin dan strategi unik yang tercatat di database untuk opsi dropdown filter.
+    """
+    try:
+        from src.modules.mongo_manager import MongoManager
+        mongo = MongoManager()
+        trades = mongo.get_trades(limit=2000)
+        
+        symbols = sorted(list(set(t.get('symbol') for t in trades if t.get('symbol'))))
+        strategies = sorted(list(set(t.get('strategy_tag') for t in trades if t.get('strategy_tag'))))
+        
+        return {
+            "status": "success",
+            "symbols": symbols,
+            "strategies": strategies
+        }
+    except Exception as e:
+        return {"status": "error", "symbols": [], "strategies": [], "message": str(e)}
+

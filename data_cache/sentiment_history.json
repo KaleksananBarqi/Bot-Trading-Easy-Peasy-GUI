@@ -58,5 +58,20 @@
     ],
     "risk_assessment": "MEDIUM - Sinyal Smart Money tidak menunjukkan tekanan jual besar, tetapi lemahnya konfirmasi pembelian dan risiko geopolitik meningkatkan kemungkinan volatilitas serta false breakout.",
     "last_updated": 1787065226.432481
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Tidak terdapat divergensi kuat antara Smart Money dan retail. Arus masuk stablecoin masih netral dan tidak ada aktivitas whale signifikan, sehingga belum terlihat akumulasi maupun distribusi agresif. Fear & Greed Index di level 41 menunjukkan retail cenderung berhati-hati, bukan panik atau euforia. Berita institusional seperti tokenisasi aset dan ekspansi perusahaan treasury Bitcoin memberi dukungan struktural, tetapi tekanan makro dari kenaikan imbal hasil obligasi, suku bunga hipotek, serta kontraksi pendapatan bursa membatasi kekuatan bullish.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada pembelian atau penjualan whale yang signifikan",
+      "Sentimen makro berisiko menekan likuiditas, sementara berita adopsi institusional memberikan dukungan terbatas"
+    ],
+    "risk_assessment": "MEDIUM - Pasar berpotensi bergerak volatil dan sideways karena belum ada konfirmasi arus modal besar; risiko meningkat apabila tekanan makro memicu pelemahan likuiditas dan penjualan lanjutan.",
+    "last_updated": 1787066006.144874
   }
 ]

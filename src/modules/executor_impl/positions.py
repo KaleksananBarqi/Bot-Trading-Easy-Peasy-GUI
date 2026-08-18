@@ -87,3 +87,7 @@ class PositionManager:
             if cat == target_category:
                 count += 1
         return count
+
+    def get_total_open_positions_count(self):
+        """Hitung seluruh total posisi aktif di exchange"""
+        return len(self.cache)

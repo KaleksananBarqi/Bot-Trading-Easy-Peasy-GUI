@@ -397,8 +397,10 @@ SCENARIO B: Sell/Short Setup
         )
 
     # [LOGIC: STRATEGY INSTRUCTION - LIQUIDITY HUNT PROTOCOL]
-    # [LOGIC: STRATEGY INSTRUCTION - LIQUIDITY HUNT PROTOCOL]
     execution_mode_text = '- Market Order: Available for confirmed setups' if config.ENABLE_MARKET_ORDERS else 'pass'
+    
+    enabled_strats = getattr(config, 'ENABLED_STRATEGIES', ['LIQUIDITY_REVERSAL_MASTER', 'PULLBACK_CONTINUATION', 'BREAKDOWN_FOLLOW'])
+    allowed_clause = f"\n⚠️ STRICT CONSTRAINT: Only the following strategies are currently ENABLED and allowed to be chosen: {', '.join(enabled_strats)}. If market conditions only match a disabled strategy, you MUST output decision 'WAIT'."
     
     strategy_instruction = config.PROMPT_STRATEGY_SELECTION.format(
         volume_spike=config.VOLUME_SPIKE_MULTIPLIER,
@@ -406,7 +408,7 @@ SCENARIO B: Sell/Short Setup
         ema_fast=config.EMA_FAST,
         ema_slow=config.EMA_SLOW,
         execution_mode_text=execution_mode_text
-    )
+    ) + allowed_clause
 
     prompt = f"""
 ROLE: {config.AI_SYSTEM_ROLE}

@@ -74,6 +74,9 @@ class OrderExecutor:
 
     def get_open_positions_count_by_category(self, target_category):
         return self.positions.get_open_positions_count_by_category(target_category)
+
+    def get_total_open_positions_count(self):
+        return self.positions.get_total_open_positions_count()
     
     def has_active_or_pending_trade(self, symbol):
         """
@@ -118,7 +121,12 @@ class OrderExecutor:
     async def install_native_trailing_stop(self, symbol, side, quantity, callback_rate, activation_price=None):
         return await self.safety.install_native_trailing_stop(symbol, side, quantity, callback_rate, activation_price)
 
-    # --- SYNC METHODS ---
+    # --- SYNC & CONFIG METHODS ---
     async def sync_pending_orders(self):
         """Delegates to OrderSyncManager."""
         return await self.sync.sync_pending_orders()
+
+    async def ensure_position_mode(self, hedged: bool = False):
+        """Memastikan Position Mode Binance sesuai (Default: One-Way Mode)."""
+        return await self.sync.ensure_position_mode(hedged)
+

@@ -144,3 +144,169 @@ def update_env_config(data: EnvUpdate):
         return {"status": "success", "message": "Pengaturan .env berhasil disimpan!"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/prompts/defaults")
+def get_default_prompts():
+    """Mengambil template prompt bawaan (default) dari config."""
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(ROOT_DIR, 'src'))
+        import config as bot_config
+        
+        return {
+            "status": "success",
+            "data": {
+                "AI_SYSTEM_ROLE": getattr(bot_config, 'DEFAULT_AI_SYSTEM_ROLE', ''),
+                "PROMPT_STRATEGY_SELECTION": getattr(bot_config, 'DEFAULT_PROMPT_STRATEGY_SELECTION', ''),
+                "PROMPT_SENTIMENT_ANALYSIS": getattr(bot_config, 'DEFAULT_PROMPT_SENTIMENT_ANALYSIS', ''),
+                "PROMPT_PATTERN_RECOGNITION": getattr(bot_config, 'DEFAULT_PROMPT_PATTERN_RECOGNITION', ''),
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+BUILTIN_PRESETS = {
+    "conservative": {
+        "name": "🛡️ Konservatif (Low Risk)",
+        "description": "Fokus proteksi modal: Leverage rendah 5x, hanya strategi Reversal di zona Pivot kuat, batas rugi harian aktif.",
+        "config": {
+            "DEFAULT_LEVERAGE": 5,
+            "USE_DYNAMIC_SIZE": False,
+            "DEFAULT_AMOUNT_USDT": 10,
+            "DEFAULT_SL_PERCENT": 0.01,
+            "DEFAULT_TP_PERCENT": 0.02,
+            "ENABLED_STRATEGIES": ["LIQUIDITY_REVERSAL_MASTER"],
+            "MAX_POSITIONS_PER_CATEGORY": 2,
+            "MAX_TOTAL_OPEN_POSITIONS": 2,
+            "MAX_DAILY_LOSS_USDT": 15,
+            "ENABLE_TRAILING_STOP": True,
+            "USE_NATIVE_TRAILING": True,
+            "AI_CONFIDENCE_THRESHOLD": 75,
+        }
+    },
+    "aggressive": {
+        "name": "⚡ Agresif Scalper (High Frequency)",
+        "description": "Memaksimalkan peluang: Leverage 20x, Dynamic Sizing 3%, seluruh strategi aktif dengan jeda cooldown lebih cepat.",
+        "config": {
+            "DEFAULT_LEVERAGE": 20,
+            "USE_DYNAMIC_SIZE": True,
+            "RISK_PERCENT_PER_TRADE": 3,
+            "DEFAULT_SL_PERCENT": 0.015,
+            "DEFAULT_TP_PERCENT": 0.03,
+            "ENABLED_STRATEGIES": ["LIQUIDITY_REVERSAL_MASTER", "PULLBACK_CONTINUATION", "BREAKDOWN_FOLLOW"],
+            "MAX_POSITIONS_PER_CATEGORY": 5,
+            "MAX_TOTAL_OPEN_POSITIONS": 5,
+            "MAX_DAILY_LOSS_USDT": 50,
+            "COOLDOWN_IF_PROFIT": 1800,
+            "COOLDOWN_IF_LOSS": 3600,
+            "ENABLE_TRAILING_STOP": True,
+            "AI_CONFIDENCE_THRESHOLD": 60,
+        }
+    },
+    "trend_follower": {
+        "name": "🌊 Trend Follower (Pullback & Breakout)",
+        "description": "Mengikuti arah tren besar: Leverage 10x, hanya Pullback dan Breakout, target TP lebih lebar dengan Trailing Stop.",
+        "config": {
+            "DEFAULT_LEVERAGE": 10,
+            "USE_DYNAMIC_SIZE": False,
+            "DEFAULT_AMOUNT_USDT": 15,
+            "DEFAULT_SL_PERCENT": 0.02,
+            "DEFAULT_TP_PERCENT": 0.05,
+            "ENABLED_STRATEGIES": ["PULLBACK_CONTINUATION", "BREAKDOWN_FOLLOW"],
+            "TIMEFRAME_TREND": "1d",
+            "TIMEFRAME_SETUP": "4h",
+            "TIMEFRAME_EXEC": "1h",
+            "ENABLE_TRAILING_STOP": True,
+            "USE_NATIVE_TRAILING": True,
+            "AI_CONFIDENCE_THRESHOLD": 65,
+        }
+    }
+}
+
+PRESETS_DIR = os.path.join(ROOT_DIR, "presets")
+
+@router.get("/presets")
+def get_presets():
+    """Mengambil daftar seluruh preset bawaan dan custom pengguna."""
+    try:
+        presets = dict(BUILTIN_PRESETS)
+        
+        # Baca custom user presets jika ada
+        if os.path.exists(PRESETS_DIR):
+            for file in os.listdir(PRESETS_DIR):
+                if file.endswith(".json"):
+                    preset_id = file[:-5]
+                    file_path = os.path.join(PRESETS_DIR, file)
+                    try:
+                        with open(file_path, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            presets[preset_id] = data
+                    except Exception:
+                        pass
+                        
+        return {"status": "success", "data": presets}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class PresetApply(BaseModel):
+    preset_id: str
+
+@router.post("/presets/apply")
+def apply_preset(data: PresetApply):
+    """Menerapkan konfigurasi preset ke gui_config.json."""
+    try:
+        presets_resp = get_presets()
+        all_presets = presets_resp.get("data", {})
+        
+        if data.preset_id not in all_presets:
+            raise HTTPException(status_code=404, detail=f"Preset '{data.preset_id}' tidak ditemukan.")
+            
+        preset_patch = all_presets[data.preset_id].get("config", {})
+        
+        # Load existing config
+        current_config = {}
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                current_config = json.load(f)
+                
+        # Merge preset patch into current config
+        current_config.update(preset_patch)
+        
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(current_config, f, indent=2)
+            
+        return {"status": "success", "message": f"Preset '{all_presets[data.preset_id].get('name', data.preset_id)}' berhasil diterapkan!", "config": current_config}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class PresetSave(BaseModel):
+    preset_id: str
+    name: str
+    description: str
+    config: Dict[str, Any]
+
+@router.post("/presets/save")
+def save_custom_preset(data: PresetSave):
+    """Menyimpan konfigurasi saat ini sebagai custom preset baru."""
+    try:
+        if not os.path.exists(PRESETS_DIR):
+            os.makedirs(PRESETS_DIR, exist_ok=True)
+            
+        safe_id = "".join([c for c in data.preset_id if c.isalnum() or c in ('_', '-')]).lower()
+        if not safe_id:
+            safe_id = "custom_preset"
+            
+        file_path = os.path.join(PRESETS_DIR, f"{safe_id}.json")
+        payload = {
+            "name": data.name,
+            "description": data.description,
+            "is_custom": True,
+            "config": data.config
+        }
+        
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+            
+        return {"status": "success", "message": f"Preset '{data.name}' berhasil disimpan!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

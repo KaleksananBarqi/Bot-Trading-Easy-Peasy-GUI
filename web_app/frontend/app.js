@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetId === 'config') loadConfig();
             if (targetId === 'sentiment') fetchSentiment();
             if (targetId === 'positions') fetchPositions();
+            if (targetId === 'history') loadTradeHistoryAndAnalytics();
         });
     });
 
@@ -192,10 +193,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     input.value = currentEnv[key];
                 }
             });
+
+            // Populate Strategy Switches
+            const enabledStrats = currentConfig.ENABLED_STRATEGIES || ['LIQUIDITY_REVERSAL_MASTER', 'PULLBACK_CONTINUATION', 'BREAKDOWN_FOLLOW'];
+            ['LIQUIDITY_REVERSAL_MASTER', 'PULLBACK_CONTINUATION', 'BREAKDOWN_FOLLOW'].forEach(strat => {
+                const el = document.getElementById(`strat-${strat}`);
+                if (el) el.checked = enabledStrats.includes(strat);
+            });
             
             renderCoinsList();
             renderArrayManager('RSS_FEED_URLS', 'rss-list-container');
             renderArrayManager('MACRO_KEYWORDS', 'macro-list-container');
+            loadPresets();
             checkEnvStatus();
         } catch (e) {
             console.error("Config load error", e);
@@ -422,7 +431,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeFormInputs = document.querySelectorAll('input[id^="cfg-"], select[id^="cfg-"], textarea[id^="cfg-"]');
         activeFormInputs.forEach(input => {
             if (!input || !input.id) return;
-            const key = input.id.replace('cfg-', '');
+            let key = input.id.replace('cfg-', '');
+            // Handle duplicate binding (e.g. cfg-MAX_TOTAL_OPEN_POSITIONS_2)
+            if (input.getAttribute('data-bind')) {
+                key = input.getAttribute('data-bind');
+            }
+            
             const isFloat = input.step && input.step.includes('.');
             
             if (input.type === 'checkbox') {
@@ -435,7 +449,155 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentConfig[key] = input.value !== undefined ? input.value : '';
             }
         });
+
+        // Collect Enabled Strategies
+        const activeStrategies = [];
+        ['LIQUIDITY_REVERSAL_MASTER', 'PULLBACK_CONTINUATION', 'BREAKDOWN_FOLLOW'].forEach(strat => {
+            const el = document.getElementById(`strat-${strat}`);
+            if (el && el.checked) activeStrategies.push(strat);
+        });
+        currentConfig.ENABLED_STRATEGIES = activeStrategies;
+
         if (jsonEditor) jsonEditor.value = JSON.stringify(currentConfig, null, 2);
+    }
+
+    // --- Preset Profiles Manager ---
+    async function loadPresets() {
+        const container = document.getElementById('presets-container');
+        if (!container) return;
+        
+        try {
+            const res = await fetch('/api/config/presets');
+            const data = await res.json();
+            if (data.status === 'success') {
+                const presets = data.data || {};
+                container.innerHTML = '';
+                
+                Object.keys(presets).forEach(presetId => {
+                    const p = presets[presetId];
+                    const card = document.createElement('div');
+                    card.className = 'preset-card';
+                    card.innerHTML = `
+                        <div class="preset-header">
+                            <div class="preset-title">${p.name || presetId}</div>
+                            <span class="preset-badge">${p.is_custom ? 'CUSTOM' : 'BUILT-IN'}</span>
+                        </div>
+                        <p class="preset-desc">${p.description || 'No description available.'}</p>
+                        <div class="preset-actions">
+                            <button class="btn btn-primary btn-sm btn-apply-preset" data-id="${presetId}">🚀 Terapkan Preset</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+                document.querySelectorAll('.btn-apply-preset').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const pid = btn.getAttribute('data-id');
+                        await applyPreset(pid);
+                    });
+                });
+            }
+        } catch (e) {
+            console.error("Gagal memuat preset", e);
+        }
+    }
+
+    async function applyPreset(presetId) {
+        const saveMsg = document.getElementById('config-save-msg');
+        try {
+            const res = await fetch('/api/config/presets/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ preset_id: presetId })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                if (saveMsg) {
+                    saveMsg.textContent = "✅ " + data.message;
+                    saveMsg.style.color = 'var(--success)';
+                    setTimeout(() => saveMsg.textContent = '', 3500);
+                }
+                await loadConfig();
+            } else {
+                throw new Error(data.detail || "Gagal menerapkan preset");
+            }
+        } catch (e) {
+            if (saveMsg) {
+                saveMsg.textContent = "❌ " + e.message;
+                saveMsg.style.color = 'var(--danger)';
+            }
+        }
+    }
+
+    const btnSaveCustomPreset = document.getElementById('btn-save-custom-preset');
+    if (btnSaveCustomPreset) {
+        btnSaveCustomPreset.addEventListener('click', async () => {
+            const pid = document.getElementById('custom-preset-id').value.trim();
+            const pname = document.getElementById('custom-preset-name').value.trim();
+            const pdesc = document.getElementById('custom-preset-desc').value.trim();
+            const saveMsg = document.getElementById('config-save-msg');
+            
+            if (!pid || !pname) {
+                alert("Mohon masukkan Preset ID dan Nama Preset!");
+                return;
+            }
+            
+            try {
+                updateRawJSON();
+                const res = await fetch('/api/config/presets/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        preset_id: pid,
+                        name: pname,
+                        description: pdesc,
+                        config: currentConfig
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    if (saveMsg) {
+                        saveMsg.textContent = "✅ " + data.message;
+                        saveMsg.style.color = 'var(--success)';
+                        setTimeout(() => saveMsg.textContent = '', 3500);
+                    }
+                    document.getElementById('custom-preset-id').value = '';
+                    document.getElementById('custom-preset-name').value = '';
+                    document.getElementById('custom-preset-desc').value = '';
+                    loadPresets();
+                } else {
+                    throw new Error(data.detail || "Gagal menyimpan preset");
+                }
+            } catch (e) {
+                if (saveMsg) {
+                    saveMsg.textContent = "❌ " + e.message;
+                    saveMsg.style.color = 'var(--danger)';
+                }
+            }
+        });
+    }
+
+    // --- AI Prompts Reset Handler ---
+    const btnResetPrompts = document.getElementById('btn-reset-prompts');
+    if (btnResetPrompts) {
+        btnResetPrompts.addEventListener('click', async () => {
+            if (!confirm("Kembalikan seluruh template prompt AI ke pengaturan bawaan (default)?")) return;
+            try {
+                const res = await fetch('/api/config/prompts/defaults');
+                const data = await res.json();
+                if (data.status === 'success' && data.data) {
+                    const defaults = data.data;
+                    if (defaults.AI_SYSTEM_ROLE) document.getElementById('cfg-AI_SYSTEM_ROLE').value = defaults.AI_SYSTEM_ROLE;
+                    if (defaults.PROMPT_STRATEGY_SELECTION) document.getElementById('cfg-PROMPT_STRATEGY_SELECTION').value = defaults.PROMPT_STRATEGY_SELECTION;
+                    if (defaults.PROMPT_SENTIMENT_ANALYSIS) document.getElementById('cfg-PROMPT_SENTIMENT_ANALYSIS').value = defaults.PROMPT_SENTIMENT_ANALYSIS;
+                    if (defaults.PROMPT_PATTERN_RECOGNITION) document.getElementById('cfg-PROMPT_PATTERN_RECOGNITION').value = defaults.PROMPT_PATTERN_RECOGNITION;
+                    updateRawJSON();
+                    alert("Template prompt AI berhasil di-reset ke default! Klik 'SAVE JSON SETTINGS' untuk menyimpan permanen.");
+                }
+            } catch (e) {
+                alert("Gagal mengambil template prompt default.");
+            }
+        });
     }
 
     if (btnSaveConfig) {
@@ -674,7 +836,589 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    connectLogStream();
+    // --- TRADE HISTORY & QUANT PERFORMANCE ANALYTICS ---
+    let equityChartInstance = null;
+    let drawdownChartInstance = null;
+    let symbolPnlChartInstance = null;
+    let outcomeChartInstance = null;
+
+    let currentHistPage = 1;
+    let cachedTradesList = [];
+    let filterOptionsLoaded = false;
+
+    async function loadTradeFilterOptions() {
+        if (filterOptionsLoaded) return;
+        try {
+            const res = await fetch('/api/data/trades/filters');
+            const data = await res.json();
+            if (data.status === 'success') {
+                const symSelect = document.getElementById('hist-filter-symbol');
+                const stratSelect = document.getElementById('hist-filter-strategy');
+                
+                if (symSelect && data.symbols) {
+                    const currentVal = symSelect.value;
+                    symSelect.innerHTML = '<option value="ALL">All Symbols</option>';
+                    data.symbols.forEach(sym => {
+                        const opt = document.createElement('option');
+                        opt.value = sym;
+                        opt.textContent = sym;
+                        symSelect.appendChild(opt);
+                    });
+                    symSelect.value = currentVal || 'ALL';
+                }
+
+                if (stratSelect && data.strategies) {
+                    const currentStrat = stratSelect.value;
+                    stratSelect.innerHTML = '<option value="ALL">All Strategies</option>';
+                    data.strategies.forEach(strat => {
+                        const opt = document.createElement('option');
+                        opt.value = strat;
+                        opt.textContent = strat;
+                        stratSelect.appendChild(opt);
+                    });
+                    stratSelect.value = currentStrat || 'ALL';
+                }
+                filterOptionsLoaded = true;
+            }
+        } catch (e) {
+            console.error("Failed to load trade filter options", e);
+        }
+    }
+
+    function getHistoryFilterParams() {
+        const days = document.getElementById('hist-filter-days')?.value || '30';
+        const symbol = document.getElementById('hist-filter-symbol')?.value || 'ALL';
+        const strategy = document.getElementById('hist-filter-strategy')?.value || 'ALL';
+        const result = document.getElementById('hist-filter-result')?.value || 'ALL';
+        return { days, symbol, strategy, result };
+    }
+
+    async function fetchTradeAnalytics() {
+        try {
+            const { days, symbol, strategy } = getHistoryFilterParams();
+            const res = await fetch(`/api/data/trades/analytics?days=${days}&symbol=${symbol}&strategy=${strategy}`);
+            const result = await res.json();
+            
+            if (result.status !== 'success') return;
+            const s = result.summary || {};
+
+            // 1. Update 8 KPI Cards
+            const netPnlEl = document.getElementById('kpi-net-pnl');
+            if (netPnlEl) {
+                const net = s.net_pnl_usdt || 0;
+                netPnlEl.textContent = (net >= 0 ? '+$' : '-$') + Math.abs(net).toFixed(2);
+                netPnlEl.className = 'quant-val ' + (net >= 0 ? 'text-success' : 'text-danger');
+            }
+
+            const feesEl = document.getElementById('kpi-fees');
+            if (feesEl) feesEl.textContent = '$' + (s.total_fees_usdt || 0).toFixed(2);
+
+            const wrEl = document.getElementById('kpi-win-rate');
+            if (wrEl) {
+                const wr = s.win_rate_percent || 0;
+                wrEl.textContent = wr.toFixed(1) + '%';
+                wrEl.className = 'quant-val ' + (wr >= 50 ? 'text-success' : (wr > 0 ? 'text-warning' : 'text-main'));
+            }
+
+            const winLossEl = document.getElementById('kpi-win-loss-count');
+            if (winLossEl) winLossEl.textContent = `${s.win_count || 0}W / ${s.loss_count || 0}L (${s.cancelled_count || 0} Canc)`;
+
+            const payoffEl = document.getElementById('kpi-payoff');
+            if (payoffEl) payoffEl.textContent = (s.payoff_ratio || 0).toFixed(2);
+
+            const evEl = document.getElementById('kpi-ev');
+            if (evEl) {
+                const ev = s.expected_value_usdt || 0;
+                evEl.textContent = (ev >= 0 ? '+$' : '-$') + Math.abs(ev).toFixed(2);
+                evEl.className = 'quant-val ' + (ev >= 0 ? 'text-success' : 'text-danger');
+            }
+
+            const evRoiEl = document.getElementById('kpi-ev-roi');
+            if (evRoiEl) evRoiEl.textContent = (s.expected_value_roi_percent || 0).toFixed(2) + '%';
+
+            const pfEl = document.getElementById('kpi-pf');
+            if (pfEl) {
+                const pf = s.profit_factor || 0;
+                pfEl.textContent = pf.toFixed(2);
+                pfEl.className = 'quant-val ' + (pf >= 1.5 ? 'text-success' : (pf >= 1.0 ? 'text-warning' : 'text-danger'));
+            }
+
+            const grossProfitEl = document.getElementById('kpi-gross-profit');
+            if (grossProfitEl) grossProfitEl.textContent = '$' + (s.gross_profit_usdt || 0).toFixed(0);
+
+            const grossLossEl = document.getElementById('kpi-gross-loss');
+            if (grossLossEl) grossLossEl.textContent = '$' + (s.gross_loss_usdt || 0).toFixed(0);
+
+            const calmarEl = document.getElementById('kpi-calmar');
+            if (calmarEl) {
+                const calmar = s.calmar_ratio || 0;
+                calmarEl.textContent = calmar.toFixed(2);
+                calmarEl.className = 'quant-val ' + (calmar >= 2.0 ? 'text-success' : (calmar >= 1.0 ? 'text-warning' : 'text-main'));
+            }
+
+            const mddEl = document.getElementById('kpi-mdd');
+            if (mddEl) mddEl.textContent = '-$' + (s.max_drawdown_usdt || 0).toFixed(2);
+
+            const mddPctEl = document.getElementById('kpi-mdd-pct');
+            if (mddPctEl) mddPctEl.textContent = (s.max_drawdown_percent || 0).toFixed(1) + '%';
+
+            const ssEl = document.getElementById('kpi-sharpe-sortino');
+            if (ssEl) ssEl.textContent = `${(s.sharpe_ratio || 0).toFixed(2)} / ${(s.sortino_ratio || 0).toFixed(2)}`;
+
+            const sqnEl = document.getElementById('kpi-sqn');
+            if (sqnEl) sqnEl.textContent = (s.sqn || 0).toFixed(2);
+
+            const sqnGradeEl = document.getElementById('kpi-sqn-grade');
+            if (sqnGradeEl) sqnGradeEl.textContent = s.sqn_grade || '--';
+
+            const kellyEl = document.getElementById('kpi-kelly');
+            if (kellyEl) kellyEl.textContent = (s.half_kelly_percent || 0).toFixed(1) + '%';
+
+            // 2. Render Charts
+            renderEquityChart(result.charts?.equity_curve || []);
+            renderDrawdownChart(result.charts?.drawdown_curve || []);
+            renderSymbolPnlChart(result.breakdown?.by_symbol || []);
+            renderOutcomeChart(result.charts?.distribution || {});
+
+        } catch (e) {
+            console.error("Failed to fetch trade analytics", e);
+        }
+    }
+
+    function renderEquityChart(curveData) {
+        const canvas = document.getElementById('equityChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        const labels = curveData.map(d => d.label || d.timestamp);
+        const cumPnls = curveData.map(d => d.cumulative_pnl);
+
+        if (equityChartInstance) {
+            equityChartInstance.data.labels = labels;
+            equityChartInstance.data.datasets[0].data = cumPnls;
+            equityChartInstance.update();
+            return;
+        }
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+        equityChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cumulative PnL ($)',
+                    data: cumPnls,
+                    borderColor: '#10b981',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: curveData.length > 50 ? 0 : 3,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#34d399'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: (ctx) => ` Cumulative: $${parseFloat(ctx.raw).toFixed(2)}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 8, font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: (v) => '$' + v
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderDrawdownChart(ddData) {
+        const canvas = document.getElementById('drawdownChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const labels = ddData.map(d => d.label || d.timestamp);
+        const ddPct = ddData.map(d => -Math.abs(d.drawdown_pct));
+
+        if (drawdownChartInstance) {
+            drawdownChartInstance.data.labels = labels;
+            drawdownChartInstance.data.datasets[0].data = ddPct;
+            drawdownChartInstance.update();
+            return;
+        }
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+        gradient.addColorStop(0, 'rgba(239, 68, 68, 0.0)');
+        gradient.addColorStop(1, 'rgba(239, 68, 68, 0.35)');
+
+        drawdownChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Underwater Drawdown (%)',
+                    data: ddPct,
+                    borderColor: '#ef4444',
+                    backgroundColor: gradient,
+                    borderWidth: 1.8,
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 0,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` Drawdown: ${parseFloat(ctx.raw).toFixed(2)}%`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 8, font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: (v) => v + '%'
+                        },
+                        max: 0
+                    }
+                }
+            }
+        });
+    }
+
+    function renderSymbolPnlChart(bySymbol) {
+        const canvas = document.getElementById('symbolPnlChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const symbols = bySymbol.slice(0, 8).map(s => s.category);
+        const pnls = bySymbol.slice(0, 8).map(s => s.net_pnl_usdt);
+        const bgColors = pnls.map(p => p >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)');
+
+        if (symbolPnlChartInstance) {
+            symbolPnlChartInstance.data.labels = symbols;
+            symbolPnlChartInstance.data.datasets[0].data = pnls;
+            symbolPnlChartInstance.data.datasets[0].backgroundColor = bgColors;
+            symbolPnlChartInstance.update();
+            return;
+        }
+
+        symbolPnlChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: symbols,
+                datasets: [{
+                    label: 'Net PnL ($)',
+                    data: pnls,
+                    backgroundColor: bgColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` Net PnL: $${parseFloat(ctx.raw).toFixed(2)}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#e2e8f0', font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: (v) => '$' + v
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderOutcomeChart(distribution) {
+        const canvas = document.getElementById('outcomeChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const dataVals = [
+            distribution.win || 0,
+            distribution.loss || 0,
+            distribution.breakeven || 0,
+            distribution.cancelled || 0
+        ];
+
+        if (outcomeChartInstance) {
+            outcomeChartInstance.data.datasets[0].data = dataVals;
+            outcomeChartInstance.update();
+            return;
+        }
+
+        outcomeChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['WIN', 'LOSS', 'BREAKEVEN', 'CANCELLED'],
+                datasets: [{
+                    data: dataVals,
+                    backgroundColor: [
+                        '#10b981',
+                        '#ef4444',
+                        '#94a3b8',
+                        '#475569'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#e2e8f0', boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    async function fetchTradeHistory(page = 1) {
+        try {
+            currentHistPage = page;
+            const { days, symbol, strategy, result } = getHistoryFilterParams();
+            const res = await fetch(`/api/data/trades/history?page=${page}&limit=20&days=${days}&symbol=${symbol}&strategy=${strategy}&result=${result}`);
+            const data = await res.json();
+
+            const tbody = document.getElementById('history-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (data.status !== 'success' || !data.data || data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center">No trade history found matching filters.</td></tr>';
+                document.getElementById('hist-total-count').textContent = '0';
+                document.getElementById('current-page-num').textContent = '1';
+                document.getElementById('total-page-num').textContent = '1';
+                document.getElementById('btn-prev-page').disabled = true;
+                document.getElementById('btn-next-page').disabled = true;
+                return;
+            }
+
+            cachedTradesList = data.data;
+            const pagination = data.pagination || { page: 1, total_pages: 1, total_items: data.data.length };
+
+            document.getElementById('hist-total-count').textContent = pagination.total_items;
+            document.getElementById('current-page-num').textContent = pagination.page;
+            document.getElementById('total-page-num').textContent = pagination.total_pages;
+            
+            document.getElementById('btn-prev-page').disabled = pagination.page <= 1;
+            document.getElementById('btn-next-page').disabled = pagination.page >= pagination.total_pages;
+
+            data.data.forEach((trade, idx) => {
+                const tr = document.createElement('tr');
+                
+                // Format timestamp
+                let timeStr = trade.timestamp || '';
+                if (timeStr.includes('T')) {
+                    timeStr = timeStr.replace('T', ' ').substring(0, 19);
+                }
+
+                const side = (trade.side || 'BUY').toUpperCase();
+                const sideBadge = `<span class="badge-pill ${side === 'BUY' || side === 'LONG' ? 'badge-long' : 'badge-short'}">${side}</span>`;
+                
+                const pnl = parseFloat(trade.pnl_usdt) || 0;
+                const roi = parseFloat(trade.roi_percent) || 0;
+                const pnlClass = pnl > 0 ? 'text-success' : (pnl < 0 ? 'text-danger' : 'text-muted');
+                const pnlSign = pnl > 0 ? '+' : '';
+                const pnlFormatted = `<span class="${pnlClass}"><strong>${pnlSign}$${pnl.toFixed(2)}</strong> <small>(${pnlSign}${roi.toFixed(1)}%)</small></span>`;
+
+                let resBadge = '';
+                const resText = (trade.result || 'UNKNOWN').toUpperCase();
+                if (resText === 'WIN') resBadge = '<span class="badge-pill badge-win">WIN</span>';
+                else if (resText === 'LOSS') resBadge = '<span class="badge-pill badge-loss">LOSS</span>';
+                else if (resText === 'BREAKEVEN') resBadge = '<span class="badge-pill badge-be">BE</span>';
+                else resBadge = `<span class="badge-pill badge-cancelled">${resText}</span>`;
+
+                tr.innerHTML = `
+                    <td style="font-size: 11px; color: #94a3b8;">${timeStr}</td>
+                    <td><strong>${trade.symbol || '--'}</strong></td>
+                    <td>${sideBadge}</td>
+                    <td>$${parseFloat(trade.size_usdt || 0).toFixed(0)}</td>
+                    <td>$${parseFloat(trade.entry_price || 0).toFixed(4)}</td>
+                    <td>$${parseFloat(trade.exit_price || 0).toFixed(4)}</td>
+                    <td>${pnlFormatted}</td>
+                    <td>${resBadge}</td>
+                    <td><small style="color: #cbd5e1;">${trade.exit_type || '-'}</small></td>
+                    <td><span style="font-size: 10px; padding: 2px 6px; border-radius: 3px; background: rgba(255,255,255,0.06);">${trade.strategy_tag || 'MANUAL'}</span></td>
+                    <td><button class="btn-detail" data-index="${idx}">👁️ Detail</button></td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            // Add click listeners to detail buttons
+            document.querySelectorAll('.btn-detail').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.getAttribute('data-index'));
+                    if (cachedTradesList[idx]) openTradeModal(cachedTradesList[idx]);
+                });
+            });
+
+        } catch (e) {
+            console.error("Failed to fetch trade history", e);
+        }
+    }
+
+    function openTradeModal(trade) {
+        const modal = document.getElementById('trade-modal');
+        if (!modal) return;
+
+        document.getElementById('modal-trade-title').textContent = `📊 Trade Detail: ${trade.symbol} (${trade.result})`;
+        document.getElementById('modal-trade-symbol-side').textContent = `${trade.symbol} | ${trade.side} | Size: $${trade.size_usdt}`;
+        
+        const pnl = parseFloat(trade.pnl_usdt) || 0;
+        const roi = parseFloat(trade.roi_percent) || 0;
+        const pnlSign = pnl > 0 ? '+' : '';
+        document.getElementById('modal-trade-pnl').innerHTML = `<span class="${pnl >= 0 ? 'text-success' : 'text-danger'}">${pnlSign}$${pnl.toFixed(2)} (${pnlSign}${roi.toFixed(2)}%) | Fee: $${trade.fee || 0}</span>`;
+        
+        document.getElementById('modal-trade-prices').textContent = `Entry: $${trade.entry_price} ➜ Exit: $${trade.exit_price}`;
+        document.getElementById('modal-trade-exit-strat').textContent = `Exit: ${trade.exit_type || '-'} | Strategy: ${trade.strategy_tag || '-'}`;
+
+        // AI Reasoning
+        let reasonText = trade.reason || '-';
+        if (trade.prompt && trade.prompt !== '-') {
+            reasonText = `AI REASONING:\n${reasonText}\n\nPROMPT CONTEXT:\n${trade.prompt}`;
+        }
+        document.getElementById('modal-trade-reason').textContent = reasonText;
+
+        // Technical Data Snapshot
+        let techObj = trade.technical_data;
+        if (typeof techObj === 'string') {
+            try { techObj = JSON.parse(techObj); } catch(e) {}
+        }
+        document.getElementById('modal-trade-tech').textContent = typeof techObj === 'object' ? JSON.stringify(techObj, null, 2) : String(techObj || '{}');
+
+        // Trailing Stats
+        const trailingEl = document.getElementById('modal-trade-trailing');
+        trailingEl.innerHTML = `
+            <div class="detail-card"><span class="detail-label">Trailing Active</span><strong>${trade.trailing_was_active ? 'YES (Triggered)' : 'NO'}</strong></div>
+            <div class="detail-card"><span class="detail-label">Activation Price</span><strong>$${trade.activation_price || '--'}</strong></div>
+            <div class="detail-card"><span class="detail-label">Final Trailing SL</span><strong>$${trade.trailing_sl_final || '--'}</strong></div>
+            <div class="detail-card"><span class="detail-label">Initial SL</span><strong>$${trade.sl_price_initial || '--'}</strong></div>
+        `;
+
+        modal.classList.add('active');
+    }
+
+    function exportTradeHistoryCSV() {
+        if (!cachedTradesList || cachedTradesList.length === 0) {
+            alert("No trade data to export.");
+            return;
+        }
+        
+        const headers = ["Timestamp", "Symbol", "Side", "Size_USDT", "Entry_Price", "Exit_Price", "PnL_USDT", "ROI_Percent", "Fee", "Result", "Exit_Type", "Strategy", "Reason"];
+        const rows = cachedTradesList.map(t => [
+            `"${t.timestamp || ''}"`,
+            `"${t.symbol || ''}"`,
+            `"${t.side || ''}"`,
+            t.size_usdt || 0,
+            t.entry_price || 0,
+            t.exit_price || 0,
+            t.pnl_usdt || 0,
+            t.roi_percent || 0,
+            t.fee || 0,
+            `"${t.result || ''}"`,
+            `"${t.exit_type || ''}"`,
+            `"${t.strategy_tag || ''}"`,
+            `"${(t.reason || '').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `trade_history_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    async function loadTradeHistoryAndAnalytics(resetPage = true) {
+        if (resetPage) currentHistPage = 1;
+        await loadTradeFilterOptions();
+        await Promise.all([
+            fetchTradeAnalytics(),
+            fetchTradeHistory(currentHistPage)
+        ]);
+    }
+
+    // History Event Listeners
+    document.getElementById('btn-refresh-history')?.addEventListener('click', () => loadTradeHistoryAndAnalytics(true));
+    document.getElementById('hist-filter-days')?.addEventListener('change', () => loadTradeHistoryAndAnalytics(true));
+    document.getElementById('hist-filter-symbol')?.addEventListener('change', () => loadTradeHistoryAndAnalytics(true));
+    document.getElementById('hist-filter-strategy')?.addEventListener('change', () => loadTradeHistoryAndAnalytics(true));
+    document.getElementById('hist-filter-result')?.addEventListener('change', () => loadTradeHistoryAndAnalytics(true));
+    document.getElementById('btn-export-csv')?.addEventListener('click', exportTradeHistoryCSV);
+
+    document.getElementById('btn-prev-page')?.addEventListener('click', () => {
+        if (currentHistPage > 1) fetchTradeHistory(currentHistPage - 1);
+    });
+    document.getElementById('btn-next-page')?.addEventListener('click', () => {
+        fetchTradeHistory(currentHistPage + 1);
+    });
+
+    // Modal Close
+    document.getElementById('close-trade-modal')?.addEventListener('click', () => {
+        document.getElementById('trade-modal')?.classList.remove('active');
+    });
+    document.getElementById('btn-close-trade-modal')?.addEventListener('click', () => {
+        document.getElementById('trade-modal')?.classList.remove('active');
+    });
+
+    // Quick Search filter
+    document.getElementById('hist-search')?.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#history-tbody tr');
+        rows.forEach(r => {
+            const text = r.textContent.toLowerCase();
+            r.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
 
     // --- Initialization & Polling ---
     checkBotStatus();
@@ -685,10 +1429,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         const sentimentPage = document.getElementById('sentiment');
         const positionsPage = document.getElementById('positions');
+        const historyPage = document.getElementById('history');
         if (sentimentPage && sentimentPage.classList.contains('active')) fetchSentiment();
         if (positionsPage && positionsPage.classList.contains('active')) fetchPositions();
+        if (historyPage && historyPage.classList.contains('active')) loadTradeHistoryAndAnalytics(false);
     }, 8000);
 
     // Initial load config on start
     loadConfig();
 });
+

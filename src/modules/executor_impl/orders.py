@@ -97,5 +97,17 @@ class OrderManager:
                     raise e
 
         except Exception as e:
-            logger.error(f"❌ Entry Failed {symbol}: {e}")
-            await kirim_tele(f"❌ <b>ENTRY ERROR</b>\n{symbol}: {e}", alert=True)
+            err_msg = str(e)
+            if "-4061" in err_msg:
+                logger.error(f"❌ Entry Failed {symbol}: Mode posisi akun Binance tidak cocok (Hedge vs One-Way Mode). Pastikan akun disetel ke One-Way Mode.")
+                await kirim_tele(
+                    f"❌ <b>ENTRY ERROR (Position Mode Mismatch)</b>\n"
+                    f"Simbol: <b>{symbol}</b>\n"
+                    f"Penyebab: Akun Binance menggunakan Hedge Mode, sedangkan bot berjalan dalam One-Way Mode.\n"
+                    f"👉 <i>Ubah Position Mode ke <b>One-Way Mode</b> di Binance Futures Preferences atau tutup posisi/order manual lalu restart bot.</i>",
+                    alert=True
+                )
+            else:
+                logger.error(f"❌ Entry Failed {symbol}: {e}")
+                await kirim_tele(f"❌ <b>ENTRY ERROR</b>\n{symbol}: {e}", alert=True)
+

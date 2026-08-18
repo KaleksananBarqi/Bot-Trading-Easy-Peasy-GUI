@@ -323,6 +323,13 @@ def _check_trade_exclusions(symbol, coin_cfg):
     if executor.is_under_cooldown(symbol):
         return True
 
+    # 2.5 Check Global Total Open Positions Limit
+    max_total_pos = getattr(config, 'MAX_TOTAL_OPEN_POSITIONS', 5)
+    if max_total_pos > 0:
+        total_open = executor.get_total_open_positions_count()
+        if total_open >= max_total_pos:
+            return True
+
     # 3. Check Category Limit
     category = coin_cfg.get('category', 'UNKNOWN')
     if config.MAX_POSITIONS_PER_CATEGORY > 0:
@@ -599,6 +606,9 @@ async def main():
 
     # 2. SETUP MODULES
     market_data, sentiment, onchain, ai_brain, executor, pattern_recognizer, journal = _initialize_modules(exchange)
+
+    # 2.1 SYNC POSITION MODE (Pastikan Binance Akun dalam One-Way Mode)
+    await executor.ensure_position_mode()
 
     # 3. PRELOAD DATA
     await market_data.initialize_data()

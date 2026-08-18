@@ -34,6 +34,9 @@
                 <a href="#" class="nav-item" data-target="positions">
                     <i class="icon">📊</i> Trade Positions
                 </a>
+                <a href="#" class="nav-item" data-target="history">
+                    <i class="icon">📈</i> Trade History & Analytics
+                </a>
                 <a href="#" class="nav-item" data-target="config">
                     <i class="icon">⚙️</i> Configuration
                 </a>
@@ -170,6 +173,165 @@
                 </div>
             </section>
 
+            <!-- Trade History & Quant Analytics Page -->
+            <section id="history" class="page">
+                <div class="page-header flex-between">
+                    <div>
+                        <h2>Trade History & Performance Analytics</h2>
+                        <p class="subtitle">Quantitative metrics from MongoDB (Expected Value, Calmar, Sharpe, SQN, Max DD)</p>
+                    </div>
+                    <div class="history-controls">
+                        <div class="filter-group">
+                            <select id="hist-filter-days" class="select-filter">
+                                <option value="0">All Time</option>
+                                <option value="7">Last 7 Days</option>
+                                <option value="30" selected>Last 30 Days</option>
+                                <option value="90">Last 90 Days</option>
+                            </select>
+                            <select id="hist-filter-symbol" class="select-filter">
+                                <option value="ALL">All Symbols</option>
+                            </select>
+                            <select id="hist-filter-strategy" class="select-filter">
+                                <option value="ALL">All Strategies</option>
+                            </select>
+                            <select id="hist-filter-result" class="select-filter">
+                                <option value="ALL">All Results</option>
+                                <option value="WIN">WIN Only</option>
+                                <option value="LOSS">LOSS Only</option>
+                                <option value="CANCELLED">Cancelled/Timeout</option>
+                            </select>
+                            <button id="btn-refresh-history" class="btn btn-primary btn-sm">🔄 Refresh</button>
+                            <button id="btn-export-csv" class="btn btn-warning btn-sm">📥 Export CSV</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8 KPI Quant Metrics Ribbon -->
+                <div class="quant-grid">
+                    <div class="quant-card glass">
+                        <div class="quant-label">NET REALIZED PNL</div>
+                        <div class="quant-val" id="kpi-net-pnl">$0.00</div>
+                        <div class="quant-sub">Total Fees: <span id="kpi-fees">$0.00</span></div>
+                    </div>
+                    <div class="quant-card glass">
+                        <div class="quant-label">WIN RATE</div>
+                        <div class="quant-val" id="kpi-win-rate">0.0%</div>
+                        <div class="quant-sub"><span id="kpi-win-loss-count">0W / 0L</span> • Payoff: <span id="kpi-payoff">0.0</span></div>
+                    </div>
+                    <div class="quant-card glass">
+                        <div class="quant-label">EXPECTED VALUE (EV)</div>
+                        <div class="quant-val" id="kpi-ev">$0.00</div>
+                        <div class="quant-sub">EV ROI: <span id="kpi-ev-roi">0.0%</span> / trade</div>
+                    </div>
+                    <div class="quant-card glass">
+                        <div class="quant-label">PROFIT FACTOR</div>
+                        <div class="quant-val" id="kpi-pf">0.00</div>
+                        <div class="quant-sub">G.Profit: <span id="kpi-gross-profit">$0</span> • Loss: <span id="kpi-gross-loss">$0</span></div>
+                    </div>
+                    <div class="quant-card glass">
+                        <div class="quant-label">CALMAR RATIO</div>
+                        <div class="quant-val" id="kpi-calmar">0.00</div>
+                        <div class="quant-sub">Return to Max DD Ratio</div>
+                    </div>
+                    <div class="quant-card glass">
+                        <div class="quant-label">MAX DRAWDOWN</div>
+                        <div class="quant-val text-danger" id="kpi-mdd">$0.00</div>
+                        <div class="quant-sub">Peak Drop: <span id="kpi-mdd-pct">0.0%</span></div>
+                    </div>
+                    <div class="quant-card glass">
+                        <div class="quant-label">SHARPE / SORTINO</div>
+                        <div class="quant-val" id="kpi-sharpe-sortino">0.0 / 0.0</div>
+                        <div class="quant-sub">Downside Risk Adjusted</div>
+                    </div>
+                    <div class="quant-card glass">
+                        <div class="quant-label">SQN SCORE & KELLY</div>
+                        <div class="quant-val" id="kpi-sqn">0.00</div>
+                        <div class="quant-sub"><span id="kpi-sqn-grade">--</span> • ½ Kelly: <span id="kpi-kelly">0%</span></div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-box glass wide">
+                        <div class="chart-header">
+                            <h3>📈 Cumulative Equity Growth ($ PnL)</h3>
+                        </div>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="equityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-box glass wide">
+                        <div class="chart-header">
+                            <h3>🌊 Underwater Drawdown (%)</h3>
+                        </div>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="drawdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row-split">
+                    <div class="chart-box glass half">
+                        <div class="chart-header">
+                            <h3>💰 Net PnL by Traded Symbol</h3>
+                        </div>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="symbolPnlChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-box glass half">
+                        <div class="chart-header">
+                            <h3>🎯 Trade Outcomes Distribution</h3>
+                        </div>
+                        <div class="chart-canvas-wrapper doughnut-wrapper">
+                            <canvas id="outcomeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trade History Table -->
+                <div class="history-table-box glass">
+                    <div class="table-toolbar">
+                        <h3>📋 Trade Journal Records (<span id="hist-total-count">0</span> trades)</h3>
+                        <div class="toolbar-actions">
+                            <input type="text" id="hist-search" placeholder="Quick search symbol/strategy..." class="search-input">
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Time (WIB)</th>
+                                    <th>Symbol</th>
+                                    <th>Side</th>
+                                    <th>Size</th>
+                                    <th>Entry Price</th>
+                                    <th>Exit Price</th>
+                                    <th>Realized PnL</th>
+                                    <th>Result</th>
+                                    <th>Exit Type</th>
+                                    <th>Strategy</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                <tr>
+                                    <td colspan="11" class="text-center">Loading trade history from MongoDB...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination Bar -->
+                    <div class="pagination-bar">
+                        <div class="page-info">Showing page <span id="current-page-num">1</span> of <span id="total-page-num">1</span></div>
+                        <div class="page-btns">
+                            <button id="btn-prev-page" class="btn btn-secondary btn-sm" disabled>◀ Previous</button>
+                            <button id="btn-next-page" class="btn btn-secondary btn-sm" disabled>Next ▶</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Configuration Page -->
             <section id="config" class="page">
                 <div class="page-header flex-between">
@@ -188,9 +350,11 @@
                     <!-- Config Tabs -->
                     <div class="config-tabs">
                         <button class="tab-btn active" data-tab="tab-env">🔑 Environment (.env)</button>
+                        <button class="tab-btn" data-tab="tab-presets">🎛️ Presets</button>
                         <button class="tab-btn" data-tab="tab-system">System & Exec</button>
                         <button class="tab-btn" data-tab="tab-trailing">Risk & Trailing</button>
-                        <button class="tab-btn" data-tab="tab-ai">AI Models</button>
+                        <button class="tab-btn" data-tab="tab-ai">AI & Strategies</button>
+                        <button class="tab-btn" data-tab="tab-prompts">🧠 AI Prompts Studio</button>
                         <button class="tab-btn" data-tab="tab-tech">Technicals</button>
                         <button class="tab-btn" data-tab="tab-data">Data & News</button>
                         <button class="tab-btn" data-tab="tab-coins">Coins List</button>
@@ -281,6 +445,38 @@
                             </div>
                         </div>
 
+                        <!-- TAB: Presets Management -->
+                        <div id="tab-presets" class="config-tab-pane">
+                            <div class="env-header-card">
+                                <div>
+                                    <h3 class="section-title" style="margin-bottom: 4px;">🎛️ Trading Profile Presets</h3>
+                                    <p class="panel-desc">Ganti setelan trading dalam 1 klik sesuai kondisi pasar (Konservatif, Agresif, Trend Follower).</p>
+                                </div>
+                            </div>
+
+                            <div class="presets-grid" id="presets-container">
+                                <!-- Rendered dynamically via JS -->
+                            </div>
+
+                            <div class="divider"></div>
+                            <h3 class="section-title">💾 Simpan Konfigurasi Saat Ini Sebagai Preset Baru</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group">
+                                    <label>Preset ID (Unik)</label>
+                                    <input type="text" id="custom-preset-id" placeholder="my_scalp_v1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nama Preset</label>
+                                    <input type="text" id="custom-preset-name" placeholder="🚀 Super Scalper 15m">
+                                </div>
+                                <div class="form-group">
+                                    <label>Deskripsi Singkat</label>
+                                    <input type="text" id="custom-preset-desc" placeholder="Khusus market bull run...">
+                                </div>
+                            </div>
+                            <button id="btn-save-custom-preset" class="btn btn-primary" style="margin-top: 10px;">💾 Simpan Sebagai Custom Preset</button>
+                        </div>
+
                         <!-- TAB: System & Execution -->
                         <div id="tab-system" class="config-tab-pane">
                             <h3 class="section-title">General Environment</h3>
@@ -311,7 +507,8 @@
                                 <div class="form-group"><label>Limit Expiry (s)</label><input type="number" id="cfg-LIMIT_ORDER_EXPIRY_SECONDS"></div>
                                 <div class="form-group"><label>SL/TP Retries</label><input type="number" id="cfg-ORDER_SLTP_RETRIES"></div>
                                 <div class="form-group"><label>Retry Delay (s)</label><input type="number" id="cfg-ORDER_SLTP_RETRY_DELAY"></div>
-                                <div class="form-group"><label>Max Positions/Cat</label><input type="number" id="cfg-MAX_POSITIONS_PER_CATEGORY"></div>
+                                <div class="form-group"><label>Max Pos/Category</label><input type="number" id="cfg-MAX_POSITIONS_PER_CATEGORY"></div>
+                                <div class="form-group"><label>Max Global Positions</label><input type="number" id="cfg-MAX_TOTAL_OPEN_POSITIONS"></div>
                                 <div class="form-group"><label>Risk Per Trade (%)</label><input type="number" id="cfg-RISK_PERCENT_PER_TRADE" step="0.1"></div>
                                 <div class="form-group"><label>Default Amount USDT</label><input type="number" id="cfg-DEFAULT_AMOUNT_USDT"></div>
                                 <div class="form-group"><label>Min Order USDT</label><input type="number" id="cfg-MIN_ORDER_USDT"></div>
@@ -323,6 +520,21 @@
 
                         <!-- TAB: Risk & Trailing -->
                         <div id="tab-trailing" class="config-tab-pane">
+                            <h3 class="section-title">🛡️ Circuit Breakers & Global Safety</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group">
+                                    <label>Max Daily Loss (USDT)</label>
+                                    <input type="number" id="cfg-MAX_DAILY_LOSS_USDT" placeholder="0 (Nonaktif)">
+                                    <small class="text-muted">Auto-halt bot jika rugi harian menyentuh batas ini (0 = off).</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Max Total Positions</label>
+                                    <input type="number" id="cfg-MAX_TOTAL_OPEN_POSITIONS_2" data-bind="MAX_TOTAL_OPEN_POSITIONS">
+                                    <small class="text-muted">Batas maksimal posisi terbuka serentak di semua koin.</small>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+
                             <h3 class="section-title">Trailing Stop Loss</h3>
                             <div class="form-grid-3">
                                 <div class="form-group"><label>Enable Trailing Stop</label><label class="switch"><input type="checkbox" id="cfg-ENABLE_TRAILING_STOP"><span class="slider"></span></label></div>
@@ -332,18 +544,47 @@
                                 <div class="form-group"><label>Callback Rate (%)</label><input type="number" id="cfg-TRAILING_CALLBACK_RATE" step="0.001"></div>
                                 <div class="form-group"><label>Min Profit Lock</label><input type="number" id="cfg-TRAILING_MIN_PROFIT_LOCK" step="0.001"></div>
                                 <div class="form-group"><label>SL Update Cooldown</label><input type="number" id="cfg-TRAILING_SL_UPDATE_COOLDOWN"></div>
+                                <div class="form-group"><label>Native Min Rate (%)</label><input type="number" id="cfg-NATIVE_TRAILING_MIN_RATE" step="0.1"></div>
+                                <div class="form-group"><label>Native Max Rate (%)</label><input type="number" id="cfg-NATIVE_TRAILING_MAX_RATE" step="0.1"></div>
                             </div>
                             <div class="divider"></div>
 
-                            <h3 class="section-title">Default Sl/TP Logic</h3>
+                            <h3 class="section-title">Default SL/TP Logic</h3>
                             <div class="form-grid-3">
                                 <div class="form-group"><label>Default SL %</label><input type="number" id="cfg-DEFAULT_SL_PERCENT" step="0.001"></div>
                                 <div class="form-group"><label>Default TP %</label><input type="number" id="cfg-DEFAULT_TP_PERCENT" step="0.001"></div>
                             </div>
                         </div>
 
-                        <!-- TAB: AI Models -->
+                        <!-- TAB: AI Models & Strategy Switch -->
                         <div id="tab-ai" class="config-tab-pane">
+                            <h3 class="section-title">⚡ Strategy Selection & Execution Switch</h3>
+                            <p class="panel-desc">Pilih strategi mana saja yang diizinkan untuk dieksekusi oleh Decision Maker AI.</p>
+                            <div class="strategy-switches-grid">
+                                <div class="strategy-card">
+                                    <div class="strat-header">
+                                        <h4>🎯 LIQUIDITY_REVERSAL_MASTER</h4>
+                                        <label class="switch"><input type="checkbox" id="strat-LIQUIDITY_REVERSAL_MASTER" checked><span class="slider"></span></label>
+                                    </div>
+                                    <p class="strat-desc">Pembalikan arah di area Pivot (S1/R1) atau Sweep Liquidity ekstrem.</p>
+                                </div>
+                                <div class="strategy-card">
+                                    <div class="strat-header">
+                                        <h4>📈 PULLBACK_CONTINUATION</h4>
+                                        <label class="switch"><input type="checkbox" id="strat-PULLBACK_CONTINUATION" checked><span class="slider"></span></label>
+                                    </div>
+                                    <p class="strat-desc">Trend-following: Entry saat harga pullback ke dynamic EMA Support/Resistance.</p>
+                                </div>
+                                <div class="strategy-card">
+                                    <div class="strat-header">
+                                        <h4>💥 BREAKDOWN_FOLLOW</h4>
+                                        <label class="switch"><input type="checkbox" id="strat-BREAKDOWN_FOLLOW" checked><span class="slider"></span></label>
+                                    </div>
+                                    <p class="strat-desc">Breakout momentum: Mengikuti breakout/breakdown level S1/R1 dengan volume spike.</p>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+
                             <h3 class="section-title">AI Master Settings</h3>
                             <div class="form-grid-3">
                                 <div class="form-group" style="grid-column: span 3;">
@@ -381,6 +622,37 @@
                                 <div class="form-group"><label>Vision Max Tokens</label><input type="number" id="cfg-AI_VISION_MAX_TOKENS"></div>
                                 <div class="form-group"><label>Pattern Max Retries</label><input type="number" id="cfg-PATTERN_MAX_RETRIES"></div>
                                 <div class="form-group"><label>Pattern Min Analysis Len</label><input type="number" id="cfg-PATTERN_MIN_ANALYSIS_LENGTH"></div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: AI Prompts Studio -->
+                        <div id="tab-prompts" class="config-tab-pane">
+                            <div class="env-header-card">
+                                <div>
+                                    <h3 class="section-title" style="margin-bottom: 4px;">🧠 AI Prompts & Rules Studio</h3>
+                                    <p class="panel-desc">Kustomisasi persona, aturan filter tren, checklist konfirmasi, dan format prompt AI langsung dari browser.</p>
+                                </div>
+                                <button id="btn-reset-prompts" class="btn btn-secondary btn-sm">🔄 Reset Prompts ke Default</button>
+                            </div>
+
+                            <div class="form-group">
+                                <label>1. Master System Role & Trend Filter Rules (<code>AI_SYSTEM_ROLE</code>)</label>
+                                <textarea id="cfg-AI_SYSTEM_ROLE" class="code-editor prompt-textarea" rows="12"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>2. Strategy Selection Checklist (<code>PROMPT_STRATEGY_SELECTION</code>)</label>
+                                <textarea id="cfg-PROMPT_STRATEGY_SELECTION" class="code-editor prompt-textarea" rows="8"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>3. Sentiment & Smart Money Analysis Prompt (<code>PROMPT_SENTIMENT_ANALYSIS</code>)</label>
+                                <textarea id="cfg-PROMPT_SENTIMENT_ANALYSIS" class="code-editor prompt-textarea" rows="8"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>4. Vision Pattern Recognition Prompt (<code>PROMPT_PATTERN_RECOGNITION</code>)</label>
+                                <textarea id="cfg-PROMPT_PATTERN_RECOGNITION" class="code-editor prompt-textarea" rows="6"></textarea>
                             </div>
                         </div>
 
@@ -442,6 +714,14 @@
 
                         <!-- TAB: Data Sources (News, Whales, BTC) -->
                         <div id="tab-data" class="config-tab-pane">
+                            <h3 class="section-title">Data Providers & BTC Benchmark</h3>
+                            <div class="form-grid-3">
+                                <div class="form-group"><label>Sentiment Provider</label><input type="text" id="cfg-SENTIMENT_PROVIDER" placeholder="RSS_Feed"></div>
+                                <div class="form-group"><label>OnChain Provider</label><input type="text" id="cfg-ONCHAIN_PROVIDER" placeholder="DefiLlama"></div>
+                                <div class="form-group"><label>BTC Benchmark Symbol</label><input type="text" id="cfg-BTC_SYMBOL" placeholder="BTC/USDT"></div>
+                            </div>
+                            <div class="divider"></div>
+
                             <h3 class="section-title">BTC Correlation & Whales</h3>
                             <div class="form-grid-3">
                                 <div class="form-group"><label>Use BTC Correlation</label><label class="switch"><input type="checkbox" id="cfg-USE_BTC_CORRELATION"><span class="slider"></span></label></div>
@@ -574,6 +854,56 @@
             </div>
             <div class="modal-footer">
                 <button id="btn-save-coin" class="btn btn-primary">Save Coin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Detail Modal -->
+    <div id="trade-modal" class="modal">
+        <div class="modal-content glass modal-lg">
+            <div class="modal-header">
+                <h3 id="modal-trade-title">📊 Trade Execution & AI Analysis Detail</h3>
+                <span class="close-modal" id="close-trade-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-trade-body">
+                <div class="trade-detail-grid">
+                    <div class="detail-card">
+                        <span class="detail-label">Symbol & Side</span>
+                        <strong id="modal-trade-symbol-side">--</strong>
+                    </div>
+                    <div class="detail-card">
+                        <span class="detail-label">Net Realized PnL</span>
+                        <strong id="modal-trade-pnl">--</strong>
+                    </div>
+                    <div class="detail-card">
+                        <span class="detail-label">Entry / Exit Price</span>
+                        <strong id="modal-trade-prices">--</strong>
+                    </div>
+                    <div class="detail-card">
+                        <span class="detail-label">Exit Type & Strategy</span>
+                        <strong id="modal-trade-exit-strat">--</strong>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>🤖 AI Reasoning & Decision</h4>
+                    <div class="code-box" id="modal-trade-reason">No AI reasoning recorded.</div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📐 Technical Indicators & Conditions Snapshot</h4>
+                    <pre class="json-box" id="modal-trade-tech">{}</pre>
+                </div>
+
+                <div class="detail-section">
+                    <h4>🛡️ Trailing Stop & Safety Execution</h4>
+                    <div class="trailing-stats-grid" id="modal-trade-trailing">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-trade-modal" class="btn btn-secondary">Close</button>
             </div>
         </div>
     </div>
