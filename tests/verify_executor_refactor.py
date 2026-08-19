@@ -22,9 +22,10 @@ async def test_refactoring():
     mock_exchange.fetch_balance.return_value = {'USDT': {'free': 1000.0}}
     mock_exchange.fetch_positions.return_value = []
     mock_exchange.fetch_open_orders.return_value = []
+    mock_exchange.fetch_ticker.return_value = {'last': 50000.0, 'mark': 50000.0}
     mock_exchange.create_order.return_value = {'id': '12345', 'status': 'NEW'}
-    mock_exchange.price_to_precision.side_effect = lambda s, p: str(p)
-    mock_exchange.amount_to_precision.side_effect = lambda s, a: str(a)
+    mock_exchange.price_to_precision = MagicMock(side_effect=lambda s, p: str(p))
+    mock_exchange.amount_to_precision = MagicMock(side_effect=lambda s, a: str(a))
     
     # 2. Instantiate Executor
     try:
