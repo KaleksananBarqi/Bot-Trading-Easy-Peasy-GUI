@@ -18,7 +18,13 @@ class PatternRecognizer:
         self.cache = {} # {symbol: {'candle_ts': 12345, 'analysis': "..."}}
         
         # Initialize AI Client for Vision
-        if config.USE_PATTERN_RECOGNITION and config.AI_API_KEY:
+        if not config.USE_PATTERN_RECOGNITION:
+            self.client = None
+            logger.info("ℹ️ Vision AI Disabled by configuration.")
+        elif not config.AI_API_KEY:
+            self.client = None
+            logger.warning("⚠️ Vision AI is enabled, but AI_API_KEY is missing.")
+        else:
             headers = get_ai_client_headers()
             self.client = AsyncOpenAI(
                 base_url=config.AI_BASE_URL,
@@ -28,9 +34,6 @@ class PatternRecognizer:
             )
             self.model = config.AI_VISION_MODEL
             logger.info(f"👁️ Pattern Recognizer Initialized: {self.model}")
-        else:
-            self.client = None
-            logger.warning("⚠️ Vision AI Disabled or Key Missing.")
 
     def get_setup_candles(self, symbol):
         """Retrieve candles for the SETUP timeframe"""

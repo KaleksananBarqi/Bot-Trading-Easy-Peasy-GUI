@@ -66,6 +66,30 @@ def test_ai_eval_manager_logging_and_stats():
     assert res["status"] == "success"
     assert len(res["data"]) >= 1
 
+def test_ai_eval_manager_objectid_and_custom_types_serialization():
+    """Memastikan _save_local_cache tidak crash saat data mengandung bson.ObjectId atau custom types."""
+    from bson import ObjectId
+    manager = AIEvaluationManager()
+    
+    # Masukkan doc yang mengandung ObjectId ke local history
+    custom_doc = {
+        "_id": ObjectId(),
+        "timestamp": "2026-08-19T03:50:00.000000",
+        "symbol": "SOL/USDT",
+        "decision": "BUY",
+        "confidence": 92.0,
+        "reason": "Breakout test with ObjectId",
+    }
+    manager.local_history.append(custom_doc)
+    
+    # Harus berhasil menyimpan tanpa TypeError ObjectId is not JSON serializable
+    manager._save_local_cache()
+    
+    # Load kembali dari disk dan pastikan valid JSON
+    loaded = manager._load_local_cache()
+    assert len(loaded) > 0
+    assert any(x.get("symbol") == "SOL/USDT" for x in loaded)
+
 @pytest.mark.asyncio
 async def test_pattern_recognizer_bypass_when_disabled(monkeypatch):
     """Memastikan PatternRecognizer mengembalikan is_valid=True saat dinonaktifkan."""
@@ -76,3 +100,28 @@ async def test_pattern_recognizer_bypass_when_disabled(monkeypatch):
     
     assert result["is_valid"] is True
     assert "Disabled" in result["analysis"]
+
+
+def test_pattern_recognizer_init_states(monkeypatch, caplog):
+    """Memastikan log level INFO saat disabled dan WARNING saat missing key."""
+    import logging
+    
+    # 1. State: Disabled by config -> harus log INFO
+    caplog.clear()
+    monkeypatch.setattr(config, 'USE_PATTERN_RECOGNITION', False)
+    with caplog.at_level(logging.INFO):
+        pr_disabled = PatternRecognizer(None)
+        assert pr_disabled.client is None
+        assert any("Vision AI Disabled by configuration" in r.message for r in caplog.records)
+        assert not any(r.levelno >= logging.WARNING for r in caplog.records)
+        
+    # 2. State: Enabled but missing key -> harus log WARNING
+    caplog.clear()
+    monkeypatch.setattr(config, 'USE_PATTERN_RECOGNITION', True)
+    monkeypatch.setattr(config, 'AI_API_KEY', "")
+    with caplog.at_level(logging.INFO):
+        pr_missing_key = PatternRecognizer(None)
+        assert pr_missing_key.client is None
+        assert any(r.levelno == logging.WARNING and "AI_API_KEY is missing" in r.message for r in caplog.records)
+
+

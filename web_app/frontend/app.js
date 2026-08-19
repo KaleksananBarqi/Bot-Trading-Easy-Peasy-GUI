@@ -1490,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchAIStats() {
         try {
-            const res = await fetch('/api/ai/stats');
+            const res = await fetch('/api/data/ai/stats');
             const json = await res.json();
             if (json.status === 'success' && json.data) {
                 const s = json.data;
@@ -1520,7 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const decision = document.getElementById('ai-filter-decision')?.value || 'ALL';
 
         try {
-            const res = await fetch(`/api/ai/evaluations?page=${page}&limit=25&symbol=${encodeURIComponent(symbol)}&decision=${encodeURIComponent(decision)}`);
+            const res = await fetch(`/api/data/ai/evaluations?page=${page}&limit=25&symbol=${encodeURIComponent(symbol)}&decision=${encodeURIComponent(decision)}`);
             const json = await res.json();
 
             if (json.status === 'success') {

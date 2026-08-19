@@ -151,7 +151,8 @@ class MongoManager:
                 if not self.connect():
                     return False
             
-            result = self.trades_collection.insert_one(trade_data)
+            doc = dict(trade_data)
+            result = self.trades_collection.insert_one(doc)
             return result.acknowledged
         except Exception as e:
             logger.error(f"❌ Failed to insert trade to MongoDB: {e}")
@@ -266,7 +267,8 @@ class MongoManager:
                 if not self.connect():
                     return False
             col = self.db['ai_evaluations']
-            res = col.insert_one(eval_data)
+            doc = dict(eval_data)
+            res = col.insert_one(doc)
             return res.acknowledged
         except Exception as e:
             logger.error(f"❌ Failed to insert AI evaluation: {e}")
@@ -291,7 +293,8 @@ class MongoManager:
         """Count AI evaluation records matching query."""
         try:
             if self.db is None:
-                return 0
+                if not self.connect():
+                    return 0
             col = self.db['ai_evaluations']
             return col.count_documents(filter_query)
         except Exception as e:

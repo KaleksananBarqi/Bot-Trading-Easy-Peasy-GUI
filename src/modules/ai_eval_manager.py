@@ -46,7 +46,7 @@ class AIEvaluationManager:
             # Keep only last N records in local json file
             trimmed = self.local_history[-self.max_local_history:]
             with open(self.cache_file, "w", encoding="utf-8") as f:
-                json.dump(trimmed, f, indent=2, ensure_ascii=False)
+                json.dump(trimmed, f, indent=2, ensure_ascii=False, default=str)
         except Exception as e:
             logger.warning(f"⚠️ Gagal menyimpan local cache AI evaluations: {e}")
 
@@ -130,7 +130,7 @@ class AIEvaluationManager:
         try:
             from src.modules.mongo_manager import MongoManager
             mongo = MongoManager()
-            mongo.insert_ai_evaluation(eval_doc)
+            mongo.insert_ai_evaluation(dict(eval_doc))
         except Exception as e:
             # Fallback to local is already handled
             pass
@@ -185,7 +185,8 @@ class AIEvaluationManager:
         except Exception as e:
             logger.debug(f"MongoDB AI eval fetch fallback to local: {e}")
 
-        # Fallback: Query dari local history
+        # Fallback: Refresh & Query dari local history
+        self.local_history = self._load_local_cache()
         filtered = list(reversed(self.local_history))
         if symbol and symbol != "ALL":
             filtered = [x for x in filtered if x.get("symbol") == symbol.upper()]
@@ -211,6 +212,37 @@ class AIEvaluationManager:
         """
         Menghitung ringkasan statistik evaluasi AI.
         """
+        # 1. Coba ambil dari MongoDB terlebih dahulu jika tersedia
+        try:
+            from src.modules.mongo_manager import MongoManager
+            mongo = MongoManager()
+            total_count = mongo.get_ai_evaluation_count({})
+            if total_count > 0:
+                buys = mongo.get_ai_evaluation_count({"decision": {"$in": ["BUY", "LONG"]}})
+                sells = mongo.get_ai_evaluation_count({"decision": {"$in": ["SELL", "SHORT"]}})
+                waits = mongo.get_ai_evaluation_count({"decision": "WAIT"})
+                recent_docs = mongo.get_ai_evaluations({}, limit=1)
+                recent = dict(recent_docs[0]) if recent_docs else None
+                if recent and "_id" in recent:
+                    recent["_id"] = str(recent["_id"])
+
+                # Ambil sample recent docs untuk rata-rata confidence
+                recent_sample = mongo.get_ai_evaluations({}, limit=100)
+                avg_conf = round(sum(d.get("confidence", 0) for d in recent_sample) / len(recent_sample), 1) if recent_sample else 0.0
+
+                return {
+                    "total_evaluations": total_count,
+                    "buy_count": buys,
+                    "sell_count": sells,
+                    "wait_count": waits,
+                    "avg_confidence": avg_conf,
+                    "recent_decision": recent
+                }
+        except Exception as e:
+            logger.debug(f"MongoDB stats calculation fallback to local: {e}")
+
+        # 2. Fallback: Query dari local history cache
+        self.local_history = self._load_local_cache()
         history = self.local_history
         total = len(history)
         if total == 0:
