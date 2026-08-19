@@ -188,8 +188,6 @@ BUILTIN_PRESETS = {
             "MAX_POSITIONS_PER_CATEGORY": 2,
             "MAX_TOTAL_OPEN_POSITIONS": 2,
             "MAX_DAILY_LOSS_USDT": 15,
-            "ENABLE_TRAILING_STOP": True,
-            "USE_NATIVE_TRAILING": True,
             "AI_CONFIDENCE_THRESHOLD": 75,
         }
     },
@@ -208,13 +206,12 @@ BUILTIN_PRESETS = {
             "MAX_DAILY_LOSS_USDT": 50,
             "COOLDOWN_IF_PROFIT": 1800,
             "COOLDOWN_IF_LOSS": 3600,
-            "ENABLE_TRAILING_STOP": True,
             "AI_CONFIDENCE_THRESHOLD": 60,
         }
     },
     "trend_follower": {
         "name": "🌊 Trend Follower (Pullback & Breakout)",
-        "description": "Mengikuti arah tren besar: Leverage 10x, hanya Pullback dan Breakout, target TP lebih lebar dengan Trailing Stop.",
+        "description": "Mengikuti arah tren besar: Leverage 10x, hanya Pullback dan Breakout, target TP lebih lebar.",
         "config": {
             "DEFAULT_LEVERAGE": 10,
             "USE_DYNAMIC_SIZE": False,
@@ -225,8 +222,6 @@ BUILTIN_PRESETS = {
             "TIMEFRAME_TREND": "1d",
             "TIMEFRAME_SETUP": "4h",
             "TIMEFRAME_EXEC": "1h",
-            "ENABLE_TRAILING_STOP": True,
-            "USE_NATIVE_TRAILING": True,
             "AI_CONFIDENCE_THRESHOLD": 65,
         }
     }

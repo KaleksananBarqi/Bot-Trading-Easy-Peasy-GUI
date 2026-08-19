@@ -128,19 +128,19 @@ class PatternRecognizer:
             logger.error(f"❌ Chart Generation Failed {symbol}: {e}")
             return None, None
 
-    def _is_valid_analysis(self, analysis_text: str) -> bool:
+    def _is_valid_analysis(self, analysis_text: str, finish_reason: str = 'stop') -> bool:
         """
         Validasi apakah output Vision AI cukup lengkap dan tidak terpotong.
         Kriteria:
         1. Panjang minimal sesuai config
         2. Mengandung salah satu keyword bias (BULLISH/BEARISH/NEUTRAL)
-        3. Tidak berakhir dengan kata yang terpotong (misal: "bullish" tanpa titik di akhir)
+        3. finish_reason dari API == 'stop' (bukan 'length' yang berarti terpotong)
         """
         if not analysis_text:
             return False
         
         # Cek panjang minimal
-        if len(analysis_text) < config.PATTERN_MIN_ANALYSIS_LENGTH:
+        if len(analysis_text.strip()) < config.PATTERN_MIN_ANALYSIS_LENGTH:
             return False
         
         # Cek keyword bias
@@ -149,10 +149,9 @@ class PatternRecognizer:
         if not has_bias:
             return False
         
-        # Cek apakah kalimat terpotong (heuristic: tidak diakhiri tanda baca/emoji)
-        analysis_stripped = analysis_text.strip()
-        if analysis_stripped and analysis_stripped[-1].isalpha():
-            # Kemungkinan terpotong mid-word
+        # Cek finish_reason dari API - cara paling akurat deteksi truncation
+        if finish_reason == 'length':
+            # Output benar-benar terpotong oleh max_tokens
             return False
         
         return True
@@ -218,9 +217,10 @@ class PatternRecognizer:
                 )
                 
                 analysis_text = response.choices[0].message.content
+                finish_reason = response.choices[0].finish_reason or 'stop'
                 
                 # VALIDASI OUTPUT
-                if self._is_valid_analysis(analysis_text):
+                if self._is_valid_analysis(analysis_text, finish_reason):
                     # Output valid - gunakan
                     final_result = {
                         'analysis': analysis_text,

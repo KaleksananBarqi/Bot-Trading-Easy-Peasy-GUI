@@ -16,6 +16,20 @@ from typing import NamedTuple
 from scipy.signal import argrelextrema
 from src.utils.helper import logger, kirim_tele, wib_time, parse_timeframe_to_seconds, create_aiohttp_session
 
+# --- SYMBOL NORMALIZATION HELPER ---
+
+def _normalize_binance_symbol(raw_sym: str) -> str:
+    """Konversi symbol Binance WS (BTCUSDT) ke format CCXT (BTC/USDT).
+    
+    Menggunakan pencocokan suffix yang aman, bukan string replace naif,
+    untuk menghindari kerusakan pada pair non-USDT atau token dengan
+    substring 'USDT' di namanya.
+    """
+    for quote in ('USDT', 'USDC', 'BUSD', 'FDUSD'):
+        if raw_sym.endswith(quote):
+            return f"{raw_sym[:-len(quote)]}/{quote}"
+    return raw_sym
+
 # --- NAMED TUPLES FOR TYPE SAFETY ---
 
 class Candle(NamedTuple):
@@ -75,8 +89,9 @@ def _calculate_market_structure_static(bars, lookback=5):
         low_vals = df['low'].values
 
         # Cari indeks swing high/low (order=lookback -> cek N candle kiri & kanan)
-        swing_high_idx = argrelextrema(high_vals, np.greater_equal, order=lookback)[0]
-        swing_low_idx = argrelextrema(low_vals, np.less_equal, order=lookback)[0]
+        # np.greater / np.less (strict) mencegah false positive pada plateau sideways
+        swing_high_idx = argrelextrema(high_vals, np.greater, order=lookback)[0]
+        swing_low_idx = argrelextrema(low_vals, np.less, order=lookback)[0]
 
         # Exclude candle terakhir (current open) dari hasil
         # Dengan menfilter indeks yang >= len(df) - lookback - 1
@@ -559,7 +574,7 @@ class MarketDataManager:
             logger.error(f"❌ Gagal ListenKey: {e}")
             return None
 
-    async def start_stream(self, callback_account_update=None, callback_order_update=None, callback_whale=None, callback_trailing=None):
+    async def start_stream(self, callback_account_update=None, callback_order_update=None, callback_whale=None):
         """Main WebSocket Loop"""
         while True:
             await self.get_listen_key()
@@ -567,30 +582,32 @@ class MarketDataManager:
                 await asyncio.sleep(5)
                 continue
                 
-            streams = [self.listen_key]
-            # Add Kline Streams & MiniTicker
+            # Build stream list (tanpa listen key, akan di-subscribe via JSON)
+            market_streams = []
+            # Add Kline Streams
             for coin in config.DAFTAR_KOIN:
                 s_clean = coin['symbol'].replace('/', '').lower()
-                streams.append(f"{s_clean}@kline_{config.TIMEFRAME_EXEC}")
-                streams.append(f"{s_clean}@kline_{config.TIMEFRAME_TREND}")
-                streams.append(f"{s_clean}@kline_{config.TIMEFRAME_SETUP}")
-                streams.append(f"{s_clean}@aggTrade") # Whale Detector Stream
-                streams.append(f"{s_clean}@miniTicker") # [NEW] Realtime Price for Trailing
-                streams.append(f"{s_clean}@depth20@500ms") # [NEW] Order Book Cache Stream
+                market_streams.append(f"{s_clean}@kline_{config.TIMEFRAME_EXEC}")
+                market_streams.append(f"{s_clean}@kline_{config.TIMEFRAME_TREND}")
+                market_streams.append(f"{s_clean}@kline_{config.TIMEFRAME_SETUP}")
+                market_streams.append(f"{s_clean}@aggTrade") # Whale Detector Stream
+                market_streams.append(f"{s_clean}@depth20@500ms") # Order Book Cache Stream
 
             # Add BTC Stream manual if not exists
             btc_clean = config.BTC_SYMBOL.replace('/', '').lower()
             btc_s = f"{btc_clean}@kline_{config.TIMEFRAME_TREND}"
-            if btc_s not in streams: streams.append(btc_s)
+            if btc_s not in market_streams: market_streams.append(btc_s)
 
-            # [NEW] Force BTC Whale Stream for Context (Global Whale Data)
+            # Force BTC Whale Stream for Context (Global Whale Data)
             btc_whale_stream = f"{btc_clean}@aggTrade"
-            if btc_whale_stream not in streams:
-                streams.append(btc_whale_stream)
-                # logger.info("🐋 BTC Whale Stream Subscribed (Context Only)")
+            if btc_whale_stream not in market_streams:
+                market_streams.append(btc_whale_stream)
 
-            url = self.ws_url + "/".join(streams)
-            logger.info(f"📡 Connecting WS... ({len(streams)} streams)")
+            # Koneksi via listen key URL saja (mencegah HTTP 414 pada banyak koin)
+            # Market streams di-subscribe via JSON SUBSCRIBE message setelah koneksi.
+            url = self.ws_url + self.listen_key
+            total_streams = len(market_streams) + 1  # +1 untuk listen key
+            logger.info(f"📡 Connecting WS... ({total_streams} streams)")
             
             # Keep Alive Task from Config
             asyncio.create_task(self._keep_alive_listen_key())
@@ -600,6 +617,17 @@ class MarketDataManager:
 
             try:
                 async with websockets.connect(url) as ws:
+                    # Subscribe market streams via JSON message (bukan URL query string)
+                    # Ini menghindari HTTP 414 Request-URI Too Large pada banyak koin.
+                    if market_streams:
+                        subscribe_msg = json.dumps({
+                            "method": "SUBSCRIBE",
+                            "params": market_streams,
+                            "id": 1
+                        })
+                        await ws.send(subscribe_msg)
+                        logger.debug(f"📡 Sent SUBSCRIBE for {len(market_streams)} market streams")
+                    
                     logger.info("✅ WebSocket Connected!")
                     await kirim_tele("✅ <b>WebSocket System Online</b>")
                     self.last_heartbeat = time.time()
@@ -621,7 +649,7 @@ class MarketDataManager:
                                 await callback_order_update(payload)
                             elif evt == 'aggTrade' and callback_whale:
                                 # "s": "BTCUSDT", "p": "0.001", "q": "100", "m": true
-                                symbol = payload['s'].replace('USDT', '/USDT')
+                                symbol = _normalize_binance_symbol(payload['s'])
                                 price = float(payload['p'])
                                 qty = float(payload['q'])
                                 amount_usdt = price * qty
@@ -633,16 +661,6 @@ class MarketDataManager:
                                         res = callback_whale(symbol, amount_usdt, side)
                                         if asyncio.iscoroutine(res):
                                             await res
-                            
-                            elif evt == '24hrMiniTicker':
-                                # [NEW] Realtime Price Handler for Trailing Stop
-                                # Payload: {"e":"24hrMiniTicker","E":167233,"s":"BTCUSDT","c":"1234.56",...}
-                                symbol = payload['s'].replace('USDT', '/USDT')
-                                price = float(payload['c']) # Current Close Price
-                                
-                                if callback_trailing:
-                                    # Use fire-and-forget task
-                                    asyncio.create_task(self._safe_callback_execution(callback_trailing, symbol, price))
 
                             elif evt == 'depthUpdate':
                                 await self._handle_depth_update(payload)
@@ -734,15 +752,8 @@ class MarketDataManager:
             except ccxt.NetworkError as e:
                 logger.debug(f"Keep alive listen key failed: {e}")
 
-    async def _safe_callback_execution(self, callback, *args):
-        """Helper to safely run callbacks without crashing the loop"""
-        try:
-            await callback(*args)
-        except Exception as e:
-            logger.error(f"Error in trailing callback: {e}")
-
     async def _handle_kline(self, data):
-        sym = data['s'].replace('USDT', '/USDT')
+        sym = _normalize_binance_symbol(data['s'])
         k = data['k']
         interval = k['i']
         new_candle = [int(k['t']), float(k['o']), float(k['h']), float(k['l']), float(k['c']), float(k['v'])]
@@ -770,7 +781,7 @@ class MarketDataManager:
         Payload: {e: depthUpdate, s: BTCUSDT, b: [[p, q], ...], a: [[p, q], ...]}
         """
         try:
-            symbol = payload['s'].replace('USDT', '/USDT')
+            symbol = _normalize_binance_symbol(payload['s'])
 
             # Convert strings to floats
             # WS sends ["price", "qty"] as strings
@@ -823,10 +834,11 @@ class MarketDataManager:
         """Retrieve aggregated technical data for AI Prompt"""
         try:
             # 1. Snapshot Data (Thread-Safe Preparation)
-            # Avoid accessing self.market_store inside the thread.
-            # Convert deque to list to ensure we have a static copy.
-            bars_exec = list(self.market_store.get(symbol, {}).get(config.TIMEFRAME_EXEC, []))
-            bars_trend = list(self.market_store.get(symbol, {}).get(config.TIMEFRAME_TREND, []))
+            # Akuisisi lock untuk mencegah RuntimeError: deque mutated during iteration
+            # karena _handle_kline() memodifikasi deque secara concurrent.
+            async with self.data_lock:
+                bars_exec = list(self.market_store.get(symbol, {}).get(config.TIMEFRAME_EXEC, []))
+                bars_trend = list(self.market_store.get(symbol, {}).get(config.TIMEFRAME_TREND, []))
 
             if len(bars_exec) < config.EMA_SLOW + 5: return None
             

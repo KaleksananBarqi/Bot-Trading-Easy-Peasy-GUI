@@ -163,9 +163,7 @@ class MongoManager:
         'pnl_usdt', 'pnl_percent', 'roi_percent',
         'fee', 'strategy_tag', 'result',
         'prompt', 'reason', 'setup_at', 'filled_at',
-        'exit_type', 'trailing_was_active',
-        'trailing_sl_final', 'trailing_high', 'trailing_low',
-        'activation_price', 'sl_price_initial'
+        'exit_type', 'sl_price_initial'
     })
 
     ALLOWED_SORT_FIELDS = frozenset({

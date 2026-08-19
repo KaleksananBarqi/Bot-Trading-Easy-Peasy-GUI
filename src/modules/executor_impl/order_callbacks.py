@@ -31,6 +31,18 @@ class OrderUpdateHandler:
         self.journal = journal
 
     # ------------------------------------------------------------------
+    # SYMBOL HELPER
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _normalize_binance_symbol(raw_sym: str) -> str:
+        """Konversi symbol Binance WS (BTCUSDT) ke format CCXT (BTC/USDT)."""
+        for quote in ('USDT', 'USDC', 'BUSD', 'FDUSD'):
+            if raw_sym.endswith(quote):
+                return f"{raw_sym[:-len(quote)]}/{quote}"
+        return raw_sym
+
+    # ------------------------------------------------------------------
     # PUBLIC CALLBACK (entry point untuk WebSocket)
     # ------------------------------------------------------------------
 
@@ -40,7 +52,7 @@ class OrderUpdateHandler:
         Dispatcher utama yang mendelegasikan ke handler spesifik.
         """
         o = payload['o']
-        sym = o['s'].replace('USDT', '/USDT')
+        sym = self._normalize_binance_symbol(o['s'])
         status = o['X']
 
         if status == 'CANCELED':
@@ -185,18 +197,11 @@ class OrderUpdateHandler:
         exit_type_map = {
             'STOP_MARKET': 'STOP_LOSS',
             'TAKE_PROFIT_MARKET': 'TAKE_PROFIT',
-            'TRAILING_STOP_MARKET': 'TRAILING_STOP',
             'MARKET': 'MANUAL',
             'LIMIT': 'LIMIT',
         }
         exit_type = exit_type_map.get(order_type, order_type)
 
-        # --- TRAILING METADATA (captured before tracker cleanup) ---
-        trailing_was_active = tracker.get('trailing_active', False)
-        trailing_sl_final = tracker.get('trailing_sl', 0)
-        trailing_high = tracker.get('trailing_high', 0)
-        trailing_low = tracker.get('trailing_low', 0)
-        activation_price = tracker.get('activation_price', 0)
         sl_price_initial = tracker.get('sl_price_initial', 0)
 
         trade_data = {
@@ -217,11 +222,6 @@ class OrderUpdateHandler:
             'technical_data': tech_snapshot,
             'config_snapshot': cfg_snapshot,
             'exit_type': exit_type,
-            'trailing_was_active': trailing_was_active,
-            'trailing_sl_final': trailing_sl_final,
-            'trailing_high': trailing_high,
-            'trailing_low': trailing_low,
-            'activation_price': activation_price,
             'sl_price_initial': sl_price_initial,
         }
 
@@ -234,7 +234,7 @@ class OrderUpdateHandler:
     async def _handle_entry_fill(self, sym, o):
         """
         Handle FILLED limit entry order (RP = 0).
-        Update tracker, kirim notifikasi, dan aktifkan native trailing jika dikonfigurasi.
+        Update tracker dan kirim notifikasi.
         """
         order_type = o.get('o', 'UNKNOWN')
         if order_type != 'LIMIT':
@@ -257,7 +257,6 @@ class OrderUpdateHandler:
         tp_str = "-"
         sl_str = "-"
         rr_str = "-"
-        tp_price_float = 0  # Untuk dikirim ke trailing delayed
 
         if atr_val > 0:
             dist_sl = atr_val * config.TRAP_SAFETY_SL
@@ -272,18 +271,9 @@ class OrderUpdateHandler:
 
             tp_str = f"{tp_p:.4f}"
             sl_str = f"{sl_p:.4f}"
-            tp_price_float = tp_p
 
             rr = dist_tp / dist_sl if dist_sl > 0 else 0
             rr_str = f"1:{rr:.2f}"
-
-        # NATIVE TRAILING LOGIC
-        trailing_note = ""
-        if config.USE_NATIVE_TRAILING:
-            trailing_note = f"\n⏳ <b>Native Trailing:</b> Activating in {config.TRAILING_ACTIVATION_DELAY}s..."
-            # Import here to avoid circular dependency
-            from src.main import activate_native_trailing_delayed
-            asyncio.create_task(activate_native_trailing_delayed(self.executor, sym, side_filled, qty_filled, price_filled, tp_price_float))
 
         msg = (
             f"✅ <b>LIMIT ENTRY FILLED</b>\n"
@@ -296,7 +286,6 @@ class OrderUpdateHandler:
             f"• TP: {tp_str}\n"
             f"• SL: {sl_str}\n"
             f"• R:R: {rr_str}"
-            f"{trailing_note}"
         )
         await kirim_tele(msg)
 

@@ -90,11 +90,6 @@ class TradeJournal:
                 'technical_data': tech_json,
                 'config_snapshot': config_json,
                 'exit_type': data.get('exit_type', 'UNKNOWN'),
-                'trailing_was_active': bool(data.get('trailing_was_active', False)),
-                'trailing_sl_final': float(data.get('trailing_sl_final', 0)),
-                'trailing_high': float(data.get('trailing_high', 0)),
-                'trailing_low': float(data.get('trailing_low', 0)),
-                'activation_price': float(data.get('activation_price', 0)),
                 'sl_price_initial': float(data.get('sl_price_initial', 0)),
             }
 
@@ -128,9 +123,7 @@ class TradeJournal:
                     'prompt', 'reason',
                     'setup_at', 'filled_at',
                     'technical_data', 'config_snapshot',
-                    'exit_type', 'trailing_was_active',
-                    'trailing_sl_final', 'trailing_high', 'trailing_low',
-                    'activation_price', 'sl_price_initial'
+                    'exit_type', 'sl_price_initial'
                 ])
             
             # Convert to DataFrame

@@ -1174,12 +1174,6 @@ input:checked + .slider:before { transform: translateX(22px); }
     font-family: 'Fira Code', monospace;
 }
 
-.trailing-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
-}
-
 /* --- Presets Management Styling --- */
 .presets-grid {
     display: grid;

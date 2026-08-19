@@ -51,11 +51,6 @@ class OrderExecutor:
     def symbol_cooldown(self):
         return self.risk.symbol_cooldown
 
-    @property
-    def _trailing_last_update(self):
-        """Expose SafetyManager's trailing throttle state for backward compatibility"""
-        return self.safety._trailing_last_update
-
     # --- TRACKER METHODS ---
     def load_tracker(self):
         self.tracker.load()
@@ -106,21 +101,6 @@ class OrderExecutor:
     async def install_safety_orders(self, symbol, pos_data):
         return await self.safety.install_safety_orders(symbol, pos_data)
 
-    async def check_trailing_on_price(self, symbol, current_price):
-        return await self.safety.check_trailing_on_price(symbol, current_price)
-    
-    async def activate_trailing_mode(self, symbol, current_price):
-        return await self.safety.activate_trailing_mode(symbol, current_price)
-
-    async def update_trailing_sl(self, symbol, current_price):
-        return await self.safety.update_trailing_sl(symbol, current_price)
-
-    async def _amend_sl_order(self, symbol, new_sl, side):
-        return await self.safety._amend_sl_order(symbol, new_sl, side)
-
-    async def install_native_trailing_stop(self, symbol, side, quantity, callback_rate, activation_price=None):
-        return await self.safety.install_native_trailing_stop(symbol, side, quantity, callback_rate, activation_price)
-
     # --- SYNC & CONFIG METHODS ---
     async def sync_pending_orders(self):
         """Delegates to OrderSyncManager."""
@@ -129,4 +109,3 @@ class OrderExecutor:
     async def ensure_position_mode(self, hedged: bool = False):
         """Memastikan Position Mode Binance sesuai (Default: One-Way Mode)."""
         return await self.sync.ensure_position_mode(hedged)
-

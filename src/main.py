@@ -47,60 +47,6 @@ onchain = None
 ai_brain = None
 executor = None
 
-async def activate_native_trailing_delayed(executor_instance, symbol, side, qty, entry_price=None, tp_price=None):
-    """
-    Activate native trailing stop after a delay.
-    Menghitung activation_price = 80% jarak dari entry menuju TP.
-
-    Args:
-        executor_instance: Instance OrderExecutor yang sudah valid (di-inject, bukan global).
-        symbol: Trading pair symbol (e.g. 'BTC/USDT')
-        side: 'BUY' atau 'SELL'
-        qty: Quantity posisi
-        entry_price: Harga entry (opsional, untuk hitung activation price)
-        tp_price: Harga TP (opsional, untuk hitung activation price)
-    """
-    logger.info(f"⏳ Waiting {config.TRAILING_ACTIVATION_DELAY}s to activate Native Trailing for {symbol}...")
-    await asyncio.sleep(config.TRAILING_ACTIVATION_DELAY)
-    
-    if not executor_instance.has_active_or_pending_trade(symbol):
-        logger.warning(f"⚠️ Position {symbol} closed before Native Trailing activation.")
-        return
-
-    # Hitung activation price (80% menuju TP)
-    activation_price = None
-    if entry_price is not None and tp_price is not None and tp_price > 0:
-        distance = abs(tp_price - entry_price)
-        if side in ('BUY', 'LONG'):
-            activation_price = entry_price + (distance * config.TRAILING_ACTIVATION_THRESHOLD)
-        else:  # SELL / SHORT
-            activation_price = entry_price - (distance * config.TRAILING_ACTIVATION_THRESHOLD)
-        logger.info(f"🎯 Activation Price: {activation_price:.4f} (80% of {entry_price:.4f} → {tp_price:.4f})")
-
-    success = await executor_instance.install_native_trailing_stop(
-        symbol, side, qty, config.TRAILING_CALLBACK_RATE, activation_price
-    )
-    if success:
-        act_str = f"\nActivation: {activation_price:.4f}" if activation_price else ""
-        cb_percent = config.TRAILING_CALLBACK_RATE * 100
-        await kirim_tele(
-            f"🔄 <b>NATIVE TRAILING ACTIVE</b>\n"
-            f"✨ <b>{symbol}</b>\n"
-            f"📍 Side: {side}\n"
-            f"📏 Qty: {qty}\n"
-            f"📈 Entry: {entry_price:.4f}\n"
-            f"🎯 TP: {tp_price:.4f}\n"
-            f"⚡ Callback: {cb_percent}%"
-            f"{act_str}"
-        )
-    else:
-        await kirim_tele(
-            f"❌ <b>TRAILING STOP GAGAL</b>\n"
-            f"✨ <b>{symbol}</b>\n"
-            f"Gagal memasang Native Trailing Stop.\n"
-            f"Cek log untuk detail error."
-        )
-
 pattern_recognizer = None
 journal = None
 
@@ -169,7 +115,6 @@ async def safety_monitor_loop(executor: OrderExecutor) -> None:
     Background Task untuk memantau posisi terbuka.
     - Cek Pending Orders (cleanup)
     - Re-verify Tracker consistency
-    - (Trailing Stop sekarang via WebSocket push, bukan polling di sini)
 
     Args:
         executor: Instance OrderExecutor untuk operasi trading
@@ -207,11 +152,6 @@ async def safety_monitor_loop(executor: OrderExecutor) -> None:
         except Exception as e:
             logger.error(f"Safety Loop Error: {e}")
             await asyncio.sleep(config.ERROR_SLEEP_DELAY)
-
-async def trailing_price_handler(symbol, price):
-    """Callback untuk menangani update harga realtime dari WebSocket"""
-    if config.ENABLE_TRAILING_STOP and executor:
-        await executor.check_trailing_on_price(symbol, price)
 
 async def whale_handler(symbol, amount, side):
     """Callback dari Market Data (AggTrade) untuk whale detection"""
@@ -545,7 +485,7 @@ async def _prepare_and_execute_trade(symbol, side, tech_data, coin_cfg, ai_decis
         'macd_histogram': tech_data.get('macd_histogram', 0),
         'bb_upper': tech_data.get('bb_upper', 0),
         'bb_lower': tech_data.get('bb_lower', 0),
-        'order_book_imbalance': tech_data.get('order_book', {}).get('imbalance_pct', 0),
+        'order_book_imbalance': (tech_data.get('order_book') or {}).get('imbalance_pct', 0),
     }
     config_snapshot = {
         'atr_multiplier_tp': config.ATR_MULTIPLIER_TP1,
@@ -599,6 +539,12 @@ async def main():
     
     logger.info(f"⏳ Next Sentiment Data Refresh: {convert_timestamp_to_wib_str(scheduler_state['next_sentiment_update'])}")
     logger.info(f"⏳ Next Sentiment AI Analysis: {convert_timestamp_to_wib_str(scheduler_state['next_sentiment_analysis'])}")
+
+    # 0. VALIDASI CONFIG WAJIB
+    # Validasi keras dilakukan di sini (bukan saat import config) agar
+    # web dashboard GUI tetap bisa start tanpa MONGO_URI untuk setup awal.
+    from src.config import _validate_mongo_uri
+    _validate_mongo_uri()
 
     # 1. INITIALIZATION
     exchange = _initialize_exchange()

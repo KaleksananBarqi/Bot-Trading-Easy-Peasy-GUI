@@ -205,19 +205,6 @@ DEFAULT_CORRELATION_HIGH = _cfg('DEFAULT_CORRELATION_HIGH', 0.99)
 ENABLE_MARKET_ORDERS = _cfg('ENABLE_MARKET_ORDERS', False)      # Izinkan Market Order (False = Limit Only)
 LIMIT_ORDER_EXPIRY_SECONDS = _cfg('LIMIT_ORDER_EXPIRY_SECONDS', 7200) # Hapus Limit Order jika tak terisi dalam 2 jam
 
-# Trailing Stop Loss (TSL)
-ENABLE_TRAILING_STOP = _cfg('ENABLE_TRAILING_STOP', True)           # Aktifkan Trailing Stop? (Master Switch)
-USE_NATIVE_TRAILING = _cfg('USE_NATIVE_TRAILING', True)            # Check form Binance (Native) vs Software (Custom)
-TRAILING_ACTIVATION_DELAY = _cfg('TRAILING_ACTIVATION_DELAY', 60)        # Delay (detik) sebelum pasang Trailing Stop (Native)
-
-TRAILING_ACTIVATION_THRESHOLD = _cfg('TRAILING_ACTIVATION_THRESHOLD', 0.80)  # Aktif saat harga jalan 80% ke TP (Software Mode Only)
-TRAILING_CALLBACK_RATE = _cfg('TRAILING_CALLBACK_RATE', 0.001)       # Jarak trail
-TRAILING_MIN_PROFIT_LOCK = _cfg('TRAILING_MIN_PROFIT_LOCK', 0.005)      # Kunci minimal profit 0.5% (Software Mode Only)
-TRAILING_SL_UPDATE_COOLDOWN = _cfg('TRAILING_SL_UPDATE_COOLDOWN', 3)       # Interval update ke exchange
-
-# Native Trailing Stop Limits (Binance Futures)
-NATIVE_TRAILING_MIN_RATE = _cfg('NATIVE_TRAILING_MIN_RATE', 0.1)       # Minimal 0.1%
-NATIVE_TRAILING_MAX_RATE = _cfg('NATIVE_TRAILING_MAX_RATE', 5.0)       # Maksimal 5.0%
 
 # Mekanisme Retry & Error Handling
 ORDER_SLTP_RETRIES = _cfg('ORDER_SLTP_RETRIES', 3)           # Retry pasang SL/TP max 3 kali
@@ -559,5 +546,26 @@ def _validate_mongo_uri():
         raise ValueError(f"Invalid MONGO_URI format: {e}")
 
 
-# Jalankan validasi saat modul di-import
-_validate_mongo_uri()
+# Soft validation saat import - hanya warning, tidak crash
+# Ini memungkinkan web dashboard berjalan tanpa MONGO_URI untuk setup awal.
+# Validasi keras dilakukan di main.py saat bot benar-benar dijalankan.
+import logging as _logging
+_config_logger = _logging.getLogger(__name__)
+
+if not MONGO_URI:
+    _config_logger.warning(
+        "⚠️ MONGO_URI belum diset. Bot tidak akan bisa berjalan. "
+        "Silakan atur melalui GUI Settings atau file .env"
+    )
+elif MONGO_URI:
+    try:
+        _parsed_uri = urlparse(MONGO_URI)
+        if _parsed_uri.scheme not in ('mongodb', 'mongodb+srv'):
+            _config_logger.warning(
+                f"⚠️ MONGO_URI menggunakan scheme tidak valid: {_parsed_uri.scheme}://. "
+                "Gunakan mongodb:// atau mongodb+srv://"
+            )
+        if not _parsed_uri.hostname:
+            _config_logger.warning("⚠️ MONGO_URI tidak memiliki hostname.")
+    except Exception:
+        _config_logger.warning("⚠️ MONGO_URI format tidak valid")

@@ -358,7 +358,7 @@
                         <button class="tab-btn active" data-tab="tab-env">🔑 Environment (.env)</button>
                         <button class="tab-btn" data-tab="tab-presets">🎛️ Presets</button>
                         <button class="tab-btn" data-tab="tab-system">System & Exec</button>
-                        <button class="tab-btn" data-tab="tab-trailing">Risk & Trailing</button>
+                        <button class="tab-btn" data-tab="tab-trailing">🛡️ Risk Management</button>
                         <button class="tab-btn" data-tab="tab-ai">AI & Strategies</button>
                         <button class="tab-btn" data-tab="tab-prompts">🧠 AI Prompts Studio</button>
                         <button class="tab-btn" data-tab="tab-tech">Technicals</button>
@@ -530,7 +530,7 @@
                             </div>
                         </div>
 
-                        <!-- TAB: Risk & Trailing -->
+                        <!-- TAB: Risk Management -->
                         <div id="tab-trailing" class="config-tab-pane">
                             <h3 class="section-title">🛡️ Circuit Breakers & Global Safety</h3>
                             <div class="form-grid-3">
@@ -544,20 +544,6 @@
                                     <input type="number" id="cfg-MAX_TOTAL_OPEN_POSITIONS_2" data-bind="MAX_TOTAL_OPEN_POSITIONS">
                                     <small class="text-muted">Batas maksimal posisi terbuka serentak di semua koin.</small>
                                 </div>
-                            </div>
-                            <div class="divider"></div>
-
-                            <h3 class="section-title">Trailing Stop Loss</h3>
-                            <div class="form-grid-3">
-                                <div class="form-group"><label>Enable Trailing Stop</label><label class="switch"><input type="checkbox" id="cfg-ENABLE_TRAILING_STOP"><span class="slider"></span></label></div>
-                                <div class="form-group"><label>Use Native Trailing</label><label class="switch"><input type="checkbox" id="cfg-USE_NATIVE_TRAILING"><span class="slider"></span></label></div>
-                                <div class="form-group"><label>Activation Delay (s)</label><input type="number" id="cfg-TRAILING_ACTIVATION_DELAY"></div>
-                                <div class="form-group"><label>Activation Threshold</label><input type="number" id="cfg-TRAILING_ACTIVATION_THRESHOLD" step="0.01"></div>
-                                <div class="form-group"><label>Callback Rate (%)</label><input type="number" id="cfg-TRAILING_CALLBACK_RATE" step="0.001"></div>
-                                <div class="form-group"><label>Min Profit Lock</label><input type="number" id="cfg-TRAILING_MIN_PROFIT_LOCK" step="0.001"></div>
-                                <div class="form-group"><label>SL Update Cooldown</label><input type="number" id="cfg-TRAILING_SL_UPDATE_COOLDOWN"></div>
-                                <div class="form-group"><label>Native Min Rate (%)</label><input type="number" id="cfg-NATIVE_TRAILING_MIN_RATE" step="0.1"></div>
-                                <div class="form-group"><label>Native Max Rate (%)</label><input type="number" id="cfg-NATIVE_TRAILING_MAX_RATE" step="0.1"></div>
                             </div>
                             <div class="divider"></div>
 
@@ -907,12 +893,7 @@
                     <pre class="json-box" id="modal-trade-tech">{}</pre>
                 </div>
 
-                <div class="detail-section">
-                    <h4>🛡️ Trailing Stop & Safety Execution</h4>
-                    <div class="trailing-stats-grid" id="modal-trade-trailing">
-                        <!-- Filled by JS -->
-                    </div>
-                </div>
+
             </div>
             <div class="modal-footer">
                 <button id="btn-close-trade-modal" class="btn btn-secondary">Close</button>

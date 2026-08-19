@@ -118,5 +118,95 @@
     ],
     "risk_assessment": "MEDIUM - Arah pasar belum terkonfirmasi oleh smart money, sehingga volatilitas dan pergerakan sideways berpotensi berlanjut; risiko meningkat jika arus stablecoin melemah atau whale mulai melakukan penjualan.",
     "last_updated": 1787072077.86799
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Smart Money belum menunjukkan arah yang jelas: arus masuk stablecoin netral dan tidak ada aktivitas whale signifikan. Ini berarti belum terdapat bukti kuat akumulasi maupun distribusi oleh pelaku besar. Sentimen retail juga netral dengan Fear & Greed Index di 41, sehingga tidak ada divergensi berarti antara Smart Money dan retail.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada pembelian atau penjualan signifikan dari whale",
+      "Fear & Greed Index 41 menunjukkan sentimen retail netral, meskipun headline mencampur katalis positif dan risiko makro"
+    ],
+    "risk_assessment": "MEDIUM - Pasar berpotensi bergerak choppy karena katalis makro, risiko utang global, dan isu regulasi masih bercampur tanpa konfirmasi arus modal besar",
+    "last_updated": 1787072409.07463
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Tidak terlihat divergensi kuat antara Smart Money dan retail. Arus masuk stablecoin netral dan tidak ada aktivitas whale signifikan, sehingga belum ada konfirmasi akumulasi maupun distribusi oleh pelaku besar. Fear & Greed di level 41 menunjukkan retail cenderung netral dengan bias hati-hati. Headline terkait regulasi dan adopsi institusional memberi dukungan jangka panjang, tetapi laporan crash Bitcoin dan pelemahan metrik SHIB menjaga sentimen tetap rapuh.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada aktivitas whale signifikan, menandakan belum ada katalis Smart Money yang dominan",
+      "Sentimen retail netral dengan headline makro yang bercampur antara perkembangan regulasi positif dan risiko penurunan pasar"
+    ],
+    "risk_assessment": "MEDIUM - Pasar berpotensi bergerak sideways dan volatil karena belum ada konfirmasi arus modal besar; headline positif dapat memicu reli sementara, tetapi risiko distribusi atau penurunan lanjutan belum tersingkirkan.",
+    "last_updated": 1787096040.928585
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Smart money belum memberikan arah yang tegas: arus masuk stablecoin netral dan tidak terdeteksi aktivitas whale yang signifikan. Ini menunjukkan belum ada bukti kuat akumulasi maupun distribusi, sehingga kondisi pasar cenderung menunggu katalis baru. Sentimen ritel juga netral dengan Fear & Greed Index di 41, sementara berita mencampurkan perkembangan regulasi dan adopsi institusional dengan risiko keamanan serta masalah hukum.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada aktivitas whale signifikan, sehingga konfirmasi pembelian atau penjualan besar belum tersedia.",
+      "Fear & Greed Index 41 serta berita makro yang berimbang mencerminkan ketidakpastian dan potensi pergerakan dalam rentang sempit."
+    ],
+    "risk_assessment": "MEDIUM - Tidak ada sinyal smart money yang mendukung arah bullish atau bearish. Pasar rentan terhadap volatilitas dan false breakout sampai arus modal stablecoin atau aktivitas whale menunjukkan perubahan yang jelas.",
+    "last_updated": 1787096284.674377
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Tidak terlihat divergensi kuat antara Smart Money dan Retail. Stablecoin inflow berada pada level netral dan tidak ada aktivitas whale signifikan, sehingga belum terdapat konfirmasi akumulasi maupun distribusi. Fear & Greed Index di 41 juga menunjukkan sentimen publik yang netral cenderung hati-hati. Headline mengenai peningkatan keterlibatan institusi dan perkembangan regulasi bersifat konstruktif, tetapi belum didukung arus modal on-chain yang nyata.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada aktivitas whale signifikan, menandakan belum ada dorongan beli atau jual besar.",
+      "Sentimen publik netral dengan berita regulasi dan adopsi institusional yang positif, namun katalis tersebut belum terkonfirmasi oleh smart money."
+    ],
+    "risk_assessment": "MEDIUM - Pasar berpotensi bergerak choppy karena katalis berita belum menghasilkan arus modal yang jelas. Risiko breakout palsu tetap ada sampai terlihat peningkatan inflow stablecoin atau aktivitas whale yang konsisten.",
+    "last_updated": 1787096400.513046
+  },
+  {
+    "analysis": "Arus Smart Money netral: tidak ada inflow stablecoin yang menonjol dan tidak terdeteksi aktivitas whale signifikan. Sentimen publik juga netral, dengan headline campuran antara kemajuan regulasi/tokenisasi dan risiko terkait leverage, kegagalan proyek, serta isu politik. Tidak ada divergensi akumulasi atau distribusi yang valid.",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Pasar berada dalam fase CHOPPY karena Smart Money belum menunjukkan komitmen beli maupun jual yang jelas. Stablecoin inflow netral dan absennya aktivitas whale berarti tidak ada konfirmasi modal besar untuk mendorong markup atau mengindikasikan distribusi.\n\nRetail juga netral pada Fear & Greed 41. Narasi tokenisasi dan potensi kejelasan regulasi memberi dukungan, tetapi dibatasi risiko leverage, tekanan pada sektor kripto yang lebih lemah, dan ketidakpastian kebijakan. Fokus pada konfirmasi perubahan inflow stablecoin atau akumulasi whale sebelum mengambil bias arah yang kuat.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada aktivitas whale signifikan",
+      "Fear & Greed 41 serta berita regulasi/tokenisasi yang bercampur dengan risiko leverage dan kegagalan proyek"
+    ],
+    "risk_assessment": "MEDIUM - Tidak ada arah Smart Money yang terkonfirmasi, sehingga harga rentan bergerak sideways dan menghasilkan false breakout.",
+    "last_updated": 1787096754.184899
+  },
+  {
+    "analysis": "sentiment",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 50,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Smart Money belum memberikan arah yang jelas: arus masuk stablecoin netral dan tidak terdeteksi aktivitas whale yang signifikan. Ini menunjukkan belum ada konfirmasi akumulasi maupun distribusi, sehingga kenaikan atau penurunan jangka pendek berisiko didominasi volatilitas dan likuiditas tipis. Sentimen retail juga netral dengan Fear & Greed Index di 41, sementara headline bercampur antara adopsi institusional, perkembangan regulasi, dan spekulasi altcoin.",
+    "key_drivers": [
+      "Stablecoin inflow netral dan tidak ada aktivitas whale signifikan, sehingga belum ada validasi arus modal besar.",
+      "Sentimen retail netral dengan berita campuran: tokenisasi aset dan treasury Bitcoin positif, tetapi spekulasi altcoin serta isu regulasi meningkatkan ketidakpastian."
+    ],
+    "risk_assessment": "MEDIUM - Tidak ada sinyal smart money yang mendukung arah bullish atau bearish; pasar berpotensi choppy dan rentan terhadap breakout palsu serta volatilitas yang dipicu berita.",
+    "last_updated": 1787096799.783801
   }
 ]

@@ -1387,15 +1387,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         document.getElementById('modal-trade-tech').textContent = typeof techObj === 'object' ? JSON.stringify(techObj, null, 2) : String(techObj || '{}');
 
-        // Trailing Stats
-        const trailingEl = document.getElementById('modal-trade-trailing');
-        trailingEl.innerHTML = `
-            <div class="detail-card"><span class="detail-label">Trailing Active</span><strong>${trade.trailing_was_active ? 'YES (Triggered)' : 'NO'}</strong></div>
-            <div class="detail-card"><span class="detail-label">Activation Price</span><strong>$${trade.activation_price || '--'}</strong></div>
-            <div class="detail-card"><span class="detail-label">Final Trailing SL</span><strong>$${trade.trailing_sl_final || '--'}</strong></div>
-            <div class="detail-card"><span class="detail-label">Initial SL</span><strong>$${trade.sl_price_initial || '--'}</strong></div>
-        `;
-
         modal.classList.add('active');
     }
 

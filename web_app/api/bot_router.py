@@ -13,6 +13,8 @@ router = APIRouter()
 bot_thread = None
 bot_running = False
 last_bot_error = None
+bot_loop = None
+bot_main_task = None
 
 # Path ke root directory & file log
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,7 +35,7 @@ class BotStatus(BaseModel):
     status: str
 
 def run_bot_in_thread():
-    global bot_running, last_bot_error
+    global bot_running, last_bot_error, bot_loop, bot_main_task
     try:
         last_bot_error = None
         # Pastikan sys.path memiliki root dan src
@@ -63,14 +65,21 @@ def run_bot_in_thread():
         # Buat event loop baru untuk thread bot
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        bot_loop = loop
         
-        # Eksekusi main bot
-        loop.run_until_complete(bot_main.main())
+        # Eksekusi main bot dengan referensi task tersimpan
+        # agar bisa di-cancel seketika dari stop_bot()
+        bot_main_task = loop.create_task(bot_main.main())
+        loop.run_until_complete(bot_main_task)
+    except asyncio.CancelledError:
+        print("Bot task dibatalkan (cancelled).")
     except Exception as e:
         last_bot_error = str(e)
         print(f"Bot thread error: {e}")
     finally:
         bot_running = False
+        bot_loop = None
+        bot_main_task = None
         print("Bot thread berhenti.")
 
 @router.get("/status")
@@ -104,6 +113,11 @@ def stop_bot():
     
     from web_app.api import bot_control_flag
     bot_control_flag.SHOULD_STOP = True
+    
+    # Force cancel asyncio task agar bot berhenti seketika
+    # tanpa menunggu polling flag di awal iterasi while loop
+    if bot_loop and bot_main_task and not bot_main_task.done():
+        bot_loop.call_soon_threadsafe(bot_main_task.cancel)
     
     return {"status": "success", "message": "Sinyal stop dikirim ke bot."}
 

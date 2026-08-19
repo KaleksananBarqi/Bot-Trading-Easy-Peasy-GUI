@@ -186,7 +186,7 @@ def build_market_prompt(symbol, tech_data, sentiment_data, onchain_data, pattern
     stoch_d = tech_data.get('stoch_d', 50)
     
     # Order Book Depth
-    ob_data = tech_data.get('order_book', {})
+    ob_data = tech_data.get('order_book') or {}
     ob_imp = "N/A"
     if ob_data:
         bid_vol = ob_data.get('bids_vol_usdt', 0) / 1000 # to K
