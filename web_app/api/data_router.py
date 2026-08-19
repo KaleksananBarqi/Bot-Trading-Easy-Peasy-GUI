@@ -117,6 +117,45 @@ def get_system_stats():
 from typing import List, Dict, Any, Optional
 
 # ==============================================================================
+# AI EVALUATIONS RECAP ENDPOINTS
+# ==============================================================================
+
+@router.get("/ai/evaluations")
+def get_ai_evaluations(
+    symbol: str = "ALL",
+    decision: str = "ALL",
+    limit: int = 50,
+    page: int = 1
+):
+    """
+    Mengambil riwayat evaluasi pasar oleh AI (BUY, SELL, WAIT) beserta detailnya.
+    """
+    try:
+        from src.modules.ai_eval_manager import AIEvaluationManager
+        manager = AIEvaluationManager()
+        return manager.get_evaluations(symbol=symbol, decision=decision, limit=limit, page=page)
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "data": [],
+            "pagination": {"page": 1, "limit": limit, "total_items": 0, "total_pages": 1}
+        }
+
+@router.get("/ai/stats")
+def get_ai_stats():
+    """
+    Mengambil ringkasan statistik keputusan AI.
+    """
+    try:
+        from src.modules.ai_eval_manager import AIEvaluationManager
+        manager = AIEvaluationManager()
+        stats = manager.get_stats()
+        return {"status": "success", "data": stats}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+# ==============================================================================
 # TRADE HISTORY & QUANT ANALYTICS ENDPOINTS
 # ==============================================================================
 

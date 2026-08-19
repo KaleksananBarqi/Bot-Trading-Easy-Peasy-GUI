@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (targetId === 'config') loadConfig();
             if (targetId === 'sentiment') fetchSentiment();
+            if (targetId === 'ai-recap') loadAIEvaluations();
             if (targetId === 'positions') fetchPositions();
             if (targetId === 'history') loadTradeHistoryAndAnalytics();
         });
@@ -359,14 +360,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.editCoin = (idx) => {
         editingCoinIdx = idx;
         const coin = currentConfig.DAFTAR_KOIN[idx];
-        document.getElementById('modal-coin-symbol').value = coin.symbol;
-        document.getElementById('modal-coin-category').value = coin.category;
-        document.getElementById('modal-coin-leverage').value = coin.leverage;
-        document.getElementById('modal-coin-amount').value = coin.amount;
-        document.getElementById('modal-coin-btc-corr').checked = coin.btc_corr || false;
+        document.getElementById('modal-coin-symbol').value = coin.symbol || '';
+        document.getElementById('modal-coin-category').value = coin.category || 'ALTS';
+        document.getElementById('modal-coin-leverage').value = coin.leverage || 10;
+        document.getElementById('modal-coin-amount').value = coin.amount || 10;
+        document.getElementById('modal-coin-margin-type').value = (coin.margin_type || 'isolated').toLowerCase();
+        document.getElementById('modal-coin-btc-corr').checked = coin.btc_corr !== undefined ? coin.btc_corr : true;
         document.getElementById('modal-coin-keywords').value = (coin.keywords || []).join(', ');
         
-        document.getElementById('modal-coin-title').textContent = "Edit Coin";
+        document.getElementById('modal-coin-title').textContent = "Edit Coin: " + (coin.symbol || '');
         if (modal) modal.style.display = 'block';
     };
 
@@ -386,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('modal-coin-category').value = 'ALTS';
             document.getElementById('modal-coin-leverage').value = 10;
             document.getElementById('modal-coin-amount').value = 10;
+            document.getElementById('modal-coin-margin-type').value = 'isolated';
             document.getElementById('modal-coin-btc-corr').checked = true;
             document.getElementById('modal-coin-keywords').value = '';
             
@@ -404,11 +407,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const keywords = kwRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
             
             const newCoin = {
-                symbol: document.getElementById('modal-coin-symbol').value,
+                symbol: document.getElementById('modal-coin-symbol').value.trim().toUpperCase(),
                 category: document.getElementById('modal-coin-category').value,
                 leverage: parseInt(document.getElementById('modal-coin-leverage').value) || 10,
                 amount: parseFloat(document.getElementById('modal-coin-amount').value) || 10,
-                margin_type: 'isolated',
+                margin_type: document.getElementById('modal-coin-margin-type').value || 'isolated',
                 btc_corr: document.getElementById('modal-coin-btc-corr').checked,
             };
             
@@ -1470,6 +1473,205 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // =========================================================================
+    // AI INTELLIGENCE HUB & RECAP MANAGER
+    // =========================================================================
+    let currentAIEvalPage = 1;
+    let cachedAIEvalsList = [];
+
+    async function loadAIEvaluations(resetPage = true) {
+        if (resetPage) currentAIEvalPage = 1;
+        await Promise.all([
+            fetchAIStats(),
+            fetchAIEvaluations(currentAIEvalPage)
+        ]);
+        populateAISymbolFilter();
+    }
+
+    async function fetchAIStats() {
+        try {
+            const res = await fetch('/api/ai/stats');
+            const json = await res.json();
+            if (json.status === 'success' && json.data) {
+                const s = json.data;
+                const elTotal = document.getElementById('ai-stat-total');
+                const elBuy = document.getElementById('ai-stat-buy');
+                const elSell = document.getElementById('ai-stat-sell');
+                const elWait = document.getElementById('ai-stat-wait');
+                const elAvg = document.getElementById('ai-stat-avg-conf');
+
+                if (elTotal) elTotal.textContent = s.total_evaluations || 0;
+                if (elBuy) elBuy.textContent = s.buy_count || 0;
+                if (elSell) elSell.textContent = s.sell_count || 0;
+                if (elWait) elWait.textContent = s.wait_count || 0;
+                if (elAvg) elAvg.textContent = (s.avg_confidence || 0) + '%';
+            }
+        } catch (e) {
+            console.error("Failed to fetch AI stats:", e);
+        }
+    }
+
+    async function fetchAIEvaluations(page = 1) {
+        const tbody = document.getElementById('ai-evals-tbody');
+        if (!tbody) return;
+
+        currentAIEvalPage = page;
+        const symbol = document.getElementById('ai-filter-symbol')?.value || 'ALL';
+        const decision = document.getElementById('ai-filter-decision')?.value || 'ALL';
+
+        try {
+            const res = await fetch(`/api/ai/evaluations?page=${page}&limit=25&symbol=${encodeURIComponent(symbol)}&decision=${encodeURIComponent(decision)}`);
+            const json = await res.json();
+
+            if (json.status === 'success') {
+                cachedAIEvalsList = json.data || [];
+                const pagination = json.pagination || { page: 1, total_pages: 1, total_items: 0 };
+
+                // Update pagination controls
+                const pageNumEl = document.getElementById('ai-page-number');
+                const pageInfoEl = document.getElementById('ai-eval-page-info');
+                const btnPrev = document.getElementById('ai-btn-prev-page');
+                const btnNext = document.getElementById('ai-btn-next-page');
+
+                if (pageNumEl) pageNumEl.textContent = `Page ${pagination.page} of ${pagination.total_pages}`;
+                if (pageInfoEl) pageInfoEl.textContent = `Total: ${pagination.total_items} AI Decisions`;
+                if (btnPrev) btnPrev.disabled = pagination.page <= 1;
+                if (btnNext) btnNext.disabled = pagination.page >= pagination.total_pages;
+
+                if (cachedAIEvalsList.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center" style="padding: 28px; color: var(--text-muted);">
+                                Belum ada riwayat evaluasi AI yang tercatat. Nyalakan bot engine untuk memulai scanning pasar.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                cachedAIEvalsList.forEach((ev, idx) => {
+                    const tr = document.createElement('tr');
+                    
+                    // Decision Badge styling
+                    let badgeBg = 'rgba(148, 163, 184, 0.2)';
+                    let badgeColor = '#94a3b8';
+                    const dec = (ev.decision || 'WAIT').toUpperCase();
+                    if (dec === 'BUY' || dec === 'LONG') {
+                        badgeBg = 'rgba(16, 185, 129, 0.2)';
+                        badgeColor = 'var(--neon-green)';
+                    } else if (dec === 'SELL' || dec === 'SHORT') {
+                        badgeBg = 'rgba(244, 63, 94, 0.2)';
+                        badgeColor = 'var(--neon-pink)';
+                    } else {
+                        badgeBg = 'rgba(245, 158, 11, 0.2)';
+                        badgeColor = '#f59e0b';
+                    }
+
+                    const timeDisplay = ev.time_wib || (ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString() : '--');
+                    const conf = Math.round(ev.confidence || 0);
+
+                    // Truncate reason
+                    const reasonSnippet = ev.reason ? (ev.reason.length > 75 ? ev.reason.substring(0, 75) + '...' : ev.reason) : '-';
+
+                    tr.innerHTML = `
+                        <td style="font-size: 0.82rem; color: var(--text-muted);">${timeDisplay}</td>
+                        <td><strong>${ev.symbol || '--'}</strong></td>
+                        <td>
+                            <span class="badge" style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 600; padding: 4px 8px; border-radius: 4px;">
+                                ${dec}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 50px; background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden;">
+                                    <div style="width: ${conf}%; background: ${conf >= 65 ? 'var(--neon-green)' : '#f59e0b'}; height: 100%;"></div>
+                                </div>
+                                <span style="font-size: 0.82rem;">${conf}%</span>
+                            </div>
+                        </td>
+                        <td style="font-size: 0.82rem;"><span class="badge" style="background: rgba(255,255,255,0.06); color: var(--neon-cyan);">${ev.strategy_mode || 'STANDARD'}</span></td>
+                        <td style="font-size: 0.82rem;">${ev.sentiment_status || 'NEUTRAL'} (${ev.sentiment_score || 50})</td>
+                        <td style="font-size: 0.82rem; color: #cbd5e1; max-width: 250px;">${reasonSnippet}</td>
+                        <td style="text-align: center;">
+                            <button class="btn btn-outline btn-xs" onclick="openAIEvalDetail(${idx})" style="padding: 3px 8px; font-size: 0.75rem;">🔍 Detail</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        } catch (e) {
+            console.error("Failed to fetch AI evaluations:", e);
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Gagal memuat evaluasi AI: ${e.message}</td></tr>`;
+        }
+    }
+
+    function populateAISymbolFilter() {
+        const select = document.getElementById('ai-filter-symbol');
+        if (!select) return;
+        
+        const currentVal = select.value;
+        const symbols = new Set();
+        (currentConfig.DAFTAR_KOIN || []).forEach(c => {
+            if (c.symbol) symbols.add(c.symbol.toUpperCase());
+        });
+        cachedAIEvalsList.forEach(e => {
+            if (e.symbol) symbols.add(e.symbol.toUpperCase());
+        });
+
+        // Keep 'ALL' as first option
+        select.innerHTML = '<option value="ALL">All Symbols</option>';
+        Array.from(symbols).sort().forEach(sym => {
+            const opt = document.createElement('option');
+            opt.value = sym;
+            opt.textContent = sym;
+            if (sym === currentVal) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
+    window.openAIEvalDetail = (idx) => {
+        const ev = cachedAIEvalsList[idx];
+        if (!ev) return;
+
+        const modal = document.getElementById('ai-eval-modal');
+        if (!modal) return;
+
+        document.getElementById('modal-ai-symbol-time').textContent = `${ev.symbol || '--'} @ ${ev.time_wib || ev.timestamp || '--'}`;
+        document.getElementById('modal-ai-decision-conf').textContent = `${ev.decision || 'WAIT'} (${ev.confidence || 0}% Confidence)`;
+        document.getElementById('modal-ai-strategy').textContent = `${ev.strategy_mode || 'STANDARD'} (${ev.execution_mode || 'MARKET'})`;
+        document.getElementById('modal-ai-sentiment').textContent = `${ev.sentiment_status || 'NEUTRAL'} (Score: ${ev.sentiment_score || 50}/100)`;
+
+        document.getElementById('modal-ai-reason').textContent = ev.reason || 'No detailed reason provided.';
+        document.getElementById('modal-ai-vision').textContent = ev.vision_summary || 'Vision AI analysis not recorded or disabled.';
+        document.getElementById('modal-ai-tech').textContent = JSON.stringify(ev.technical_snapshot || {}, null, 2);
+        document.getElementById('modal-ai-prompt').textContent = ev.prompt_snippet || 'Prompt snippet not available.';
+
+        modal.classList.add('active');
+        modal.style.display = 'block';
+    };
+
+    // AI Eval Modal Closes
+    document.getElementById('close-ai-modal')?.addEventListener('click', () => {
+        const m = document.getElementById('ai-eval-modal');
+        if (m) { m.classList.remove('active'); m.style.display = 'none'; }
+    });
+    document.getElementById('btn-close-ai-modal')?.addEventListener('click', () => {
+        const m = document.getElementById('ai-eval-modal');
+        if (m) { m.classList.remove('active'); m.style.display = 'none'; }
+    });
+
+    // AI Recap Event Listeners
+    document.getElementById('btn-refresh-ai-recap')?.addEventListener('click', () => loadAIEvaluations(true));
+    document.getElementById('ai-filter-symbol')?.addEventListener('change', () => fetchAIEvaluations(1));
+    document.getElementById('ai-filter-decision')?.addEventListener('change', () => fetchAIEvaluations(1));
+    document.getElementById('ai-btn-prev-page')?.addEventListener('click', () => {
+        if (currentAIEvalPage > 1) fetchAIEvaluations(currentAIEvalPage - 1);
+    });
+    document.getElementById('ai-btn-next-page')?.addEventListener('click', () => {
+        fetchAIEvaluations(currentAIEvalPage + 1);
+    });
+
     // --- Initialization & Polling ---
     checkBotStatus();
     fetchSystemStats();
@@ -1479,9 +1681,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     setInterval(() => {
         const sentimentPage = document.getElementById('sentiment');
+        const aiRecapPage = document.getElementById('ai-recap');
         const positionsPage = document.getElementById('positions');
         const historyPage = document.getElementById('history');
         if (sentimentPage && sentimentPage.classList.contains('active')) fetchSentiment();
+        if (aiRecapPage && aiRecapPage.classList.contains('active')) loadAIEvaluations(false);
         if (positionsPage && positionsPage.classList.contains('active')) fetchPositions();
         if (historyPage && historyPage.classList.contains('active')) loadTradeHistoryAndAnalytics(false);
     }, 8000);

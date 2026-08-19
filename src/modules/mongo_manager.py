@@ -255,3 +255,45 @@ class MongoManager:
         except Exception as e:
             logger.error(f"❌ Error counting trades: {e}")
             return 0
+
+    # =========================================================================
+    # AI EVALUATIONS COLLECTION
+    # =========================================================================
+    def insert_ai_evaluation(self, eval_data: dict) -> bool:
+        """Insert single AI market evaluation record."""
+        try:
+            if self.db is None:
+                if not self.connect():
+                    return False
+            col = self.db['ai_evaluations']
+            res = col.insert_one(eval_data)
+            return res.acknowledged
+        except Exception as e:
+            logger.error(f"❌ Failed to insert AI evaluation: {e}")
+            return False
+
+    def get_ai_evaluations(self, filter_query: dict = {}, limit: int = 100, skip: int = 0) -> list:
+        """Get AI evaluation records with sorting by timestamp DESC."""
+        try:
+            if self.db is None:
+                if not self.connect():
+                    return []
+            col = self.db['ai_evaluations']
+            cursor = col.find(filter_query).sort("timestamp", DESCENDING).skip(skip)
+            if limit > 0:
+                cursor = cursor.limit(limit)
+            return list(cursor)
+        except Exception as e:
+            logger.error(f"❌ Failed to fetch AI evaluations: {e}")
+            return []
+
+    def get_ai_evaluation_count(self, filter_query: dict = {}) -> int:
+        """Count AI evaluation records matching query."""
+        try:
+            if self.db is None:
+                return 0
+            col = self.db['ai_evaluations']
+            return col.count_documents(filter_query)
+        except Exception as e:
+            logger.error(f"❌ Error counting AI evaluations: {e}")
+            return 0

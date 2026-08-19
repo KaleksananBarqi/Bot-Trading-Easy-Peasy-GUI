@@ -163,12 +163,12 @@ class PatternRecognizer:
         Returns Dict: {'analysis': "...", 'raw_data': {...}, 'is_valid': bool}
         """
         if not self.client or not config.USE_PATTERN_RECOGNITION:
-            return {"analysis": "Vision AI Disabled.", "is_valid": False}
+            return {"analysis": "Vision AI Disabled (Bypassed).", "is_valid": True}
 
         # Check Cache based on last candle timestamp
         candles = self.get_setup_candles(symbol)
         if not candles: 
-            return {"analysis": "Not enough data.", "is_valid": False}
+            return {"analysis": "Not enough candle data for vision.", "is_valid": True}
         
         last_ts = candles[-1][0] # Timestamp newest candle
         

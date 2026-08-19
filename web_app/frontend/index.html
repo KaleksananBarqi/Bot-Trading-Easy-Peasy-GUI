@@ -31,6 +31,9 @@
                 <a href="#" class="nav-item" data-target="sentiment">
                     <i class="icon">⚡</i> Market Sentiment
                 </a>
+                <a href="#" class="nav-item" data-target="ai-recap">
+                    <i class="icon">🧠</i> AI Intelligence Recap
+                </a>
                 <a href="#" class="nav-item" data-target="positions">
                     <i class="icon">📊</i> Trade Positions
                 </a>
@@ -141,6 +144,108 @@
                         <div class="risk-box">
                             <strong>Risk Assessment:</strong> <span id="sentiment-risk">--</span>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Intelligence Recap Page -->
+            <section id="ai-recap" class="page">
+                <div class="page-header flex-between">
+                    <div>
+                        <h2>🧠 AI Intelligence Recap & Decision Hub</h2>
+                        <p class="subtitle">Rekapitulasi lengkap seluruh evaluasi Master AI, Vision AI, dan Sentimen (BUY, SELL, WAIT)</p>
+                    </div>
+                    <div class="header-actions">
+                        <button id="btn-refresh-ai-recap" class="btn btn-outline btn-sm">🔄 Refresh Data</button>
+                    </div>
+                </div>
+
+                <!-- AI Quick Stats Grid -->
+                <div class="stats-overview-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card glass">
+                        <div class="stat-icon neon-blue">📊</div>
+                        <div class="stat-info">
+                            <span class="stat-title">Total AI Evaluations</span>
+                            <span class="stat-number" id="ai-stat-total">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon neon-green">🟢</div>
+                        <div class="stat-info">
+                            <span class="stat-title">Buy Signals</span>
+                            <span class="stat-number" id="ai-stat-buy">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon neon-pink">🔴</div>
+                        <div class="stat-info">
+                            <span class="stat-title">Sell Signals</span>
+                            <span class="stat-number" id="ai-stat-sell">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon" style="color: #f59e0b;">⏸️</div>
+                        <div class="stat-info">
+                            <span class="stat-title">Wait / Pass</span>
+                            <span class="stat-number" id="ai-stat-wait">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon neon-purple">🎯</div>
+                        <div class="stat-info">
+                            <span class="stat-title">Avg Confidence</span>
+                            <span class="stat-number" id="ai-stat-avg-conf">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Evaluations Filter & Table -->
+                <div class="table-container glass">
+                    <div class="filter-bar flex-between" style="padding: 16px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
+                        <div class="filter-group" style="display: flex; gap: 10px; align-items: center;">
+                            <label style="font-size: 0.85rem; color: var(--text-muted);">Symbol:</label>
+                            <select id="ai-filter-symbol" class="form-select" style="background: rgba(15,23,42,0.8); border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: 6px;">
+                                <option value="ALL">All Symbols</option>
+                            </select>
+                        </div>
+                        <div class="filter-group" style="display: flex; gap: 10px; align-items: center;">
+                            <label style="font-size: 0.85rem; color: var(--text-muted);">Decision:</label>
+                            <select id="ai-filter-decision" class="form-select" style="background: rgba(15,23,42,0.8); border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: 6px;">
+                                <option value="ALL">All Decisions</option>
+                                <option value="BUY">BUY / LONG</option>
+                                <option value="SELL">SELL / SHORT</option>
+                                <option value="WAIT">WAIT</option>
+                            </select>
+                        </div>
+                        <div class="pagination-info" style="font-size: 0.85rem; color: var(--text-muted);" id="ai-eval-page-info">
+                            Showing page 1
+                        </div>
+                    </div>
+
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Symbol</th>
+                                <th>Decision</th>
+                                <th>Confidence</th>
+                                <th>Strategy Mode</th>
+                                <th>Sentiment</th>
+                                <th>AI Reason & Summary</th>
+                                <th style="text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ai-evals-tbody">
+                            <tr>
+                                <td colspan="8" class="text-center" style="padding: 24px;">Memuat data evaluasi AI...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="table-footer flex-between" style="padding: 12px 16px;">
+                        <button id="ai-btn-prev-page" class="btn btn-secondary btn-sm" disabled>◀ Previous</button>
+                        <span id="ai-page-number" style="font-size: 0.85rem; color: var(--text-muted);">Page 1 of 1</span>
+                        <button id="ai-btn-next-page" class="btn btn-secondary btn-sm" disabled>Next ▶</button>
                     </div>
                 </div>
             </section>
@@ -525,7 +630,13 @@
                                 <div class="form-group"><label>Default Amount USDT</label><input type="number" id="cfg-DEFAULT_AMOUNT_USDT"></div>
                                 <div class="form-group"><label>Min Order USDT</label><input type="number" id="cfg-MIN_ORDER_USDT"></div>
                                 <div class="form-group"><label>Default Leverage</label><input type="number" id="cfg-DEFAULT_LEVERAGE"></div>
-                                <div class="form-group"><label>Margin Type</label><input type="text" id="cfg-DEFAULT_MARGIN_TYPE"></div>
+                                <div class="form-group">
+                                    <label>Margin Type</label>
+                                    <select id="cfg-DEFAULT_MARGIN_TYPE" class="form-select">
+                                        <option value="isolated">ISOLATED</option>
+                                        <option value="cross">CROSS</option>
+                                    </select>
+                                </div>
                                 <div class="form-group"><label>Use Dynamic Size</label><label class="switch"><input type="checkbox" id="cfg-USE_DYNAMIC_SIZE"><span class="slider"></span></label></div>
                             </div>
                         </div>
@@ -603,7 +714,17 @@
                                 <div class="form-group"><label>Enable Reasoning</label><label class="switch"><input type="checkbox" id="cfg-AI_REASONING_ENABLED"><span class="slider"></span></label></div>
                                 <div class="form-group"><label>Exclude Reasoning</label><label class="switch"><input type="checkbox" id="cfg-AI_REASONING_EXCLUDE"><span class="slider"></span></label></div>
                                 <div class="form-group"><label>Log Reasoning</label><label class="switch"><input type="checkbox" id="cfg-AI_LOG_REASONING"><span class="slider"></span></label></div>
-                                <div class="form-group"><label>Reasoning Effort</label><input type="text" id="cfg-AI_REASONING_EFFORT"></div>
+                                <div class="form-group">
+                                    <label>Reasoning Effort</label>
+                                    <select id="cfg-AI_REASONING_EFFORT" class="form-select">
+                                        <option value="none">none</option>
+                                        <option value="minimal">minimal</option>
+                                        <option value="low">low</option>
+                                        <option value="medium">medium</option>
+                                        <option value="high">high</option>
+                                        <option value="xhigh">xhigh</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="divider"></div>
 
@@ -611,8 +732,28 @@
                             <div class="form-grid-3">
                                 <div class="form-group"><label>Enable Sentiment</label><label class="switch"><input type="checkbox" id="cfg-ENABLE_SENTIMENT_ANALYSIS"><span class="slider"></span></label></div>
                                 <div class="form-group"><label>Sentiment Model</label><input type="text" id="cfg-AI_SENTIMENT_MODEL"></div>
-                                <div class="form-group"><label>Analysis Interval</label><input type="text" id="cfg-SENTIMENT_ANALYSIS_INTERVAL"></div>
-                                <div class="form-group"><label>Update Interval</label><input type="text" id="cfg-SENTIMENT_UPDATE_INTERVAL"></div>
+                                <div class="form-group">
+                                    <label>Analysis Interval</label>
+                                    <select id="cfg-SENTIMENT_ANALYSIS_INTERVAL" class="form-select">
+                                        <option value="15m">15m</option>
+                                        <option value="30m">30m</option>
+                                        <option value="1h">1h</option>
+                                        <option value="2h">2h</option>
+                                        <option value="4h">4h</option>
+                                        <option value="1d">1d</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Update Interval</label>
+                                    <select id="cfg-SENTIMENT_UPDATE_INTERVAL" class="form-select">
+                                        <option value="15m">15m</option>
+                                        <option value="30m">30m</option>
+                                        <option value="1h">1h</option>
+                                        <option value="2h">2h</option>
+                                        <option value="4h">4h</option>
+                                        <option value="1d">1d</option>
+                                    </select>
+                                </div>
                                 
                                 <div class="form-group"><label>Enable Vision (Pattern)</label><label class="switch"><input type="checkbox" id="cfg-USE_PATTERN_RECOGNITION"><span class="slider"></span></label></div>
                                 <div class="form-group"><label>Vision Model</label><input type="text" id="cfg-AI_VISION_MODEL"></div>
@@ -658,9 +799,48 @@
                         <div id="tab-tech" class="config-tab-pane">
                             <h3 class="section-title">Timeframes</h3>
                             <div class="form-grid-3">
-                                <div class="form-group"><label>Exec TF</label><input type="text" id="cfg-TIMEFRAME_EXEC"></div>
-                                <div class="form-group"><label>Setup TF</label><input type="text" id="cfg-TIMEFRAME_SETUP"></div>
-                                <div class="form-group"><label>Trend TF</label><input type="text" id="cfg-TIMEFRAME_TREND"></div>
+                                <div class="form-group">
+                                    <label>Exec TF</label>
+                                    <select id="cfg-TIMEFRAME_EXEC" class="form-select">
+                                        <option value="1m">1m</option>
+                                        <option value="3m">3m</option>
+                                        <option value="5m">5m</option>
+                                        <option value="15m">15m</option>
+                                        <option value="30m">30m</option>
+                                        <option value="1h">1h</option>
+                                        <option value="2h">2h</option>
+                                        <option value="4h">4h</option>
+                                        <option value="1d">1d</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Setup TF</label>
+                                    <select id="cfg-TIMEFRAME_SETUP" class="form-select">
+                                        <option value="1m">1m</option>
+                                        <option value="3m">3m</option>
+                                        <option value="5m">5m</option>
+                                        <option value="15m">15m</option>
+                                        <option value="30m">30m</option>
+                                        <option value="1h">1h</option>
+                                        <option value="2h">2h</option>
+                                        <option value="4h">4h</option>
+                                        <option value="1d">1d</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Trend TF</label>
+                                    <select id="cfg-TIMEFRAME_TREND" class="form-select">
+                                        <option value="1m">1m</option>
+                                        <option value="3m">3m</option>
+                                        <option value="5m">5m</option>
+                                        <option value="15m">15m</option>
+                                        <option value="30m">30m</option>
+                                        <option value="1h">1h</option>
+                                        <option value="2h">2h</option>
+                                        <option value="4h">4h</option>
+                                        <option value="1d">1d</option>
+                                    </select>
+                                </div>
                                 <div class="form-group"><label>Limit Exec</label><input type="number" id="cfg-LIMIT_EXEC"></div>
                                 <div class="form-group"><label>Limit Setup</label><input type="number" id="cfg-LIMIT_SETUP"></div>
                                 <div class="form-group"><label>Limit Trend</label><input type="number" id="cfg-LIMIT_TREND"></div>
@@ -714,8 +894,20 @@
                         <div id="tab-data" class="config-tab-pane">
                             <h3 class="section-title">Data Providers & BTC Benchmark</h3>
                             <div class="form-grid-3">
-                                <div class="form-group"><label>Sentiment Provider</label><input type="text" id="cfg-SENTIMENT_PROVIDER" placeholder="RSS_Feed"></div>
-                                <div class="form-group"><label>OnChain Provider</label><input type="text" id="cfg-ONCHAIN_PROVIDER" placeholder="DefiLlama"></div>
+                                <div class="form-group">
+                                    <label>Sentiment Provider</label>
+                                    <select id="cfg-SENTIMENT_PROVIDER" class="form-select">
+                                        <option value="RSS_Feed">RSS_Feed</option>
+                                        <option value="CryptoPanic">CryptoPanic</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>OnChain Provider</label>
+                                    <select id="cfg-ONCHAIN_PROVIDER" class="form-select">
+                                        <option value="DefiLlama">DefiLlama</option>
+                                        <option value="Glassnode">Glassnode</option>
+                                    </select>
+                                </div>
                                 <div class="form-group"><label>BTC Benchmark Symbol</label><input type="text" id="cfg-BTC_SYMBOL" placeholder="BTC/USDT"></div>
                             </div>
                             <div class="divider"></div>
@@ -824,11 +1016,19 @@
             <div class="modal-body form-grid">
                 <div class="form-group">
                     <label>Symbol (e.g., BTC/USDT)</label>
-                    <input type="text" id="modal-coin-symbol">
+                    <input type="text" id="modal-coin-symbol" placeholder="BTC/USDT">
                 </div>
                 <div class="form-group">
-                    <label>Category (e.g., KING, ALTS, MEME)</label>
-                    <input type="text" id="modal-coin-category">
+                    <label>Category</label>
+                    <select id="modal-coin-category" class="form-select">
+                        <option value="KING">KING (BTC/ETH)</option>
+                        <option value="MAJOR">MAJOR (SOL, BNB, etc)</option>
+                        <option value="LAYER1">LAYER 1</option>
+                        <option value="DEFI">DEFI</option>
+                        <option value="MEME">MEME</option>
+                        <option value="AI">AI NARRATIVE</option>
+                        <option value="ALTS">ALTS (General)</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Leverage</label>
@@ -839,19 +1039,79 @@
                     <input type="number" id="modal-coin-amount" value="10">
                 </div>
                 <div class="form-group">
+                    <label>Margin Type</label>
+                    <select id="modal-coin-margin-type" class="form-select">
+                        <option value="isolated">ISOLATED</option>
+                        <option value="cross">CROSS</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>BTC Correlated</label>
                     <label class="switch">
                         <input type="checkbox" id="modal-coin-btc-corr">
                         <span class="slider"></span>
                     </label>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="grid-column: span 2;">
                     <label>Keywords (comma separated)</label>
                     <input type="text" id="modal-coin-keywords" placeholder="bitcoin, btc">
                 </div>
             </div>
             <div class="modal-footer">
                 <button id="btn-save-coin" class="btn btn-primary">Save Coin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Evaluation Detail Modal -->
+    <div id="ai-eval-modal" class="modal">
+        <div class="modal-content glass modal-lg">
+            <div class="modal-header">
+                <h3 id="modal-ai-title">🧠 AI Market Evaluation & Decision Detail</h3>
+                <span class="close-modal" id="close-ai-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-ai-body">
+                <div class="trade-detail-grid">
+                    <div class="detail-card">
+                        <span class="detail-label">Symbol & Time</span>
+                        <strong id="modal-ai-symbol-time">--</strong>
+                    </div>
+                    <div class="detail-card">
+                        <span class="detail-label">AI Decision & Confidence</span>
+                        <strong id="modal-ai-decision-conf">--</strong>
+                    </div>
+                    <div class="detail-card">
+                        <span class="detail-label">Strategy Mode</span>
+                        <strong id="modal-ai-strategy">--</strong>
+                    </div>
+                    <div class="detail-card">
+                        <span class="detail-label">Sentiment Status</span>
+                        <strong id="modal-ai-sentiment">--</strong>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>🤖 Master AI Reasoning & Decision Argument</h4>
+                    <div class="code-box" id="modal-ai-reason">No reasoning recorded.</div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>👁️ Vision AI Chart Pattern Analysis</h4>
+                    <div class="code-box" id="modal-ai-vision" style="color: var(--neon-cyan);">No pattern analysis recorded.</div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📐 Technical Indicators Snapshot at Decision Time</h4>
+                    <pre class="json-box" id="modal-ai-tech">{}</pre>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📝 Prompt Snippet</h4>
+                    <div class="code-box" id="modal-ai-prompt" style="font-size: 0.75rem; max-height: 120px; overflow-y: auto;">--</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-ai-modal" class="btn btn-secondary">Close</button>
             </div>
         </div>
     </div>
@@ -892,8 +1152,6 @@
                     <h4>📐 Technical Indicators & Conditions Snapshot</h4>
                     <pre class="json-box" id="modal-trade-tech">{}</pre>
                 </div>
-
-
             </div>
             <div class="modal-footer">
                 <button id="btn-close-trade-modal" class="btn btn-secondary">Close</button>

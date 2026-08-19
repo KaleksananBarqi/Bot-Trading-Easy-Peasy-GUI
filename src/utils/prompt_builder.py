@@ -256,14 +256,19 @@ def build_market_prompt(symbol, tech_data, sentiment_data, onchain_data, pattern
             f"- Key Context: {s_summary}"
         )
     else:
-        # [FALLBACK] Use Raw Data (Mini Mode)
-        # Hemat token: Cuma F&G + Stablecoin Inflow, tanpa list berita panjang
-        inflow_status = onchain_data.get('stablecoin_inflow', 'Neutral')
-        sentiment_section_str = (
-            f"- Fear & Greed Index: {fng_value} ({fng_text})\n"
-            f"- Stablecoin Inflow: {inflow_status}\n"
-            f"- Note: Deep sentiment analysis not available yet (using fallback)."
-        )
+        # [FALLBACK] Use Raw Data (Mini Mode or Disabled)
+        inflow_status = onchain_data.get('stablecoin_inflow', 'Neutral') if onchain_data else 'Neutral'
+        if not getattr(config, 'ENABLE_SENTIMENT_ANALYSIS', True):
+            sentiment_section_str = (
+                f"- Fear & Greed Index: {fng_value} ({fng_text})\n"
+                f"- Sentiment Module: Disabled (Focus on Technical Indicators & Market Structure)."
+            )
+        else:
+            sentiment_section_str = (
+                f"- Fear & Greed Index: {fng_value} ({fng_text})\n"
+                f"- Stablecoin Inflow: {inflow_status}\n"
+                f"- Note: Deep sentiment analysis not available yet (using fallback)."
+            )
 
     # ==========================================
     # 2. CONTEXTUAL LOGIC BUILDER

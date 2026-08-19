@@ -208,5 +208,20 @@
     ],
     "risk_assessment": "MEDIUM - Tidak ada sinyal smart money yang mendukung arah bullish atau bearish; pasar berpotensi choppy dan rentan terhadap breakout palsu serta volatilitas yang dipicu berita.",
     "last_updated": 1787096799.783801
+  },
+  {
+    "analysis": "Smart money belum menunjukkan arus modal yang meyakinkan: inflow stablecoin netral dan tidak ada aktivitas whale signifikan. Sentimen publik juga cenderung campuran, sehingga belum terbentuk konfirmasi arah pasar.",
+    "overall_sentiment": "NEUTRAL",
+    "sentiment_score": 48,
+    "market_phase": "CHOPPY",
+    "smart_money_activity": "NEUTRAL",
+    "retail_sentiment": "NEUTRAL",
+    "summary": "Smart Money dan retail sama-sama netral, tanpa divergensi yang dapat menandakan akumulasi atau distribusi. Tidak adanya pembelian whale dan inflow stablecoin yang kuat membuat narasi bahwa koreksi Bitcoin segera berakhir belum terkonfirmasi oleh aliran modal.\n\nBerita regulasi AS memberi dukungan moderat, tetapi tekanan dari kenaikan imbal hasil obligasi dan kekhawatiran utang global membatasi potensi kenaikan. Kondisi paling tepat dikategorikan CHOPPY: pergerakan berisiko reaktif terhadap berita dan rawan sinyal palsu sampai muncul perubahan nyata pada arus stablecoin atau aktivitas whale.",
+    "key_drivers": [
+      "Inflow stablecoin netral dan tidak ada aktivitas whale signifikan",
+      "Narasi regulasi yang konstruktif diimbangi tekanan imbal hasil obligasi serta ketidakpastian makro"
+    ],
+    "risk_assessment": "MEDIUM - Tidak ada konfirmasi arah dari Smart Money, sementara katalis berita yang saling bertentangan meningkatkan risiko volatilitas dan sinyal palsu.",
+    "last_updated": 1787106453.512908
   }
 ]

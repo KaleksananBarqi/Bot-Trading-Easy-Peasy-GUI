@@ -282,7 +282,8 @@ def _calculate_volume_indicators(df):
     Args:
         df: DataFrame with OHLCV data
     """
-    df['VOL_MA'] = df.ta.sma(close='volume', length=config.VOL_MA_PERIOD)
+    # Gunakan rolling mean langsung dari kolom volume untuk menghindari bug fallback pandas_ta ke kolom close
+    df['VOL_MA'] = df['volume'].rolling(window=config.VOL_MA_PERIOD, min_periods=1).mean()
 
 
 def _calculate_trend_state(cur_row):
@@ -637,8 +638,8 @@ class MarketDataManager:
                         self.last_heartbeat = time.time()
                         data = json.loads(msg)
                         
-                        if 'data' in data:
-                            payload = data['data']
+                        payload = data.get('data', data)
+                        if isinstance(payload, dict):
                             evt = payload.get('e', '')
                             
                             if evt == 'kline':

@@ -1,0 +1,30 @@
+[
+  {
+    "timestamp": "2026-08-19T02:28:02.361797",
+    "time_wib": "Wed Aug 19 02:28:02 2026",
+    "symbol": "BTC/USDT",
+    "decision": "WAIT",
+    "confidence": 88.0,
+    "strategy_mode": "WAIT",
+    "execution_mode": "LIMIT",
+    "reason": "Harga masih berada di dalam range S1-R1, yaitu 64367.20 di atas S1 64184.07 dan di bawah R1 65083.87, sehingga belum ada breakout atau retest EMA yang terkonfirmasi. Walaupun terdapat bullish rejection di sekitar S1, volume hanya 1.10x rata-rata, RSI 30.20 belum memenuhi kondisi oversold ekstrem, dan StochRSI K 0.00 masih berada di bawah D 1.11 sehingga belum ada bullish cross. Setup reversal tidak memenuhi syarat volume dan momentum, sedangkan setup PULLBACK_CONTINUATION short belum memiliki konfirmasi global_trend_1d yang diperlukan. Struktur harian juga masih CONSOLIDATION dan kondisi pasar CHOPPY, sehingga sinyal lokal bearish pada 15m belum cukup untuk membuka posisi SELL. BREAKDOWN_FOLLOW juga tidak tersedia karena harga belum close di bawah S1 dengan volume tinggi.",
+    "vision_summary": "Price remains in a broader uptrend, but the latest structure shows a sharp breakout followed by a lower-high pullback, with no clean Head & Shoulders, double top, or confirmed flag. A bearish divergence is visible: price made a higher high on the recent spike, while the MACD peak was lower; the MACD line is now below its signal and the histogram is negative at `-51.28`. **Overall bias: BEARISH short term**, with risk of further consolidation or retracement unless BTC reclaims the recent swing high and MACD turns upward.",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 64367.2,
+      "rsi": 30.195558691062654,
+      "adx": 29.358932649630923,
+      "volume": 10707.2766,
+      "vol_ma": 9720.154765,
+      "vol_ratio": 1.1,
+      "ema_fast": 64437.0761828345,
+      "ema_slow": 64530.247245857616,
+      "price_vs_ema": "Below",
+      "trend_major": "Bearish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 1.0
+    },
+    "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  }
+]

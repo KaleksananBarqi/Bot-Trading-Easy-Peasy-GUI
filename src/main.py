@@ -23,6 +23,7 @@ from src.modules.ai_brain import AIBrain
 from src.modules.executor import OrderExecutor
 from src.modules.pattern_recognizer import PatternRecognizer
 from src.modules.journal import TradeJournal
+from src.modules.ai_eval_manager import AIEvaluationManager
 from src.modules.executor_impl.order_callbacks import OrderUpdateHandler
 
 # ==============================================================================
@@ -49,6 +50,7 @@ executor = None
 
 pattern_recognizer = None
 journal = None
+ai_eval_manager = None
 
 
 async def run_sentiment_analysis():
@@ -201,7 +203,8 @@ def _initialize_modules(exchange):
     exe = OrderExecutor(exchange)
     pr = PatternRecognizer(md)
     jr = TradeJournal()
-    return md, sent, oc, ai, exe, pr, jr
+    ai_eval = AIEvaluationManager()
+    return md, sent, oc, ai, exe, pr, jr, ai_eval
 
 
 
@@ -524,7 +527,7 @@ async def _prepare_and_execute_trade(symbol, side, tech_data, coin_cfg, ai_decis
 # ============================================================================
 
 async def main():
-    global market_data, sentiment, onchain, ai_brain, executor, pattern_recognizer, journal
+    global market_data, sentiment, onchain, ai_brain, executor, pattern_recognizer, journal, ai_eval_manager
     
     # Track AI Query Timestamp (Candle ID)
     analyzed_candle_ts = {}
@@ -551,7 +554,7 @@ async def main():
     await kirim_tele("🤖 <b>BOT TRADING STARTED</b>\nAI-Hybrid System Online.", alert=True)
 
     # 2. SETUP MODULES
-    market_data, sentiment, onchain, ai_brain, executor, pattern_recognizer, journal = _initialize_modules(exchange)
+    market_data, sentiment, onchain, ai_brain, executor, pattern_recognizer, journal, ai_eval_manager = _initialize_modules(exchange)
 
     # 2.1 SYNC POSITION MODE (Pastikan Binance Akun dalam One-Way Mode)
     await executor.ensure_position_mode()
@@ -629,7 +632,7 @@ async def main():
             # Pattern Recognition (Vision)
             pattern_ctx = await pattern_recognizer.analyze_pattern(symbol)
             
-            if not pattern_ctx.get('is_valid', True):
+            if config.USE_PATTERN_RECOGNITION and not pattern_ctx.get('is_valid', True):
                 logger.warning(f"⚠️ Skipping {symbol} - Pattern analysis invalid/truncated")
                 await asyncio.sleep(config.LOOP_SKIP_DELAY)
                 continue
@@ -670,6 +673,22 @@ async def main():
             decision = ai_decision.get('decision', 'WAIT').upper()
             confidence = ai_decision.get('confidence', 0)
             reason = html.escape(str(ai_decision.get('reason', '')))
+
+            # Record AI Evaluation to Manager
+            if ai_eval_manager:
+                ai_eval_manager.log_evaluation(
+                    symbol=symbol,
+                    decision=decision,
+                    confidence=confidence,
+                    strategy_mode=ai_decision.get('selected_strategy', 'STANDARD'),
+                    reason=ai_decision.get('reason', ''),
+                    tech_data=tech_data,
+                    pattern_analysis=pattern_ctx,
+                    sentiment_data=sentiment_data,
+                    sentiment_analysis=sentiment_analysis,
+                    execution_mode=ai_decision.get('execution_mode', 'MARKET'),
+                    prompt=prompt
+                )
 
             # --- STEP E: EXECUTION ---
             if decision in ['BUY', 'SELL', 'LONG', 'SHORT']:
