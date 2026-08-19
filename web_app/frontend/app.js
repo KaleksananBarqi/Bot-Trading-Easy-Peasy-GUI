@@ -10,6 +10,70 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#039;');
     }
 
+    // --- Central Time Formatter (WIB / UTC+7) ---
+    function formatWIB(timestamp, formatType = 'table') {
+        if (!timestamp) return '--';
+        let date;
+        if (typeof timestamp === 'number') {
+            date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+        } else if (typeof timestamp === 'string') {
+            let s = timestamp.trim();
+            // Jika format string adalah ISO naive tanpa timezone offset, tambahkan 'Z' agar di-parse sebagai UTC
+            if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(s) && !s.includes('+') && !s.endsWith('Z')) {
+                s = s.replace(' ', 'T') + 'Z';
+            }
+            date = new Date(s);
+        } else if (timestamp instanceof Date) {
+            date = timestamp;
+        } else {
+            return String(timestamp);
+        }
+
+        if (isNaN(date.getTime())) return String(timestamp);
+
+        const tz = 'Asia/Jakarta';
+
+        if (formatType === 'time') {
+            return date.toLocaleTimeString('id-ID', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' WIB';
+        } else if (formatType === 'time-short') {
+            return date.toLocaleTimeString('id-ID', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }) + ' WIB';
+        } else if (formatType === 'chart') {
+            const dStr = date.toLocaleDateString('id-ID', { timeZone: tz, day: '2-digit', month: '2-digit' });
+            const tStr = date.toLocaleTimeString('id-ID', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false });
+            return `${dStr} ${tStr}`;
+        } else if (formatType === 'table') {
+            const dStr = date.toLocaleDateString('id-ID', { timeZone: tz, day: '2-digit', month: '2-digit', year: 'numeric' });
+            const tStr = date.toLocaleTimeString('id-ID', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            return `${dStr} ${tStr} WIB`;
+        } else if (formatType === 'full') {
+            const dStr = date.toLocaleDateString('id-ID', { timeZone: tz, weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+            const tStr = date.toLocaleTimeString('id-ID', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            return `${dStr}, ${tStr} WIB`;
+        } else {
+            const dStr = date.toLocaleDateString('id-ID', { timeZone: tz, day: '2-digit', month: '2-digit', year: 'numeric' });
+            const tStr = date.toLocaleTimeString('id-ID', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            return `${dStr} ${tStr} WIB`;
+        }
+    }
+
+    // --- Real-time Live WIB Clock ---
+    function updateLiveClock() {
+        const clockEl = document.getElementById('live-wib-clock');
+        const dateEl = document.getElementById('live-wib-date');
+        if (!clockEl && !dateEl) return;
+        
+        const now = new Date();
+        const tz = 'Asia/Jakarta';
+        if (clockEl) {
+            clockEl.textContent = now.toLocaleTimeString('id-ID', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' WIB';
+        }
+        if (dateEl) {
+            dateEl.textContent = now.toLocaleDateString('id-ID', { timeZone: tz, weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+        }
+    }
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
+
     // --- Navigation ---
     const navItems = document.querySelectorAll('.nav-item');
     const pages = document.querySelectorAll('.page');
@@ -696,6 +760,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const riskEl = document.getElementById('sentiment-risk');
                 if (riskEl) riskEl.textContent = latest.risk_assessment || '--';
+
+                const updateTimeEl = document.getElementById('sentiment-last-update-time');
+                if (updateTimeEl && latest.last_updated) {
+                    updateTimeEl.textContent = formatWIB(latest.last_updated, 'full');
+                }
                 
                 const driversList = document.getElementById('sentiment-drivers');
                 if (driversList) {
@@ -727,8 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const labels = historyData.map(h => {
             if(!h.last_updated) return '';
-            const d = new Date(h.last_updated * 1000);
-            return `${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+            return formatWIB(h.last_updated, 'time-short');
         });
         const scores = historyData.map(h => h.sentiment_score);
         
@@ -1056,7 +1124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         
-        const labels = curveData.map(d => d.label || d.timestamp);
+        const labels = curveData.map(d => d.label || formatWIB(d.timestamp, 'chart'));
         const cumPnls = curveData.map(d => d.cumulative_pnl);
 
         if (equityChartInstance) {
@@ -1122,7 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        const labels = ddData.map(d => d.label || d.timestamp);
+        const labels = ddData.map(d => d.label || formatWIB(d.timestamp, 'chart'));
         const ddPct = ddData.map(d => -Math.abs(d.drawdown_pct));
 
         if (drawdownChartInstance) {
@@ -1320,11 +1388,8 @@ document.addEventListener('DOMContentLoaded', () => {
             data.data.forEach((trade, idx) => {
                 const tr = document.createElement('tr');
                 
-                // Format timestamp
-                let timeStr = trade.timestamp || '';
-                if (timeStr.includes('T')) {
-                    timeStr = timeStr.replace('T', ' ').substring(0, 19);
-                }
+                // Format timestamp ke WIB
+                const timeStr = formatWIB(trade.timestamp, 'table');
 
                 const side = (trade.side || 'BUY').toUpperCase();
                 const sideBadge = `<span class="badge-pill ${side === 'BUY' || side === 'LONG' ? 'badge-long' : 'badge-short'}">${side}</span>`;
@@ -1343,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else resBadge = `<span class="badge-pill badge-cancelled">${escapeHtml(resText)}</span>`;
 
                 tr.innerHTML = `
-                    <td style="font-size: 11px; color: #94a3b8;">${escapeHtml(timeStr)}</td>
+                    <td style="font-size: 11px; color: #94a3b8; font-family: monospace;">${escapeHtml(timeStr)}</td>
                     <td><strong>${escapeHtml(trade.symbol || '--')}</strong></td>
                     <td>${sideBadge}</td>
                     <td>$${parseFloat(trade.size_usdt || 0).toFixed(0)}</td>
@@ -1376,8 +1441,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('trade-modal');
         if (!modal) return;
 
+        const timeFinished = formatWIB(trade.timestamp, 'full');
+        const timeSetup = trade.setup_at ? formatWIB(trade.setup_at, 'full') : '-';
+        const timeFilled = trade.filled_at ? formatWIB(trade.filled_at, 'full') : '-';
+
         document.getElementById('modal-trade-title').textContent = `📊 Trade Detail: ${trade.symbol} (${trade.result})`;
         document.getElementById('modal-trade-symbol-side').textContent = `${trade.symbol} | ${trade.side} | Size: $${trade.size_usdt}`;
+        
+        const modalTimeEl = document.getElementById('modal-trade-time');
+        if (modalTimeEl) modalTimeEl.textContent = timeFinished;
+
+        const modalTimelineEl = document.getElementById('modal-trade-timeline');
+        if (modalTimelineEl) {
+            modalTimelineEl.textContent = `Setup: ${timeSetup} ➜ Filled: ${timeFilled} ➜ Close: ${timeFinished}`;
+        }
         
         const pnl = parseFloat(trade.pnl_usdt) || 0;
         const roi = parseFloat(trade.roi_percent) || 0;
@@ -1410,9 +1487,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const headers = ["Timestamp", "Symbol", "Side", "Size_USDT", "Entry_Price", "Exit_Price", "PnL_USDT", "ROI_Percent", "Fee", "Result", "Exit_Type", "Strategy", "Reason"];
+        const headers = ["Timestamp (WIB)", "Symbol", "Side", "Size_USDT", "Entry_Price", "Exit_Price", "PnL_USDT", "ROI_Percent", "Fee", "Result", "Exit_Type", "Strategy", "Reason"];
         const rows = cachedTradesList.map(t => [
-            `"${t.timestamp || ''}"`,
+            `"${formatWIB(t.timestamp, 'table')}"`,
             `"${t.symbol || ''}"`,
             `"${t.side || ''}"`,
             t.size_usdt || 0,
@@ -1431,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
-        link.setAttribute('download', `trade_history_${new Date().toISOString().slice(0,10)}.csv`);
+        link.setAttribute('download', `trade_history_wib_${new Date().toISOString().slice(0,10)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1579,14 +1656,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         badgeColor = '#f59e0b';
                     }
 
-                    const timeDisplay = ev.time_wib || (ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString() : '--');
+                    const timeDisplay = formatWIB(ev.timestamp || ev.time_wib, 'table');
                     const conf = Math.round(ev.confidence || 0);
 
                     // Truncate reason
                     const reasonSnippet = ev.reason ? (ev.reason.length > 75 ? ev.reason.substring(0, 75) + '...' : ev.reason) : '-';
 
                     tr.innerHTML = `
-                        <td style="font-size: 0.82rem; color: var(--text-muted);">${escapeHtml(timeDisplay)}</td>
+                        <td style="font-size: 0.82rem; color: var(--text-muted); font-family: monospace;">${escapeHtml(timeDisplay)}</td>
                         <td><strong>${escapeHtml(ev.symbol || '--')}</strong></td>
                         <td>
                             <span class="badge" style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 600; padding: 4px 8px; border-radius: 4px;">
@@ -1648,7 +1725,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('ai-eval-modal');
         if (!modal) return;
 
-        document.getElementById('modal-ai-symbol-time').textContent = `${ev.symbol || '--'} @ ${ev.time_wib || ev.timestamp || '--'}`;
+        const formattedTime = formatWIB(ev.timestamp || ev.time_wib, 'full');
+        document.getElementById('modal-ai-symbol-time').textContent = `${ev.symbol || '--'} @ ${formattedTime}`;
         document.getElementById('modal-ai-decision-conf').textContent = `${ev.decision || 'WAIT'} (${ev.confidence || 0}% Confidence)`;
         document.getElementById('modal-ai-strategy').textContent = `${ev.strategy_mode || 'STANDARD'} (${ev.execution_mode || 'MARKET'})`;
         document.getElementById('modal-ai-sentiment').textContent = `${ev.sentiment_status || 'NEUTRAL'} (Score: ${ev.sentiment_score || 50}/100)`;

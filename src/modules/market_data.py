@@ -9,6 +9,7 @@ try:
 except ImportError:
     import pandas_ta_classic as ta
 import ccxt.async_support as ccxt
+import websockets
 import src.config as config
 from collections import deque
 from typing import NamedTuple

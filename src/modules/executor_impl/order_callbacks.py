@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 import config
-from src.utils.helper import logger, kirim_tele, get_coin_leverage, normalize_binance_symbol
+from src.utils.helper import logger, kirim_tele, convert_timestamp_to_wib_str, get_coin_leverage, normalize_binance_symbol
 
 
 class OrderUpdateHandler:
@@ -184,8 +184,8 @@ class OrderUpdateHandler:
         tech_snapshot = tracker.get('technical_data', {})
         cfg_snapshot = tracker.get('config_snapshot', {})
 
-        setup_at_str = datetime.fromtimestamp(setup_at_ts).isoformat() if setup_at_ts > 0 else ''
-        filled_at_str = datetime.fromtimestamp(filled_at_ts).isoformat() if filled_at_ts > 0 else ''
+        setup_at_str = convert_timestamp_to_wib_str(setup_at_ts) if setup_at_ts > 0 else ''
+        filled_at_str = convert_timestamp_to_wib_str(filled_at_ts) if filled_at_ts > 0 else ''
 
         # Get Order Type from Tracker (Entry Type), not Closing Order Type
         entry_order_type = tracker.get('order_type', 'MARKET')
@@ -312,7 +312,7 @@ class OrderUpdateHandler:
         entry_price_setup = tracker.get('entry_price', 0)
         side_setup = tracker.get('side', 'UNKNOWN')
 
-        setup_at_str = datetime.fromtimestamp(setup_at_ts).isoformat() if setup_at_ts > 0 else ''
+        setup_at_str = convert_timestamp_to_wib_str(setup_at_ts) if setup_at_ts > 0 else ''
 
         return {
             'symbol': sym,

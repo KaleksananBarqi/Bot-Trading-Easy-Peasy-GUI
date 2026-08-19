@@ -1,8 +1,8 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
-from src.utils.helper import logger, convert_timestamp_to_wib_str
+from src.utils.helper import logger, convert_timestamp_to_wib_str, get_wib_now
 
 class AIEvaluationManager:
     """
@@ -36,7 +36,11 @@ class AIEvaluationManager:
             try:
                 with open(self.cache_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    return data if isinstance(data, list) else []
+                    if isinstance(data, list):
+                        for item in data:
+                            if not item.get("time_wib") and item.get("timestamp"):
+                                item["time_wib"] = convert_timestamp_to_wib_str(item["timestamp"])
+                        return data
             except Exception as e:
                 logger.warning(f"⚠️ Gagal memuat local cache AI evaluations: {e}")
         return []
@@ -65,11 +69,11 @@ class AIEvaluationManager:
         prompt: str = ""
     ) -> Dict[str, Any]:
         """
-        Mencatat satu entri evaluasi AI.
+        Mencatat satu entri evaluasi AI dalam zona waktu WIB (UTC+7).
         """
-        now = datetime.utcnow()
-        timestamp_iso = now.isoformat()
-        wib_time = convert_timestamp_to_wib_str(now.timestamp())
+        wib_now = get_wib_now()
+        timestamp_iso = wib_now.isoformat()
+        wib_time = wib_now.strftime('%d/%m/%Y %H:%M:%S WIB')
         
         decision_upper = str(decision).upper() if decision else "WAIT"
         if decision_upper not in ["BUY", "SELL", "WAIT", "LONG", "SHORT"]:
@@ -169,6 +173,8 @@ class AIEvaluationManager:
                     doc = dict(d)
                     if "_id" in doc:
                         doc["_id"] = str(doc["_id"])
+                    # Pastikan time_wib selalu akurat dalam format WIB
+                    doc["time_wib"] = convert_timestamp_to_wib_str(doc.get("timestamp") or doc.get("time_wib"))
                     cleaned.append(doc)
 
                 total_pages = max(1, (total_count + limit - 1) // limit)
@@ -195,6 +201,9 @@ class AIEvaluationManager:
 
         total_count = len(filtered)
         paginated = filtered[skip:skip + limit]
+        for p in paginated:
+            p["time_wib"] = convert_timestamp_to_wib_str(p.get("timestamp") or p.get("time_wib"))
+
         total_pages = max(1, (total_count + limit - 1) // limit)
 
         return {

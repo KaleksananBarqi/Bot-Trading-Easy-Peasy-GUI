@@ -25,11 +25,34 @@ def convert_dt_to_wib(dt):
         dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(WIB_OFFSET)
 
-def convert_timestamp_to_wib_str(ts, fmt='%a %b %d %H:%M:%S %Y'):
-    """Mengubah unix timestamp ke string WIB."""
-    if not ts: return "-"
-    dt = datetime.fromtimestamp(ts, tz=timezone.utc).astimezone(WIB_OFFSET)
-    return dt.strftime(fmt)
+def convert_timestamp_to_wib_str(ts, fmt='%d/%m/%Y %H:%M:%S WIB'):
+    """Mengubah unix timestamp, string ISO, atau datetime ke string format WIB."""
+    if not ts:
+        return "-"
+    try:
+        if isinstance(ts, (int, float)):
+            # Handle millisecond timestamp if > 1e11
+            sec = ts / 1000.0 if ts > 1e11 else float(ts)
+            dt = datetime.fromtimestamp(sec, tz=timezone.utc).astimezone(WIB_OFFSET)
+        elif isinstance(ts, datetime):
+            if ts.tzinfo is None:
+                dt = ts.replace(tzinfo=timezone.utc).astimezone(WIB_OFFSET)
+            else:
+                dt = ts.astimezone(WIB_OFFSET)
+        elif isinstance(ts, str):
+            ts_clean = ts.strip().replace('Z', '+00:00')
+            try:
+                dt = datetime.fromisoformat(ts_clean)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.astimezone(WIB_OFFSET)
+            except Exception:
+                return str(ts)
+        else:
+            return str(ts)
+        return dt.strftime(fmt)
+    except Exception:
+        return str(ts)
 
 def wib_time(*args):
     """Converter untuk logging agar menggunakan WIB."""

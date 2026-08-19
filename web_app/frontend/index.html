@@ -48,6 +48,11 @@
                 </a>
             </nav>
             <div class="sidebar-footer">
+                <div id="live-clock-container" class="live-clock-box">
+                    <div class="clock-label"><span class="clock-icon">🕒</span> WAKTU LIVE (WIB)</div>
+                    <div id="live-wib-clock" class="clock-time">--:--:-- WIB</div>
+                    <div id="live-wib-date" class="clock-date">--</div>
+                </div>
                 <div id="status-indicator" class="status-offline">
                     <span class="pulse"></span> 
                     <div class="status-details">
@@ -122,6 +127,7 @@
                             <span id="sentiment-mood" class="mood-text">WAITING DATA</span>
                         </div>
                         <p class="market-phase">Phase: <span id="market-phase">--</span></p>
+                        <p class="sentiment-last-update" style="font-size: 0.78rem; color: var(--neon-cyan); margin-top: 6px;">🕒 Update: <span id="sentiment-last-update-time">--</span></p>
                     </div>
                     
                     <div class="sentiment-card glass">
@@ -225,7 +231,7 @@
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Timestamp</th>
+                                <th>Waktu (WIB)</th>
                                 <th>Symbol</th>
                                 <th>Decision</th>
                                 <th>Confidence</th>
@@ -1130,6 +1136,10 @@
                         <strong id="modal-trade-symbol-side">--</strong>
                     </div>
                     <div class="detail-card">
+                        <span class="detail-label">Waktu Selesai (WIB)</span>
+                        <strong id="modal-trade-time">--</strong>
+                    </div>
+                    <div class="detail-card">
                         <span class="detail-label">Net Realized PnL</span>
                         <strong id="modal-trade-pnl">--</strong>
                     </div>
@@ -1137,9 +1147,13 @@
                         <span class="detail-label">Entry / Exit Price</span>
                         <strong id="modal-trade-prices">--</strong>
                     </div>
-                    <div class="detail-card">
+                    <div class="detail-card" style="grid-column: span 2;">
                         <span class="detail-label">Exit Type & Strategy</span>
                         <strong id="modal-trade-exit-strat">--</strong>
+                    </div>
+                    <div class="detail-card" style="grid-column: span 2;">
+                        <span class="detail-label">Timeline Eksekusi (WIB)</span>
+                        <small id="modal-trade-timeline" style="color: var(--neon-cyan); font-family: monospace; font-size: 0.78rem;">--</small>
                     </div>
                 </div>
 

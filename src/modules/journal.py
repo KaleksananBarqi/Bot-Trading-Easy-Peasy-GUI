@@ -2,7 +2,7 @@
 import pandas as pd
 from datetime import datetime
 import json
-from src.utils.helper import logger
+from src.utils.helper import logger, get_wib_now
 from src.modules.mongo_manager import MongoManager
 
 class TradeJournal:
@@ -67,7 +67,7 @@ class TradeJournal:
                 config_json = '{}'
 
             # 3. Prepare Document
-            timestamp = data.get('timestamp', datetime.now().isoformat())
+            timestamp = data.get('timestamp', get_wib_now().isoformat())
             
             trade_doc = {
                 'timestamp': timestamp,

@@ -12,7 +12,7 @@ from typing import Dict, List, Any, Optional
 import pandas as pd
 import numpy as np
 
-from src.utils.helper import logger
+from src.utils.helper import logger, convert_timestamp_to_wib_str
 from src.modules.mongo_manager import MongoManager
 
 
@@ -243,11 +243,11 @@ class QuantAnalyticsEngine:
 
         for idx, row in df_exec.iterrows():
             ts = str(row.get('timestamp', ''))
-            ts_short = ts[5:16].replace('T', ' ') if len(ts) >= 16 else ts
+            ts_label = convert_timestamp_to_wib_str(ts, fmt='%d/%m %H:%M') if ts else ts
             
             equity_curve_data.append({
                 "timestamp": ts,
-                "label": ts_short,
+                "label": ts_label,
                 "pnl": round(float(row.get('pnl_usdt', 0)), 2),
                 "cumulative_pnl": round(float(row.get('cum_pnl', 0)), 2),
                 "symbol": str(row.get('symbol', ''))
@@ -255,7 +255,7 @@ class QuantAnalyticsEngine:
             
             drawdown_curve_data.append({
                 "timestamp": ts,
-                "label": ts_short,
+                "label": ts_label,
                 "drawdown_usdt": round(float(row.get('drawdown_usdt', 0)), 2),
                 "drawdown_pct": round(float(row.get('drawdown_pct', 0)), 2)
             })
