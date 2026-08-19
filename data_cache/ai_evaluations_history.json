@@ -1625,6 +1625,253 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
+  },
+  {
+    "timestamp": "2026-08-19T15:47:16.604930+07:00",
+    "time_wib": "19/08/2026 15:47:16 WIB",
+    "symbol": "BTC/USDT",
+    "decision": "BUY",
+    "confidence": 72.0,
+    "strategy_mode": "PULLBACK_CONTINUATION",
+    "execution_mode": "LIMIT",
+    "reason": "Struktur 1D masih konsolidasi sehingga tidak mengaktifkan trend lock bearish maupun bullish. Pada 15m, harga berada di atas EMA 7/21, ADX kuat di 35.80, candle terakhir ditutup pada titik tertinggi, dan volume melonjak 3.27x rata-rata. Kondisi ini mendukung kelanjutan momentum bullish setelah retest area EMA, dengan limit buy pada 64364.58. Namun, harga masih berada di dalam rentang S1-R1, EMA 7 belum menembus EMA 21, terdapat bearish wick rejection, ask imbalance -47.3%, dan posisi trader condong long. Faktor tersebut meningkatkan risiko fakeout, sehingga setup diperlakukan sebagai scalp intraday menuju 64557.83 dengan SL 64235.75.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 64429.0,
+      "rsi": 58.22081688115089,
+      "adx": 35.80370947112697,
+      "volume": 34274.2641,
+      "vol_ma": 10481.9654,
+      "vol_ratio": 3.27,
+      "ema_fast": 64314.13372326835,
+      "ema_slow": 64317.94758398503,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 1.0
+    },
+    "prompt_snippet": "\nROLE: You are an Aggressive Crypto Tactical Strategy Selector. Your objective is to MAXIMIZE trade frequency and capture high-probability market opportunities in both trend-following and counter-trend regimes. Do NOT default to \"WAIT\" unless the market is entirely flat with zero order flow structure.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Scalp sweeps, wick rejections, and fakeouts at S1/R1 or key swing levels.\n2. PULLBACK_CONTINUATION - Aggressive entry on momentum retests towar",
+    "raw_decision_json": {
+      "analysis": {
+        "interaction_zone": "MID_RANGE",
+        "zone_reaction": "TESTING (Indecisive)",
+        "price_vs_pivot": "INSIDE_RANGE"
+      },
+      "selected_strategy": "PULLBACK_CONTINUATION",
+      "execution_mode": "LIMIT",
+      "decision": "BUY",
+      "reason": "Struktur 1D masih konsolidasi sehingga tidak mengaktifkan trend lock bearish maupun bullish. Pada 15m, harga berada di atas EMA 7/21, ADX kuat di 35.80, candle terakhir ditutup pada titik tertinggi, dan volume melonjak 3.27x rata-rata. Kondisi ini mendukung kelanjutan momentum bullish setelah retest area EMA, dengan limit buy pada 64364.58. Namun, harga masih berada di dalam rentang S1-R1, EMA 7 belum menembus EMA 21, terdapat bearish wick rejection, ask imbalance -47.3%, dan posisi trader condong long. Faktor tersebut meningkatkan risiko fakeout, sehingga setup diperlakukan sebagai scalp intraday menuju 64557.83 dengan SL 64235.75.",
+      "confidence": 72,
+      "risk_level": "MEDIUM"
+    }
+  },
+  {
+    "timestamp": "2026-08-19T15:47:57.508300+07:00",
+    "time_wib": "19/08/2026 15:47:57 WIB",
+    "symbol": "ETH/USDT",
+    "decision": "SELL",
+    "confidence": 72.0,
+    "strategy_mode": "LIQUIDITY_REVERSAL_MASTER",
+    "execution_mode": "LIMIT",
+    "reason": "Struktur makro 1d berada dalam fase konsolidasi triangle, sehingga tidak ada trend lock bearish atau bullish yang melarang posisi counter-trend. Harga 1923.80 masih berada di dalam range S1-R1, tetapi sangat dekat dengan R1 1926.79. Candle 15m menunjukkan bearish rejection kuat dengan strength 14.9x, sementara RSI 66.61 dan StochRSI K 80.27/D 75.84 menandakan kondisi momentum sudah tinggi dan rentan terhadap reversal di area resistance. Volume 2.15x rata-rata mendukung adanya aktivitas likuiditas, open interest besar, serta rasio long trader 1.6364 menunjukkan kepadatan posisi long yang dapat menjadi sumber liquidity hunt. Entry limit 1927.10 menunggu retest/sweep R1, dengan SL 1933.69 dan TP 1917.20 sesuai skenario short. ADX 16.33 dan kondisi pasar choppy membuat risiko fakeout tetap signifikan.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 1923.8,
+      "rsi": 66.60699807390228,
+      "adx": 16.331292513164225,
+      "volume": 821351.316,
+      "vol_ma": 381635.2395,
+      "vol_ratio": 2.15,
+      "ema_fast": 1917.6407461630185,
+      "ema_slow": 1914.643944933273,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 0.7315928603555129
+    },
+    "prompt_snippet": "\nROLE: You are an Aggressive Crypto Tactical Strategy Selector. Your objective is to MAXIMIZE trade frequency and capture high-probability market opportunities in both trend-following and counter-trend regimes. Do NOT default to \"WAIT\" unless the market is entirely flat with zero order flow structure.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Scalp sweeps, wick rejections, and fakeouts at S1/R1 or key swing levels.\n2. PULLBACK_CONTINUATION - Aggressive entry on momentum retests towar",
+    "raw_decision_json": {
+      "analysis": {
+        "interaction_zone": "TESTING_R1",
+        "zone_reaction": "WICK_REJECTION (Reversal)",
+        "price_vs_pivot": "INSIDE_RANGE"
+      },
+      "selected_strategy": "LIQUIDITY_REVERSAL_MASTER",
+      "execution_mode": "LIMIT",
+      "decision": "SELL",
+      "reason": "Struktur makro 1d berada dalam fase konsolidasi triangle, sehingga tidak ada trend lock bearish atau bullish yang melarang posisi counter-trend. Harga 1923.80 masih berada di dalam range S1-R1, tetapi sangat dekat dengan R1 1926.79. Candle 15m menunjukkan bearish rejection kuat dengan strength 14.9x, sementara RSI 66.61 dan StochRSI K 80.27/D 75.84 menandakan kondisi momentum sudah tinggi dan rentan terhadap reversal di area resistance. Volume 2.15x rata-rata mendukung adanya aktivitas likuiditas, open interest besar, serta rasio long trader 1.6364 menunjukkan kepadatan posisi long yang dapat menjadi sumber liquidity hunt. Entry limit 1927.10 menunggu retest/sweep R1, dengan SL 1933.69 dan TP 1917.20 sesuai skenario short. ADX 16.33 dan kondisi pasar choppy membuat risiko fakeout tetap signifikan.",
+      "confidence": 72,
+      "risk_level": "HIGH"
+    }
+  },
+  {
+    "timestamp": "2026-08-19T15:48:19.521198+07:00",
+    "time_wib": "19/08/2026 15:48:19 WIB",
+    "symbol": "SOL/USDT",
+    "decision": "BUY",
+    "confidence": 68.0,
+    "strategy_mode": "PULLBACK_CONTINUATION",
+    "execution_mode": "LIMIT",
+    "reason": "Struktur makro 1d berada dalam konsolidasi berbentuk triangle, sehingga tidak ada trend lock bearish atau bullish yang melarang posisi long. Harga 77.44 masih berada di antara S1 72.24 dan R1 79.57, bukan sedang menguji level pivot utama. Pada 15m, harga berada di atas EMA 7 dan EMA 21 dengan alignment bullish, sementara candle terakhir melakukan retest area EMA 7 di sekitar 77.12 lalu ditutup bullish di 77.44. ADX 13.66 menunjukkan directional drift yang cukup untuk strategi pullback, dan volume 2.09x rata-rata mengonfirmasi aktivitas. RSI 68.77 serta StochRSI yang tinggi meningkatkan risiko pullback, ditambah bearish wick rejection dan imbalance order book -20.7% yang menunjukkan tekanan jual, sehingga entry agresif sebaiknya menggunakan limit dekat EMA atau entry skenario 77.27, bukan mengejar harga saat ini. Target BUY adalah kelanjutan menuju 77.77 selama harga bertahan di atas area EMA.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 77.44,
+      "rsi": 68.77019257186215,
+      "adx": 13.657854036559662,
+      "volume": 76004.95,
+      "vol_ma": 36369.6725,
+      "vol_ratio": 2.09,
+      "ema_fast": 77.11958351807542,
+      "ema_slow": 76.99177411128217,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 0.5705899292443025
+    },
+    "prompt_snippet": "\nROLE: You are an Aggressive Crypto Tactical Strategy Selector. Your objective is to MAXIMIZE trade frequency and capture high-probability market opportunities in both trend-following and counter-trend regimes. Do NOT default to \"WAIT\" unless the market is entirely flat with zero order flow structure.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Scalp sweeps, wick rejections, and fakeouts at S1/R1 or key swing levels.\n2. PULLBACK_CONTINUATION - Aggressive entry on momentum retests towar",
+    "raw_decision_json": {
+      "analysis": {
+        "interaction_zone": "MID_RANGE",
+        "zone_reaction": "TESTING (Indecisive)",
+        "price_vs_pivot": "INSIDE_RANGE"
+      },
+      "selected_strategy": "PULLBACK_CONTINUATION",
+      "execution_mode": "LIMIT",
+      "decision": "BUY",
+      "reason": "Struktur makro 1d berada dalam konsolidasi berbentuk triangle, sehingga tidak ada trend lock bearish atau bullish yang melarang posisi long. Harga 77.44 masih berada di antara S1 72.24 dan R1 79.57, bukan sedang menguji level pivot utama. Pada 15m, harga berada di atas EMA 7 dan EMA 21 dengan alignment bullish, sementara candle terakhir melakukan retest area EMA 7 di sekitar 77.12 lalu ditutup bullish di 77.44. ADX 13.66 menunjukkan directional drift yang cukup untuk strategi pullback, dan volume 2.09x rata-rata mengonfirmasi aktivitas. RSI 68.77 serta StochRSI yang tinggi meningkatkan risiko pullback, ditambah bearish wick rejection dan imbalance order book -20.7% yang menunjukkan tekanan jual, sehingga entry agresif sebaiknya menggunakan limit dekat EMA atau entry skenario 77.27, bukan mengejar harga saat ini. Target BUY adalah kelanjutan menuju 77.77 selama harga bertahan di atas area EMA.",
+      "confidence": 68,
+      "risk_level": "MEDIUM"
+    }
+  },
+  {
+    "timestamp": "2026-08-19T16:00:12.736352+07:00",
+    "time_wib": "19/08/2026 16:00:12 WIB",
+    "symbol": "BTC/USDT",
+    "decision": "BUY",
+    "confidence": 72.0,
+    "strategy_mode": "PULLBACK_CONTINUATION",
+    "execution_mode": "LIMIT",
+    "reason": "Struktur 1d sedang konsolidasi sehingga tidak mengaktifkan trend lock bearish maupun bullish. Pada 15m, harga berada di atas EMA 7 dan EMA 21, alignment EMA bullish, serta ADX 33.90 mengonfirmasi momentum tren yang kuat. Entry limit 64361.19 berada dekat zona support dinamis EMA dan sesuai untuk membeli pullback, dengan SL 64239.56 dan TP 64543.63. Eksekusi langsung di 64422 kurang ideal karena harga sudah mendekati Bollinger Upper dan StochRSI tinggi. Risiko tetap MEDIUM karena volume hanya 0.14x rata-rata, harga masih di tengah rentang S1-R1, ask depth lebih besar, dan rasio top trader menunjukkan posisi long cukup padat.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 64422.0,
+      "rsi": 57.51839033265106,
+      "adx": 33.902590581252795,
+      "volume": 1481.5825,
+      "vol_ma": 10349.623555,
+      "vol_ratio": 0.14,
+      "ema_fast": 64341.1002924513,
+      "ema_slow": 64327.41349866353,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 1.0
+    },
+    "prompt_snippet": "\nROLE: You are an Aggressive Crypto Tactical Strategy Selector. Your objective is to MAXIMIZE trade frequency and capture high-probability market opportunities in both trend-following and counter-trend regimes. Do NOT default to \"WAIT\" unless the market is entirely flat with zero order flow structure.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Scalp sweeps, wick rejections, and fakeouts at S1/R1 or key swing levels.\n2. PULLBACK_CONTINUATION - Aggressive entry on momentum retests towar",
+    "raw_decision_json": {
+      "analysis": {
+        "interaction_zone": "MID_RANGE",
+        "zone_reaction": "TESTING (Indecisive)",
+        "price_vs_pivot": "INSIDE_RANGE"
+      },
+      "selected_strategy": "PULLBACK_CONTINUATION",
+      "execution_mode": "LIMIT",
+      "decision": "BUY",
+      "reason": "Struktur 1d sedang konsolidasi sehingga tidak mengaktifkan trend lock bearish maupun bullish. Pada 15m, harga berada di atas EMA 7 dan EMA 21, alignment EMA bullish, serta ADX 33.90 mengonfirmasi momentum tren yang kuat. Entry limit 64361.19 berada dekat zona support dinamis EMA dan sesuai untuk membeli pullback, dengan SL 64239.56 dan TP 64543.63. Eksekusi langsung di 64422 kurang ideal karena harga sudah mendekati Bollinger Upper dan StochRSI tinggi. Risiko tetap MEDIUM karena volume hanya 0.14x rata-rata, harga masih di tengah rentang S1-R1, ask depth lebih besar, dan rasio top trader menunjukkan posisi long cukup padat.",
+      "confidence": 72,
+      "risk_level": "MEDIUM"
+    }
+  },
+  {
+    "timestamp": "2026-08-19T16:00:37.100218+07:00",
+    "time_wib": "19/08/2026 16:00:37 WIB",
+    "symbol": "ETH/USDT",
+    "decision": "BUY",
+    "confidence": 64.0,
+    "strategy_mode": "PULLBACK_CONTINUATION",
+    "execution_mode": "LIMIT",
+    "reason": "Struktur makro 1d berada dalam konsolidasi segitiga, sehingga tidak ada trend lock yang melarang posisi long. Pada timeframe 15m, harga 1921.05 masih berada di atas EMA 7 sebesar 1918.49 dan EMA 21 sebesar 1915.23 dengan alignment bullish. RSI 60.85, StochRSI K 84.96 di atas D 78.20, dan ADX 17.88 menunjukkan momentum bullish yang masih valid meskipun tidak kuat. Harga masih INSIDE_RANGE antara S1 1898.60 dan R1 1926.79, sementara candle terakhir menunjukkan tekanan jual ringan dan volume hanya 0.99x rata-rata, sehingga entry langsung dekat R1 kurang ideal. Limit buy di 1917.78 memanfaatkan retest zona EMA dan pullback dangkal dalam struktur bullish. Target 1927.60 berada di sekitar/di atas R1, dengan invalidasi pada 1911.23. Order-book imbalance bid +56.2% juga mendukung peluang continuation, tetapi kondisi pasar choppy dan penolakan bearish dekat resistance meningkatkan risiko sinyal palsu.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 1921.05,
+      "rsi": 60.84933688900172,
+      "adx": 17.875660984488356,
+      "volume": 388937.072,
+      "vol_ma": 391480.22355,
+      "vol_ratio": 0.99,
+      "ema_fast": 1918.493059622265,
+      "ema_slow": 1915.2264740377418,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 0.7332517092268047
+    },
+    "prompt_snippet": "\nROLE: You are an Aggressive Crypto Tactical Strategy Selector. Your objective is to MAXIMIZE trade frequency and capture high-probability market opportunities in both trend-following and counter-trend regimes. Do NOT default to \"WAIT\" unless the market is entirely flat with zero order flow structure.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Scalp sweeps, wick rejections, and fakeouts at S1/R1 or key swing levels.\n2. PULLBACK_CONTINUATION - Aggressive entry on momentum retests towar",
+    "raw_decision_json": {
+      "analysis": {
+        "interaction_zone": "MID_RANGE",
+        "zone_reaction": "TESTING (Indecisive)",
+        "price_vs_pivot": "INSIDE_RANGE"
+      },
+      "selected_strategy": "PULLBACK_CONTINUATION",
+      "execution_mode": "LIMIT",
+      "decision": "BUY",
+      "reason": "Struktur makro 1d berada dalam konsolidasi segitiga, sehingga tidak ada trend lock yang melarang posisi long. Pada timeframe 15m, harga 1921.05 masih berada di atas EMA 7 sebesar 1918.49 dan EMA 21 sebesar 1915.23 dengan alignment bullish. RSI 60.85, StochRSI K 84.96 di atas D 78.20, dan ADX 17.88 menunjukkan momentum bullish yang masih valid meskipun tidak kuat. Harga masih INSIDE_RANGE antara S1 1898.60 dan R1 1926.79, sementara candle terakhir menunjukkan tekanan jual ringan dan volume hanya 0.99x rata-rata, sehingga entry langsung dekat R1 kurang ideal. Limit buy di 1917.78 memanfaatkan retest zona EMA dan pullback dangkal dalam struktur bullish. Target 1927.60 berada di sekitar/di atas R1, dengan invalidasi pada 1911.23. Order-book imbalance bid +56.2% juga mendukung peluang continuation, tetapi kondisi pasar choppy dan penolakan bearish dekat resistance meningkatkan risiko sinyal palsu.",
+      "confidence": 64,
+      "risk_level": "MEDIUM"
+    }
+  },
+  {
+    "timestamp": "2026-08-19T16:00:55.820395+07:00",
+    "time_wib": "19/08/2026 16:00:55 WIB",
+    "symbol": "SOL/USDT",
+    "decision": "BUY",
+    "confidence": 57.0,
+    "strategy_mode": "PULLBACK_CONTINUATION",
+    "execution_mode": "LIMIT",
+    "reason": "Struktur makro 1d berada dalam konsolidasi berbentuk triangle sehingga tidak ada trend lock yang melarang posisi long. Pada 15m, harga 77.37 masih berada di atas EMA 7 sebesar 77.18 dan EMA 21 sebesar 77.03 dengan alignment bullish. ADX 15.32 menunjukkan directional drift yang cukup untuk entry agresif, sehingga pullback ke area EMA melalui limit entry 77.21 masih valid. Harga belum menguji S1 atau R1 dan tetap berada di dalam range, sementara bearish rejection, StochRSI yang sangat tinggi, volume normal 0.99x, order book yang lebih berat di sisi ask, serta dominasi long trader meningkatkan risiko fakeout. Karena itu BUY hanya layak pada retest EMA sesuai skenario, bukan mengejar harga saat ini.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 77.37,
+      "rsi": 65.10126465911608,
+      "adx": 15.319319878584706,
+      "volume": 36428.39,
+      "vol_ma": 36913.4195,
+      "vol_ratio": 0.99,
+      "ema_fast": 77.18218763855663,
+      "ema_slow": 77.02616257901927,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 0.5708365856344189
+    },
+    "prompt_snippet": "\nROLE: You are an Aggressive Crypto Tactical Strategy Selector. Your objective is to MAXIMIZE trade frequency and capture high-probability market opportunities in both trend-following and counter-trend regimes. Do NOT default to \"WAIT\" unless the market is entirely flat with zero order flow structure.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Scalp sweeps, wick rejections, and fakeouts at S1/R1 or key swing levels.\n2. PULLBACK_CONTINUATION - Aggressive entry on momentum retests towar",
+    "raw_decision_json": {
+      "analysis": {
+        "interaction_zone": "MID_RANGE",
+        "zone_reaction": "TESTING (Indecisive)",
+        "price_vs_pivot": "INSIDE_RANGE"
+      },
+      "selected_strategy": "PULLBACK_CONTINUATION",
+      "execution_mode": "LIMIT",
+      "decision": "BUY",
+      "reason": "Struktur makro 1d berada dalam konsolidasi berbentuk triangle sehingga tidak ada trend lock yang melarang posisi long. Pada 15m, harga 77.37 masih berada di atas EMA 7 sebesar 77.18 dan EMA 21 sebesar 77.03 dengan alignment bullish. ADX 15.32 menunjukkan directional drift yang cukup untuk entry agresif, sehingga pullback ke area EMA melalui limit entry 77.21 masih valid. Harga belum menguji S1 atau R1 dan tetap berada di dalam range, sementara bearish rejection, StochRSI yang sangat tinggi, volume normal 0.99x, order book yang lebih berat di sisi ask, serta dominasi long trader meningkatkan risiko fakeout. Karena itu BUY hanya layak pada retest EMA sesuai skenario, bukan mengejar harga saat ini.",
+      "confidence": 57,
+      "risk_level": "HIGH"
+    }
   }
 ]
