@@ -61,7 +61,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "_id": "6a8529b548686294947bce12",
@@ -69,7 +70,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T03:57:49.838482",
@@ -133,7 +135,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T03:58:34.914139",
@@ -197,7 +200,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T03:58:51.645114",
@@ -261,7 +265,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T04:07:48.219461",
@@ -353,7 +358,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T04:19:20.547587",
@@ -417,7 +423,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T04:55:39.234352",
@@ -957,7 +964,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T07:00:54.619265",
@@ -1021,7 +1029,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T07:01:50.685783",
@@ -1085,7 +1094,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T07:05:13.629047",
@@ -1149,7 +1159,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T07:06:01.130012",
@@ -1213,7 +1224,8 @@
     "symbol": "SOL/USDT",
     "decision": "BUY",
     "confidence": 92.0,
-    "reason": "Breakout test with ObjectId"
+    "reason": "Breakout test with ObjectId",
+    "time_wib": "19/08/2026 10:50:00 WIB"
   },
   {
     "timestamp": "2026-08-19T07:16:46.711470",
@@ -1382,5 +1394,237 @@
       "btc_correlation": 0.7323612083169452
     },
     "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  },
+  {
+    "timestamp": "2026-08-19T14:39:50.553687+07:00",
+    "time_wib": "19/08/2026 14:39:50 WIB",
+    "symbol": "BTC/USDT",
+    "decision": "WAIT",
+    "confidence": 91.0,
+    "strategy_mode": "WAIT",
+    "execution_mode": "LIMIT",
+    "reason": "Harga 64321.80 masih berada di antara S1 64184.07 dan R1 65083.87, sehingga dikategorikan MID_RANGE. Belum ada sweep yang terkonfirmasi karena candle terakhir tidak menembus S1 atau R1, sementara volume hanya 0.22x rata-rata dan tidak memenuhi syarat volume spike untuk LIQUIDITY_REVERSAL_MASTER. RSI 47.71 juga netral, dan StochRSI K 98.77 masih berada di atas D 93.91 tanpa bearish cross yang valid. Meskipun ADX 41.00 menunjukkan tren kuat dan sinyal lokal terlihat bullish, EMA 7 masih di bawah EMA 21 serta struktur harian masih CONSOLIDATION. Tidak ada konfirmasi pullback yang bersih maupun breakout valid. Karena data global_trend_1d tidak diberikan dan kondisi pasar choppy dengan order book sangat berat di sisi ask, TREND LOCK dan validasi setup tidak terpenuhi. Keputusan yang sesuai adalah WAIT.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 64321.8,
+      "rsi": 47.710806015669945,
+      "adx": 41.000261377056745,
+      "volume": 2090.6853,
+      "vol_ma": 9616.145414999999,
+      "vol_ratio": 0.22,
+      "ema_fast": 64289.98902315558,
+      "ema_slow": 64321.56431837515,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 1.0
+    },
+    "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  },
+  {
+    "timestamp": "2026-08-19T14:40:09.631122+07:00",
+    "time_wib": "19/08/2026 14:40:09 WIB",
+    "symbol": "ETH/USDT",
+    "decision": "WAIT",
+    "confidence": 89.0,
+    "strategy_mode": "WAIT",
+    "execution_mode": "LIMIT",
+    "reason": "Harga 1917.09 masih berada di tengah rentang S1 1898.60 dan R1 1926.79 tanpa pengujian atau reaksi valid pada pivot. Tidak ada wick rejection, RSI 59.59 tidak ekstrem, dan volume hanya 0.49x rata-rata sehingga LIQUIDITY_REVERSAL_MASTER tidak memenuhi syarat. Tren 15m memang bullish dengan ADX 14.19, tetapi harga belum pullback secara jelas ke EMA 7/21 dan kondisi makro masih konsolidasi serta pasar choppy. Selain itu, arah global_trend_1d tidak tersedia sehingga keselarasan Trend Lock tidak dapat dikonfirmasi. Posisi StochRSI yang sudah tinggi, sentimen netral, dan minimnya dukungan smart money meningkatkan risiko sinyal palsu. Tunggu pullback bersih ke area EMA sekitar 1912.51-1914.26 dengan konfirmasi bullish, atau reaksi valid di S1/R1.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 1917.09,
+      "rsi": 59.59302006077103,
+      "adx": 14.185348283379946,
+      "volume": 174188.247,
+      "vol_ma": 356905.36020000005,
+      "vol_ratio": 0.49,
+      "ema_fast": 1914.2629797157672,
+      "ema_slow": 1912.5119257013007,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 0.7316624962610382
+    },
+    "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  },
+  {
+    "timestamp": "2026-08-19T14:44:56.337985+07:00",
+    "time_wib": "19/08/2026 14:44:56 WIB",
+    "symbol": "BTC/USDT",
+    "decision": "WAIT",
+    "confidence": 91.0,
+    "strategy_mode": "WAIT",
+    "execution_mode": "LIMIT",
+    "reason": "Harga 64321.80 masih berada di dalam rentang S1 64184.07–R1 65083.87 dan hanya menguji area dekat S1 tanpa sweep atau breakout yang terkonfirmasi. LIQUIDITY_REVERSAL_MASTER tidak valid karena RSI 47.71 tidak ekstrem dan volume hanya 0.22x rata-rata, jauh di bawah syarat 1.5x. PULLBACK_CONTINUATION juga belum layak meskipun ADX 41 menunjukkan tren kuat, sebab sinyal 15m saling bertentangan: harga sedikit di atas EMA, tetapi EMA 7 masih berada di bawah EMA 21, sementara struktur harian konsolidasi dan tidak memberikan bias global yang jelas. Bearish wick rejection, StochRSI yang sangat tinggi, ketimpangan order book -63.8%, serta dominasi posisi long menambah risiko penurunan, tetapi belum cukup untuk SELL karena tidak ada penutupan di bawah S1 dan BREAKDOWN_FOLLOW sedang tidak diaktifkan. Kondisi pasar choppy dan volume lemah mendukung keputusan menunggu konfirmasi.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 64321.8,
+      "rsi": 47.710806015669945,
+      "adx": 41.000261377056745,
+      "volume": 2090.6853,
+      "vol_ma": 9616.145414999999,
+      "vol_ratio": 0.22,
+      "ema_fast": 64289.98902315558,
+      "ema_slow": 64321.56431837515,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 1.0
+    },
+    "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  },
+  {
+    "timestamp": "2026-08-19T14:45:14.308680+07:00",
+    "time_wib": "19/08/2026 14:45:14 WIB",
+    "symbol": "ETH/USDT",
+    "decision": "WAIT",
+    "confidence": 94.0,
+    "strategy_mode": "WAIT",
+    "execution_mode": "LIMIT",
+    "reason": "Harga 1919.02 masih berada di antara S1 1898.60 dan R1 1926.79 tanpa rejection ataupun breakout terkonfirmasi. PULLBACK_CONTINUATION belum valid karena meskipun tren 15m bullish dan ADX 15.04 memenuhi ambang, harga berada di atas EMA 7/21 serta Bollinger Upper, bukan sedang pullback ke EMA. LIQUIDITY_REVERSAL_MASTER juga tidak valid karena tidak ada sweep atau wick rejection di S1/R1, RSI 62.54 belum ekstrem, dan volume hanya 0.31x rata-rata. Selain itu, arah global_trend_1d tidak tersedia sehingga kesesuaian Trend Lock tidak dapat dikonfirmasi. Kondisi makro konsolidasi, sentimen choppy, dan volume rendah meningkatkan risiko sinyal palsu. Tunggu pullback bullish yang bersih ke EMA setelah konfirmasi bias harian, atau reaksi valid di level pivot.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 1919.02,
+      "rsi": 62.53957902001988,
+      "adx": 15.041741008544118,
+      "volume": 106329.702,
+      "vol_ma": 348436.22485,
+      "vol_ratio": 0.31,
+      "ema_fast": 1915.4522347868242,
+      "ema_slow": 1913.1034308092246,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 0.731635273285259
+    },
+    "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  },
+  {
+    "timestamp": "2026-08-19T14:45:30.190419+07:00",
+    "time_wib": "19/08/2026 14:45:30 WIB",
+    "symbol": "SOL/USDT",
+    "decision": "WAIT",
+    "confidence": 96.0,
+    "strategy_mode": "WAIT",
+    "execution_mode": "LIMIT",
+    "reason": "Harga 76.98 masih berada di tengah rentang S1 72.24 dan R1 79.57, sehingga tidak sedang menguji pivot utama. LIQUIDITY_REVERSAL_MASTER tidak valid karena bullish rejection tidak terjadi di S1/R1, RSI 53.22 tidak ekstrem, dan volume hanya 0.01x rata-rata, jauh di bawah syarat 1.5x. PULLBACK_CONTINUATION juga tidak valid karena ADX 12.90 berada di bawah ambang 14, menandakan tren belum cukup kuat meskipun EMA 15m bullish. Struktur harian masih konsolidasi, kondisi pasar choppy, dan data global_trend_1d yang tegas tidak tersedia. Tidak ada breakout terkonfirmasi maupun setup pullback berkualitas, sehingga kedua skenario entry harus dihindari.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 76.98,
+      "rsi": 53.218635389265415,
+      "adx": 12.896035899889188,
+      "volume": 363.82,
+      "vol_ma": 34056.982,
+      "vol_ratio": 0.01,
+      "ema_fast": 76.94436272379416,
+      "ema_slow": 76.91296068417391,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 0.5715884306662969
+    },
+    "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  },
+  {
+    "timestamp": "2026-08-19T14:45:51.375264+07:00",
+    "time_wib": "19/08/2026 14:45:51 WIB",
+    "symbol": "BTC/USDT",
+    "decision": "WAIT",
+    "confidence": 88.0,
+    "strategy_mode": "WAIT",
+    "execution_mode": "LIMIT",
+    "reason": "Harga berada di dalam range S1 (64184.07) dan R1 (65083.87), tepatnya di 64330.00, sehingga belum ada pengujian level kunci yang cukup jelas. Meskipun ADX 39.60 menunjukkan tren kuat dan harga sedikit berada di atas EMA, EMA 7 masih di bawah EMA 21 sehingga sinyal tren saling bertentangan. Rejection bearish terdeteksi, tetapi volume hanya 0.51x rata-rata, jauh di bawah syarat konfirmasi reversal 1.5x. RSI 48.57 juga tidak ekstrem, sehingga LIQUIDITY_REVERSAL_MASTER tidak tervalidasi. PULLBACK_CONTINUATION belum valid karena arah EMA tidak selaras dan harga masih berada di mid-range. Tidak ada breakout valid karena candle belum menutup di luar S1/R1 dengan volume tinggi. Dalam kondisi konsolidasi/choppy dan trend lock yang tidak memberikan konfirmasi global bullish atau bearish, keputusan yang aman adalah menunggu setup yang lebih jelas.",
+    "vision_summary": "Vision AI Disabled (Bypassed).",
+    "sentiment_score": 48,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 64330.0,
+      "rsi": 48.56764118923979,
+      "adx": 39.60479443052268,
+      "volume": 5016.5206,
+      "vol_ma": 9860.024894999999,
+      "vol_ratio": 0.51,
+      "ema_fast": 64299.99176736665,
+      "ema_slow": 64322.328638546,
+      "price_vs_ema": "Above",
+      "trend_major": "Bullish",
+      "btc_trend": "BULLISH",
+      "btc_correlation": 1.0
+    },
+    "prompt_snippet": "\nROLE: You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.\n\nAVAILABLE STRATEGIES:\n1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1\n2. PULLBACK_CONTINUATION - Use when strong trend with pullback to EMA\n3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🌍 GLOBAL TREND FILTER (1d) - [HIGHEST "
+  },
+  {
+    "timestamp": "2026-08-19T14:56:58.888782+07:00",
+    "time_wib": "19/08/2026 14:56:58 WIB",
+    "symbol": "BTC/USDT",
+    "decision": "BUY",
+    "confidence": 85.0,
+    "strategy_mode": "LIQUIDITY_REVERSAL_MASTER",
+    "execution_mode": "MARKET",
+    "reason": "Strong bounce off S1 support with volume spike",
+    "vision_summary": "N/A",
+    "sentiment_score": 50,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 65000,
+      "rsi": 32,
+      "adx": 0,
+      "volume": 150,
+      "vol_ma": 100,
+      "vol_ratio": 1.5,
+      "ema_fast": 0,
+      "ema_slow": 0,
+      "price_vs_ema": "-",
+      "trend_major": "-",
+      "btc_trend": "-",
+      "btc_correlation": 0
+    },
+    "prompt_snippet": ""
+  },
+  {
+    "timestamp": "2026-08-19T14:56:59.754704+07:00",
+    "time_wib": "19/08/2026 14:56:59 WIB",
+    "symbol": "ETH/USDT",
+    "decision": "WAIT",
+    "confidence": 40.0,
+    "strategy_mode": "STANDARD",
+    "execution_mode": "MARKET",
+    "reason": "RSI neutral and no clear edge",
+    "vision_summary": "N/A",
+    "sentiment_score": 50,
+    "sentiment_status": "NEUTRAL",
+    "technical_snapshot": {
+      "price": 3200,
+      "rsi": 50,
+      "adx": 0,
+      "volume": 50,
+      "vol_ma": 80,
+      "vol_ratio": 0.62,
+      "ema_fast": 0,
+      "ema_slow": 0,
+      "price_vs_ema": "-",
+      "trend_major": "-",
+      "btc_trend": "-",
+      "btc_correlation": 0
+    },
+    "prompt_snippet": ""
+  },
+  {
+    "_id": "6a8561ccfe0c0f0d11445e5a",
+    "timestamp": "2026-08-19T03:50:00.000000",
+    "symbol": "SOL/USDT",
+    "decision": "BUY",
+    "confidence": 92.0,
+    "reason": "Breakout test with ObjectId"
   }
 ]

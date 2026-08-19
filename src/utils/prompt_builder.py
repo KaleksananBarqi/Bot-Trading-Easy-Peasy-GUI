@@ -1,6 +1,29 @@
 
 import config
 import re
+import string
+
+class SafeFormatter(string.Formatter):
+    """Formatter aman yang tidak crash jika ada key/placeholder yang hilang."""
+    def get_value(self, key, args, kwargs):
+        if isinstance(key, str):
+            return kwargs.get(key, f"{{{key}}}")
+        return super().get_value(key, args, kwargs)
+
+_safe_formatter = SafeFormatter()
+
+def safe_format(template: str, **kwargs) -> str:
+    """Format string secara aman tanpa crash jika ada key kurung kurawal yang salah/hilang."""
+    if not template or not isinstance(template, str):
+        return ""
+    try:
+        return _safe_formatter.format(template, **kwargs)
+    except Exception:
+        res = template
+        for k, v in kwargs.items():
+            res = res.replace(f"{{{k}}}", str(v))
+        return res
+
 
 def sanitize_prompt_input(text: str, max_length: int = 1000) -> str:
     """
@@ -377,7 +400,8 @@ SCENARIO B: Sell/Short Setup
 - Pivot Points: {pivot_str}
 --------------------------------------------------
 """
-        btc_instruction_prompt = config.PROMPT_BTC_WITH_CONTEXT.format(
+        btc_instruction_prompt = safe_format(
+            config.PROMPT_BTC_WITH_CONTEXT,
             market_struct=market_struct,
             btc_trend=btc_trend,
             btc_instruction=btc_instruction,
@@ -393,7 +417,8 @@ SCENARIO B: Sell/Short Setup
 - Pivot Points: {pivot_str}
 --------------------------------------------------
 """
-        btc_instruction_prompt = config.PROMPT_BTC_NO_CONTEXT.format(
+        btc_instruction_prompt = safe_format(
+            config.PROMPT_BTC_NO_CONTEXT,
             timeframe_trend=config.TIMEFRAME_TREND,
             market_struct=market_struct,
             rsi_oversold=config.RSI_DEEP_OVERSOLD,
@@ -407,7 +432,8 @@ SCENARIO B: Sell/Short Setup
     enabled_strats = getattr(config, 'ENABLED_STRATEGIES', ['LIQUIDITY_REVERSAL_MASTER', 'PULLBACK_CONTINUATION', 'BREAKDOWN_FOLLOW'])
     allowed_clause = f"\n⚠️ STRICT CONSTRAINT: Only the following strategies are currently ENABLED and allowed to be chosen: {', '.join(enabled_strats)}. If market conditions only match a disabled strategy, you MUST output decision 'WAIT'."
     
-    strategy_instruction = config.PROMPT_STRATEGY_SELECTION.format(
+    strategy_instruction = safe_format(
+        config.PROMPT_STRATEGY_SELECTION,
         volume_spike=config.VOLUME_SPIKE_MULTIPLIER,
         adx_period=config.ADX_PERIOD,
         ema_fast=config.EMA_FAST,
@@ -505,7 +531,8 @@ REMINDER: Adhere strictly to the TREND LOCK GATE defined in your system role.
 
     execution_mode_json = '{ "MARKET" | "LIMIT" }' if config.ENABLE_MARKET_ORDERS else '"LIMIT"'
     
-    output_format_prompt = config.PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT.format(
+    output_format_prompt = safe_format(
+        config.PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT,
         execution_mode_json=execution_mode_json
     )
 
@@ -547,7 +574,8 @@ def build_sentiment_prompt(sentiment_data, onchain_data):
 
     # 2. Prompt Construction
     # Note: Sanitized data is wrapped in <external_data> tags by the prompt template
-    prompt = config.PROMPT_SENTIMENT_ANALYSIS.format(
+    prompt = safe_format(
+        config.PROMPT_SENTIMENT_ANALYSIS,
         fng_value=fng_value,
         fng_text=fng_text,
         inflow_status=inflow_status,
@@ -570,10 +598,12 @@ def build_pattern_recognition_prompt(symbol, timeframe, raw_data=None):
             f"- Volume: {raw_data.get('volume', 0)}\n"
         )
 
-    prompt_text = config.PROMPT_PATTERN_RECOGNITION.format(
+    prompt_text = safe_format(
+        config.PROMPT_PATTERN_RECOGNITION,
         timeframe=timeframe,
         symbol=symbol,
         raw_info=raw_info
     )
     return prompt_text
+
 

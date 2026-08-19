@@ -775,29 +775,108 @@
                             <div class="env-header-card">
                                 <div>
                                     <h3 class="section-title" style="margin-bottom: 4px;">🧠 AI Prompts & Rules Studio</h3>
-                                    <p class="panel-desc">Kustomisasi persona, aturan filter tren, checklist konfirmasi, dan format prompt AI langsung dari browser.</p>
+                                    <p class="panel-desc">Kustomisasi persona bot, filter tren, panduan strategi, dan format JSON langsung dari browser tanpa perlu mengedit file Python.</p>
                                 </div>
-                                <button id="btn-reset-prompts" class="btn btn-secondary btn-sm">🔄 Reset Prompts ke Default</button>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button id="btn-open-prompt-sandbox" class="btn btn-primary btn-sm">🧪 Buka AI Sandbox Tester</button>
+                                    <button id="btn-reset-prompts" class="btn btn-secondary btn-sm">🔄 Reset ke File Default</button>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <label>1. Master System Role & Trend Filter Rules (<code>AI_SYSTEM_ROLE</code>)</label>
+                            <!-- Card 1: Master System Role -->
+                            <div class="prompt-card glass-panel">
+                                <div class="prompt-card-header">
+                                    <div>
+                                        <h4 class="prompt-card-title">1. Master System Role & Trend Filter Rules</h4>
+                                        <small class="prompt-card-sub">Template persona bot, Global Trend Filter (1D/4h), dan Local Trend Lock (15m).</small>
+                                    </div>
+                                    <span class="badge-config-key"><code>AI_SYSTEM_ROLE</code></span>
+                                </div>
+                                <div class="tag-chips-wrapper">
+                                    <span class="tag-chips-label">Variabel Dinamis:</span>
+                                    <div class="tag-chips-bar" data-target="cfg-AI_SYSTEM_ROLE" id="chips-AI_SYSTEM_ROLE"></div>
+                                </div>
                                 <textarea id="cfg-AI_SYSTEM_ROLE" class="code-editor prompt-textarea" rows="12"></textarea>
                             </div>
 
-                            <div class="form-group">
-                                <label>2. Strategy Selection Checklist (<code>PROMPT_STRATEGY_SELECTION</code>)</label>
+                            <!-- Card 2: Strategy Selection Checklist -->
+                            <div class="prompt-card glass-panel">
+                                <div class="prompt-card-header">
+                                    <div>
+                                        <h4 class="prompt-card-title">2. Strategy Selection Checklist</h4>
+                                        <small class="prompt-card-sub">Aturan validasi untuk Reversal (Sweep), Pullback Continuation, dan Breakdown Follow.</small>
+                                    </div>
+                                    <span class="badge-config-key"><code>PROMPT_STRATEGY_SELECTION</code></span>
+                                </div>
+                                <div class="tag-chips-wrapper">
+                                    <span class="tag-chips-label">Variabel Dinamis:</span>
+                                    <div class="tag-chips-bar" data-target="cfg-PROMPT_STRATEGY_SELECTION" id="chips-PROMPT_STRATEGY_SELECTION"></div>
+                                </div>
                                 <textarea id="cfg-PROMPT_STRATEGY_SELECTION" class="code-editor prompt-textarea" rows="8"></textarea>
                             </div>
 
-                            <div class="form-group">
-                                <label>3. Sentiment & Smart Money Analysis Prompt (<code>PROMPT_SENTIMENT_ANALYSIS</code>)</label>
+                            <!-- Card 3: Sentiment Analysis -->
+                            <div class="prompt-card glass-panel">
+                                <div class="prompt-card-header">
+                                    <div>
+                                        <h4 class="prompt-card-title">3. Sentiment & Smart Money Analysis Prompt</h4>
+                                        <small class="prompt-card-sub">Instruksi analisis divergensi Smart Money (Whale/Inflow) vs Retail Noise (F&G/News).</small>
+                                    </div>
+                                    <span class="badge-config-key"><code>PROMPT_SENTIMENT_ANALYSIS</code></span>
+                                </div>
+                                <div class="tag-chips-wrapper">
+                                    <span class="tag-chips-label">Variabel Dinamis:</span>
+                                    <div class="tag-chips-bar" data-target="cfg-PROMPT_SENTIMENT_ANALYSIS" id="chips-PROMPT_SENTIMENT_ANALYSIS"></div>
+                                </div>
                                 <textarea id="cfg-PROMPT_SENTIMENT_ANALYSIS" class="code-editor prompt-textarea" rows="8"></textarea>
                             </div>
 
-                            <div class="form-group">
-                                <label>4. Vision Pattern Recognition Prompt (<code>PROMPT_PATTERN_RECOGNITION</code>)</label>
+                            <!-- Card 4: Vision Pattern Recognition -->
+                            <div class="prompt-card glass-panel">
+                                <div class="prompt-card-header">
+                                    <div>
+                                        <h4 class="prompt-card-title">4. Vision Pattern Recognition Prompt</h4>
+                                        <small class="prompt-card-sub">Instruksi Vision AI untuk mendeteksi Chart Pattern & MACD Divergence.</small>
+                                    </div>
+                                    <span class="badge-config-key"><code>PROMPT_PATTERN_RECOGNITION</code></span>
+                                </div>
+                                <div class="tag-chips-wrapper">
+                                    <span class="tag-chips-label">Variabel Dinamis:</span>
+                                    <div class="tag-chips-bar" data-target="cfg-PROMPT_PATTERN_RECOGNITION" id="chips-PROMPT_PATTERN_RECOGNITION"></div>
+                                </div>
                                 <textarea id="cfg-PROMPT_PATTERN_RECOGNITION" class="code-editor prompt-textarea" rows="6"></textarea>
+                            </div>
+
+                            <!-- Card 5: Macro BTC Context Guide -->
+                            <div class="prompt-card glass-panel">
+                                <div class="prompt-card-header">
+                                    <div>
+                                        <h4 class="prompt-card-title">5. Macro Context & BTC Correlation Guide</h4>
+                                        <small class="prompt-card-sub">Instruksi interpretasi korelasi arah Bitcoin terhadap pergerakan Altcoins.</small>
+                                    </div>
+                                    <span class="badge-config-key"><code>PROMPT_BTC_WITH_CONTEXT</code></span>
+                                </div>
+                                <div class="tag-chips-wrapper">
+                                    <span class="tag-chips-label">Variabel Dinamis:</span>
+                                    <div class="tag-chips-bar" data-target="cfg-PROMPT_BTC_WITH_CONTEXT" id="chips-PROMPT_BTC_WITH_CONTEXT"></div>
+                                </div>
+                                <textarea id="cfg-PROMPT_BTC_WITH_CONTEXT" class="code-editor prompt-textarea" rows="6"></textarea>
+                            </div>
+
+                            <!-- Card 6: Market Analysis Output Format -->
+                            <div class="prompt-card glass-panel">
+                                <div class="prompt-card-header">
+                                    <div>
+                                        <h4 class="prompt-card-title">6. Market Analysis Output Format Schema</h4>
+                                        <small class="prompt-card-sub">Spesifikasi format output JSON wajib untuk keputusan BUY / SELL / WAIT.</small>
+                                    </div>
+                                    <span class="badge-config-key"><code>PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT</code></span>
+                                </div>
+                                <div class="tag-chips-wrapper">
+                                    <span class="tag-chips-label">Variabel Dinamis:</span>
+                                    <div class="tag-chips-bar" data-target="cfg-PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT" id="chips-PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT"></div>
+                                </div>
+                                <textarea id="cfg-PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT" class="code-editor prompt-textarea" rows="6"></textarea>
                             </div>
                         </div>
 
@@ -1169,6 +1248,86 @@
             </div>
             <div class="modal-footer">
                 <button id="btn-close-trade-modal" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Prompt Sandbox / Tester Modal -->
+    <div id="prompt-sandbox-modal" class="modal">
+        <div class="modal-content glass modal-lg">
+            <div class="modal-header">
+                <h3>🧪 AI Prompt Sandbox / Live Market Tester</h3>
+                <span class="close-modal" id="close-prompt-sandbox-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="sandbox-control-card glass-panel">
+                    <div class="sandbox-controls-row">
+                        <div class="form-group" style="margin-bottom: 0; min-width: 180px;">
+                            <label>Simbol Koin</label>
+                            <select id="sandbox-symbol-select" class="form-select">
+                                <option value="BTC/USDT">BTC/USDT</option>
+                                <option value="ETH/USDT">ETH/USDT</option>
+                                <option value="SOL/USDT">SOL/USDT</option>
+                                <option value="BNB/USDT">BNB/USDT</option>
+                                <option value="XRP/USDT">XRP/USDT</option>
+                                <option value="DOGE/USDT">DOGE/USDT</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: center; gap: 10px;">
+                            <div>
+                                <label style="margin-bottom: 2px;">Panggil AI Model Asli?</label>
+                                <small style="display: block; color: var(--text-muted); font-size: 0.72rem;">Jika aktif, AI akan mengevaluasi & mengembalikan respon JSON.</small>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="sandbox-call-ai" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button id="btn-run-sandbox" class="btn btn-primary">
+                                <span id="sandbox-btn-text">🚀 Jalankan Simulasi Sandbox</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="sandbox-status-msg" style="margin-top: 10px; font-size: 0.82rem;"></div>
+                </div>
+
+                <!-- Hasil Sandbox -->
+                <div id="sandbox-results-container" style="display: none; margin-top: 16px;">
+                    <!-- Technical Indicators Snapshot -->
+                    <div class="detail-section">
+                        <h4>📊 Snapshot Data Pasar & Indikator (Real-Time)</h4>
+                        <div class="sandbox-badges-grid" id="sandbox-tech-badges"></div>
+                    </div>
+
+                    <!-- AI Decision Result (if called) -->
+                    <div class="detail-section" id="sandbox-ai-decision-section">
+                        <h4>🧠 Keputusan AI (Simulasi Tanpa Order)</h4>
+                        <div class="sandbox-decision-card" id="sandbox-decision-box">
+                            <div class="sandbox-decision-header">
+                                <span id="sandbox-badge-decision" class="badge-decision">--</span>
+                                <span id="sandbox-badge-confidence" class="badge-pill">Confidence: --%</span>
+                                <span id="sandbox-badge-strategy" class="badge-pill">Strategy: --</span>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <strong>📝 Alasan & Analisa AI:</strong>
+                                <p id="sandbox-decision-reason" style="margin-top: 4px; font-size: 0.88rem; line-height: 1.4; color: var(--text-main);">--</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Rendered Prompt View -->
+                    <div class="detail-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h4 style="margin: 0;">📝 Prompt Final yang Diterima AI</h4>
+                            <button id="btn-copy-sandbox-prompt" class="btn btn-secondary btn-sm">📋 Salin Prompt</button>
+                        </div>
+                        <pre class="code-box" id="sandbox-rendered-prompt" style="max-height: 240px; overflow-y: auto; font-size: 0.76rem; white-space: pre-wrap; word-break: break-word;"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-sandbox-footer" class="btn btn-secondary">Tutup Sandbox</button>
             </div>
         </div>
     </div>

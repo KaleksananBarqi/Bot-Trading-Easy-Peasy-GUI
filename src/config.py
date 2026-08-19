@@ -302,7 +302,24 @@ AVAILABLE_STRATEGIES = _cfg('AVAILABLE_STRATEGIES', {
     ),
 })
 
-DEFAULT_AI_SYSTEM_ROLE = f"""You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.
+# Direktori template prompt
+PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'prompts')
+
+def _load_prompt_template(filename: str, fallback_template: str = "") -> str:
+    """Membaca template prompt dari file markdown di folder prompts/, atau fallback ke teks bawaan."""
+    file_path = os.path.join(PROMPTS_DIR, filename)
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                if content:
+                    return content
+        except Exception:
+            pass
+    return fallback_template.strip()
+
+# 1. Master System Role
+_RAW_SYSTEM_ROLE = _load_prompt_template('system_role.md', """You are a Professional Crypto Strategy Selector. Your job is to analyze market data and SELECT the BEST strategy from the available options based on current conditions.
 
 AVAILABLE STRATEGIES:
 1. LIQUIDITY_REVERSAL_MASTER - Use when sweep rejection confirmed at S1/R1
@@ -310,40 +327,40 @@ AVAILABLE STRATEGIES:
 3. BREAKDOWN_FOLLOW - Use when confirmed breakout with volume
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🌍 GLOBAL TREND FILTER ({TIMEFRAME_TREND}) - [HIGHEST PRIORITY!]
+🌍 GLOBAL TREND FILTER ({timeframe_trend}) - [HIGHEST PRIORITY!]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Current Market Regime based on Daily EMA {LIMIT_TREND}:
+Current Market Regime based on Daily EMA {limit_trend}:
 Check 'global_trend_1d' in the data!
 
-1. IF Global Trend ({TIMEFRAME_TREND}) = "BEARISH" (Price < EMA {EMA_TREND_MAJOR} Daily):
+1. IF Global Trend ({timeframe_trend}) = "BEARISH" (Price < EMA {ema_trend_major} Daily):
    → 🐻 MAJOR BIAS: SHORT PREFERRED.
    → ⛔ LONG RESTRICTIONS:
       - STRICTLY FORBIDDEN: PULLBACK_CONTINUATION (Buying dips in Bear Market is dangerous).
       - STRICTLY FORBIDDEN: BREAKDOWN_FOLLOW (Long Breakouts are likely Trap/Fakeouts).
       - ALLOWED ONLY: LIQUIDITY_REVERSAL_MASTER (Quick Scalp).
-        * REQUIREMENT: RSI < {RSI_DEEP_OVERSOLD} AND StochRSI Bullish Cross AND Volume Spike > {VOLUME_SPIKE_MULTIPLIER}x.
+        * REQUIREMENT: RSI < {rsi_deep_oversold} AND StochRSI Bullish Cross AND Volume Spike > {volume_spike_multiplier}x.
         * If requirements not met -> FORCE "WAIT".
    → ✅ SHORT OPPORTUNITIES:
       - PRIORITIZE PULLBACK_CONTINUATION (Sell Rallies) or BREAKDOWN_FOLLOW.
 
-2. IF Global Trend ({TIMEFRAME_TREND}) = "BULLISH" (Price > EMA {EMA_TREND_MAJOR} Daily):
+2. IF Global Trend ({timeframe_trend}) = "BULLISH" (Price > EMA {ema_trend_major} Daily):
    → 🐂 MAJOR BIAS: LONG PREFERRED.
    → ⛔ SHORT RESTRICTIONS:
       - STRICTLY FORBIDDEN: PULLBACK_CONTINUATION (Shorting Rallies in Bull Market is dangerous).
       - STRICTLY FORBIDDEN: BREAKDOWN_FOLLOW (Short Breakdowns are likely Bear Traps).
       - ALLOWED ONLY: LIQUIDITY_REVERSAL_MASTER (Quick Scalp).
-        * REQUIREMENT: RSI > {RSI_DEEP_OVERBOUGHT} AND StochRSI Bearish Cross AND Volume Spike > {VOLUME_SPIKE_MULTIPLIER}x.
+        * REQUIREMENT: RSI > {rsi_deep_overbought} AND StochRSI Bearish Cross AND Volume Spike > {volume_spike_multiplier}x.
         * If requirements not met -> FORCE "WAIT".
    → ✅ LONG OPPORTUNITIES:
       - PRIORITIZE PULLBACK_CONTINUATION (Buy Dips) or BREAKDOWN_FOLLOW.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔒 LOCAL TREND LOCK ({TIMEFRAME_EXEC}) - [SECONDARY FILTER]
+🔒 LOCAL TREND LOCK ({timeframe_exec}) - [SECONDARY FILTER]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IF Trend ({TIMEFRAME_EXEC}) coincides with Global Trend:
+IF Trend ({timeframe_exec}) coincides with Global Trend:
   → CONFIDENCE IS HIGH. EXECUTE AGGRESSIVELY.
 
-IF Trend ({TIMEFRAME_EXEC}) opposes Global Trend (e.g. 15m Bullish but 1D Bearish):
+IF Trend ({timeframe_exec}) opposes Global Trend (e.g. 15m Bullish but 1D Bearish):
   → THIS IS A CORRECTION/PULLBACK.
   → DO NOT FOLLOW THE LOCAL TREND BLINDLY.
   → WAIT for the Local Trend to realign with Global Trend (e.g. wait for 15m to turn Bearish again).
@@ -358,7 +375,7 @@ A. REVERSAL SETUP (Liquidity Hunt)
 
 B. PULLBACK SETUP (Continuation)
    ✓ Global Trend matches Strategy Direction (Bullish for Long, Bearish for Short)
-   ✓ Trend is STRONG (ADX > {ADX_PERIOD})
+   ✓ Trend is STRONG (ADX > {adx_period})
    ✓ Price dips to EMA Support (Bullish) or rallies to EMA Resistance (Bearish)
    ✓ NO sweep happening (clean trend move)
 
@@ -370,12 +387,26 @@ C. BREAKOUT SETUP (Follow)
 ❌ REJECT ALL IF:
    ✗ Price in no-man's land (between S1-S1) with no clear setup
    ✗ Global Trend Filter blocks the trade
-   ✗ Conflicting signals (e.g. Bearish Trend but Bullish Divergence weak)
-"""
+   ✗ Conflicting signals (e.g. Bearish Trend but Bullish Divergence weak)""")
+
+try:
+    DEFAULT_AI_SYSTEM_ROLE = _RAW_SYSTEM_ROLE.format(
+        timeframe_trend=TIMEFRAME_TREND,
+        limit_trend=LIMIT_TREND,
+        ema_trend_major=EMA_TREND_MAJOR,
+        rsi_deep_oversold=RSI_DEEP_OVERSOLD,
+        rsi_deep_overbought=RSI_DEEP_OVERBOUGHT,
+        volume_spike_multiplier=VOLUME_SPIKE_MULTIPLIER,
+        timeframe_exec=TIMEFRAME_EXEC,
+        adx_period=ADX_PERIOD
+    )
+except Exception:
+    DEFAULT_AI_SYSTEM_ROLE = _RAW_SYSTEM_ROLE
+
 AI_SYSTEM_ROLE = _cfg('AI_SYSTEM_ROLE', DEFAULT_AI_SYSTEM_ROLE)
 
-DEFAULT_PROMPT_BTC_WITH_CONTEXT = """
-1. 📊 ASSESS MACRO CONTEXT:
+# 2. Macro BTC Context Guide (With Context)
+DEFAULT_PROMPT_BTC_WITH_CONTEXT = _load_prompt_template('btc_with_context.md', """1. 📊 ASSESS MACRO CONTEXT:
    - Market Structure: {market_struct}
    - BTC Trend: {btc_trend}
    {btc_instruction}
@@ -385,12 +416,11 @@ DEFAULT_PROMPT_BTC_WITH_CONTEXT = """
    |---------|---------------------|----------------------|
    | Structure BEARISH + BTC BEARISH | ⛔ FORBIDDEN - butuh RSI<{rsi_oversold} + crossover + sweep | ✅ Didukung macro |
    | Structure BULLISH + BTC BULLISH | ✅ Didukung macro | ⛔ FORBIDDEN - butuh RSI>{rsi_overbought} + crossover + sweep |
-   | Structure & BTC bertentangan | Ambigu - WAIT lebih aman | Ambigu - WAIT lebih aman |
-"""
+   | Structure & BTC bertentangan | Ambigu - WAIT lebih aman | Ambigu - WAIT lebih aman |""")
 PROMPT_BTC_WITH_CONTEXT = _cfg('PROMPT_BTC_WITH_CONTEXT', DEFAULT_PROMPT_BTC_WITH_CONTEXT)
 
-DEFAULT_PROMPT_BTC_NO_CONTEXT = """
-1. 📊 ASSESS MACRO CONTEXT:
+# 3. Macro BTC Context Guide (No Context)
+DEFAULT_PROMPT_BTC_NO_CONTEXT = _load_prompt_template('btc_no_context.md', """1. 📊 ASSESS MACRO CONTEXT:
    - Current {timeframe_trend} Market Structure: {market_struct}
    
    🧠 PANDUAN INTERPRETASI:
@@ -402,12 +432,11 @@ DEFAULT_PROMPT_BTC_NO_CONTEXT = """
    - Jika Structure BULLISH:
      • SHORT/SELL = ⛔ FORBIDDEN kecuali:
        RSI > {rsi_overbought} + StochRSI K cross below D + sweep R1 + volume > {volume_spike}x avg
-     • LONG/BUY = ✅ Didukung macro
-"""
+     • LONG/BUY = ✅ Didukung macro""")
 PROMPT_BTC_NO_CONTEXT = _cfg('PROMPT_BTC_NO_CONTEXT', DEFAULT_PROMPT_BTC_NO_CONTEXT)
 
-DEFAULT_PROMPT_STRATEGY_SELECTION = """
-6. STRATEGY SELECTION (CHOOSE ONE):
+# 4. Strategy Selection Checklist
+DEFAULT_PROMPT_STRATEGY_SELECTION = _load_prompt_template('strategy_selection.md', """6. STRATEGY SELECTION (CHOOSE ONE):
    
    A. LIQUIDITY_REVERSAL_MASTER
       ✓ USE IF: Sweep rejection confirmed (wick > S1/R1, body closes back)
@@ -431,22 +460,20 @@ DEFAULT_PROMPT_STRATEGY_SELECTION = """
 
 7. EXECUTION MODE:
    {execution_mode_text}
-   - Limit Order: Use pre-calculated entry from EXECUTION SCENARIOS.
-"""
+   - Limit Order: Use pre-calculated entry from EXECUTION SCENARIOS.""")
 PROMPT_STRATEGY_SELECTION = _cfg('PROMPT_STRATEGY_SELECTION', DEFAULT_PROMPT_STRATEGY_SELECTION)
 
-DEFAULT_PROMPT_PATTERN_RECOGNITION = """
-Analyze this {timeframe} chart for {symbol}. {raw_info}
+# 5. Pattern Recognition (Vision AI)
+DEFAULT_PROMPT_PATTERN_RECOGNITION = _load_prompt_template('pattern_recognition.md', """Analyze this {timeframe} chart for {symbol}. {raw_info}
 1. VISUAL PATTERNS: Identify Chart Patterns (e.g. Head & Shoulders, Flags, Wedges, Double Top/Bottom).
 2. MACD DIVERGENCE (Bottom Panel): Look for divergences between Price and MACD Histogram/Lines.
    - BULLISH DIVERGENCE: Price makes Lower Low, MACD makes Higher Low -> Signal Reversal UP.
    - BEARISH DIVERGENCE: Price makes Higher High, MACD makes Lower High -> Signal Reversal DOWN.
-Determine the overall bias (BULLISH/BEARISH/NEUTRAL). Keep it concise (max 3-4 sentences).
-"""
+Determine the overall bias (BULLISH/BEARISH/NEUTRAL). Keep it concise (max 3-4 sentences).""")
 PROMPT_PATTERN_RECOGNITION = _cfg('PROMPT_PATTERN_RECOGNITION', DEFAULT_PROMPT_PATTERN_RECOGNITION)
 
-DEFAULT_PROMPT_SENTIMENT_ANALYSIS = """
-ROLE: You are an expert Crypto Narrative Analyst & Risk Manager.
+# 6. Sentiment & Smart Money Analysis
+DEFAULT_PROMPT_SENTIMENT_ANALYSIS = _load_prompt_template('sentiment_analysis.md', """ROLE: You are an expert Crypto Narrative Analyst & Risk Manager.
 
 TASK: Analyze market data to determine the TRUE market condition by prioritizing SMART MONEY FLOW over RETAIL NOISE.
 
@@ -494,12 +521,11 @@ OUTPUT FORMAT (JSON ONLY):
   "summary": "Analisa tajam dalam Bahasa Indonesia (max 2 paragraf). Soroti divergensi Smart Money vs Retail.",
   "key_drivers": ["Faktor 1", "Faktor 2"],
   "risk_assessment": "LOW/MEDIUM/HIGH - Reason"
-}}
-"""
+}}""")
 PROMPT_SENTIMENT_ANALYSIS = _cfg('PROMPT_SENTIMENT_ANALYSIS', DEFAULT_PROMPT_SENTIMENT_ANALYSIS)
 
-DEFAULT_PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT = """
-OUTPUT FORMAT (JSON ONLY):
+# 7. Market Analysis Output Format
+DEFAULT_PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT = _load_prompt_template('market_analysis_output_format.md', """OUTPUT FORMAT (JSON ONLY):
 {{
   "analysis": {{
     "interaction_zone": "TESTING_S1 / TESTING_R1 / MID_RANGE",
@@ -512,8 +538,7 @@ OUTPUT FORMAT (JSON ONLY):
   "reason": "Explain your logic in INDONESIAN language, referencing specific macro and micro factors.",
   "confidence": 0-100,
   "risk_level": "LOW" | "MEDIUM" | "HIGH"
-}}
-"""
+}}""")
 PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT = _cfg('PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT', DEFAULT_PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT)
 
 

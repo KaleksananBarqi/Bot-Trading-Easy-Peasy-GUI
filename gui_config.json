@@ -125,6 +125,14 @@
       "amount": 10,
       "margin_type": "isolated",
       "btc_corr": true
+    },
+    {
+      "symbol": "SOL/USDT",
+      "category": "ALTS",
+      "leverage": 10,
+      "amount": 10,
+      "margin_type": "cross",
+      "btc_corr": true
     }
   ],
   "RSS_FEED_URLS": [

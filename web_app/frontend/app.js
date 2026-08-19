@@ -277,6 +277,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (el) el.checked = enabledStrats.includes(strat);
             });
             
+            // Auto-populate Prompt textareas with defaults if empty
+            try {
+                const resPrompt = await fetch('/api/config/prompts/defaults');
+                const promptData = await resPrompt.json();
+                if (promptData.status === 'success' && promptData.data) {
+                    const defaults = promptData.data;
+                    Object.keys(defaults).forEach(pk => {
+                        const el = document.getElementById(`cfg-${pk}`);
+                        if (el && (!el.value || !el.value.trim())) {
+                            el.value = defaults[pk] || '';
+                            currentConfig[pk] = defaults[pk] || '';
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn("Could not load prompt defaults", err);
+            }
+
             renderCoinsList();
             renderArrayManager('RSS_FEED_URLS', 'rss-list-container');
             renderArrayManager('MACRO_KEYWORDS', 'macro-list-container');
@@ -659,21 +677,247 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnResetPrompts = document.getElementById('btn-reset-prompts');
     if (btnResetPrompts) {
         btnResetPrompts.addEventListener('click', async () => {
-            if (!confirm("Kembalikan seluruh template prompt AI ke pengaturan bawaan (default)?")) return;
+            if (!confirm("Kembalikan seluruh template prompt AI ke pengaturan bawaan (file default)?")) return;
             try {
                 const res = await fetch('/api/config/prompts/defaults');
                 const data = await res.json();
                 if (data.status === 'success' && data.data) {
                     const defaults = data.data;
-                    if (defaults.AI_SYSTEM_ROLE) document.getElementById('cfg-AI_SYSTEM_ROLE').value = defaults.AI_SYSTEM_ROLE;
-                    if (defaults.PROMPT_STRATEGY_SELECTION) document.getElementById('cfg-PROMPT_STRATEGY_SELECTION').value = defaults.PROMPT_STRATEGY_SELECTION;
-                    if (defaults.PROMPT_SENTIMENT_ANALYSIS) document.getElementById('cfg-PROMPT_SENTIMENT_ANALYSIS').value = defaults.PROMPT_SENTIMENT_ANALYSIS;
-                    if (defaults.PROMPT_PATTERN_RECOGNITION) document.getElementById('cfg-PROMPT_PATTERN_RECOGNITION').value = defaults.PROMPT_PATTERN_RECOGNITION;
+                    [
+                        'AI_SYSTEM_ROLE',
+                        'PROMPT_STRATEGY_SELECTION',
+                        'PROMPT_SENTIMENT_ANALYSIS',
+                        'PROMPT_PATTERN_RECOGNITION',
+                        'PROMPT_BTC_WITH_CONTEXT',
+                        'PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT'
+                    ].forEach(pk => {
+                        const el = document.getElementById(`cfg-${pk}`);
+                        if (el && defaults[pk] !== undefined) {
+                            el.value = defaults[pk];
+                            currentConfig[pk] = defaults[pk];
+                        }
+                    });
                     updateRawJSON();
-                    alert("Template prompt AI berhasil di-reset ke default! Klik 'SAVE JSON SETTINGS' untuk menyimpan permanen.");
+                    alert("Template prompt AI berhasil di-reset ke file default! Klik 'SAVE JSON SETTINGS' untuk menyimpan permanen.");
                 }
             } catch (e) {
                 alert("Gagal mengambil template prompt default.");
+            }
+        });
+    }
+
+    // --- AI Prompts Studio Tag Chips Helper ---
+    async function initPromptStudio() {
+        try {
+            const res = await fetch('/api/config/prompts/variables');
+            const data = await res.json();
+            if (data.status === 'success' && data.data) {
+                const varMap = data.data;
+                Object.keys(varMap).forEach(key => {
+                    const container = document.getElementById(`chips-${key}`);
+                    if (!container) return;
+                    container.innerHTML = '';
+                    const chips = varMap[key] || [];
+                    chips.forEach(item => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'tag-chip';
+                        btn.textContent = `+ ${item.tag}`;
+                        btn.title = item.desc || item.tag;
+                        btn.addEventListener('click', () => {
+                            insertTagIntoPrompt(`cfg-${key}`, item.tag);
+                        });
+                        container.appendChild(btn);
+                    });
+                });
+            }
+        } catch (e) {
+            console.error("Gagal memuat variabel tag prompt", e);
+        }
+    }
+
+    function insertTagIntoPrompt(textareaId, tag) {
+        const textarea = document.getElementById(textareaId);
+        if (!textarea) return;
+        const start = textarea.selectionStart || 0;
+        const end = textarea.selectionEnd || 0;
+        const text = textarea.value;
+        textarea.value = text.substring(0, start) + tag + text.substring(end);
+        textarea.focus();
+        textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+        updateRawJSON();
+    }
+
+    // --- AI Prompt Sandbox Modal & Tester ---
+    function initPromptSandbox() {
+        const modal = document.getElementById('prompt-sandbox-modal');
+        const btnOpen = document.getElementById('btn-open-prompt-sandbox');
+        const btnClose = document.getElementById('close-prompt-sandbox-modal');
+        const btnCloseFooter = document.getElementById('btn-close-sandbox-footer');
+        const btnRun = document.getElementById('btn-run-sandbox');
+        const symbolSelect = document.getElementById('sandbox-symbol-select');
+        const callAiToggle = document.getElementById('sandbox-call-ai');
+        const statusMsg = document.getElementById('sandbox-status-msg');
+        const resultsContainer = document.getElementById('sandbox-results-container');
+        const btnCopyPrompt = document.getElementById('btn-copy-sandbox-prompt');
+
+        if (!modal) return;
+
+        function populateSandboxSymbols() {
+            if (!symbolSelect) return;
+            const currentVal = symbolSelect.value;
+            symbolSelect.innerHTML = '';
+            
+            const coins = (currentConfig && currentConfig.DAFTAR_KOIN && currentConfig.DAFTAR_KOIN.length > 0)
+                ? currentConfig.DAFTAR_KOIN.map(c => c.symbol)
+                : ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT', 'DOGE/USDT'];
+            
+            coins.forEach(sym => {
+                const opt = document.createElement('option');
+                opt.value = sym;
+                opt.textContent = sym;
+                symbolSelect.appendChild(opt);
+            });
+            if (coins.includes(currentVal)) {
+                symbolSelect.value = currentVal;
+            }
+        }
+
+        btnOpen?.addEventListener('click', () => {
+            populateSandboxSymbols();
+            modal.style.display = 'block';
+        });
+
+        btnClose?.addEventListener('click', () => { modal.style.display = 'none'; });
+        btnCloseFooter?.addEventListener('click', () => { modal.style.display = 'none'; });
+
+        btnRun?.addEventListener('click', async () => {
+            const sym = symbolSelect.value || 'BTC/USDT';
+            const callAi = callAiToggle ? callAiToggle.checked : false;
+
+            if (statusMsg) {
+                statusMsg.textContent = "⏳ Mengambil data pasar real-time & menjalankan simulasi...";
+                statusMsg.style.color = 'var(--neon-cyan)';
+            }
+            if (btnRun) btnRun.disabled = true;
+
+            // Gather prompt overrides currently typed in textareas
+            const promptOverrides = {};
+            [
+                'AI_SYSTEM_ROLE',
+                'PROMPT_STRATEGY_SELECTION',
+                'PROMPT_SENTIMENT_ANALYSIS',
+                'PROMPT_PATTERN_RECOGNITION',
+                'PROMPT_BTC_WITH_CONTEXT',
+                'PROMPT_BTC_NO_CONTEXT',
+                'PROMPT_MARKET_ANALYSIS_OUTPUT_FORMAT'
+            ].forEach(k => {
+                const el = document.getElementById(`cfg-${k}`);
+                if (el && el.value) promptOverrides[k] = el.value;
+            });
+
+            try {
+                const res = await fetch('/api/config/prompts/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        symbol: sym,
+                        call_ai: callAi,
+                        prompt_overrides: promptOverrides
+                    })
+                });
+                const resData = await res.json();
+
+                if (resData.status === 'success' && resData.data) {
+                    const data = resData.data;
+                    if (statusMsg) {
+                        statusMsg.textContent = "✅ Simulasi sandbox berhasil!";
+                        statusMsg.style.color = 'var(--success)';
+                    }
+                    if (resultsContainer) resultsContainer.style.display = 'block';
+
+                    // 1. Render Technical Badges
+                    const techContainer = document.getElementById('sandbox-tech-badges');
+                    if (techContainer && data.tech_summary) {
+                        const t = data.tech_summary;
+                        techContainer.innerHTML = `
+                            <div class="sandbox-tech-badge">
+                                <span class="badge-label">Harga Saat Ini</span>
+                                <span class="badge-val">$${Number(t.price).toLocaleString()}</span>
+                            </div>
+                            <div class="sandbox-tech-badge">
+                                <span class="badge-label">RSI (14)</span>
+                                <span class="badge-val" style="color: ${t.rsi < 30 ? 'var(--success)' : t.rsi > 70 ? 'var(--danger)' : '#38bdf8'}">${t.rsi}</span>
+                            </div>
+                            <div class="sandbox-tech-badge">
+                                <span class="badge-label">ADX Tren</span>
+                                <span class="badge-val">${t.adx}</span>
+                            </div>
+                            <div class="sandbox-tech-badge">
+                                <span class="badge-label">Trend vs EMA</span>
+                                <span class="badge-val">${escapeHtml(t.trend_major || '--')}</span>
+                            </div>
+                            <div class="sandbox-tech-badge">
+                                <span class="badge-label">Market Structure</span>
+                                <span class="badge-val" style="font-size: 11px;">${escapeHtml(t.market_structure || '--')}</span>
+                            </div>
+                            <div class="sandbox-tech-badge">
+                                <span class="badge-label">Global 1D Bias</span>
+                                <span class="badge-val" style="color: ${t.global_trend_1d === 'BULLISH' ? 'var(--success)' : 'var(--danger)'}">${escapeHtml(t.global_trend_1d || '--')}</span>
+                            </div>
+                        `;
+                    }
+
+                    // 2. Render AI Decision
+                    const aiSection = document.getElementById('sandbox-ai-decision-section');
+                    const badgeDec = document.getElementById('sandbox-badge-decision');
+                    const badgeConf = document.getElementById('sandbox-badge-confidence');
+                    const badgeStrat = document.getElementById('sandbox-badge-strategy');
+                    const reasonP = document.getElementById('sandbox-decision-reason');
+
+                    if (data.ai_decision) {
+                        if (aiSection) aiSection.style.display = 'block';
+                        const d = data.ai_decision;
+                        const dec = (d.decision || 'WAIT').toUpperCase();
+                        
+                        if (badgeDec) {
+                            badgeDec.textContent = dec;
+                            badgeDec.className = `badge-decision ${dec.includes('BUY') || dec.includes('LONG') ? 'buy' : dec.includes('SELL') || dec.includes('SHORT') ? 'sell' : 'wait'}`;
+                        }
+                        if (badgeConf) badgeConf.textContent = `Confidence: ${d.confidence || 0}%`;
+                        if (badgeStrat) badgeStrat.textContent = `Strategy: ${d.selected_strategy || '--'}`;
+                        if (reasonP) reasonP.textContent = d.reason || 'Tidak ada penalaran yang disertakan.';
+                    } else {
+                        if (aiSection) aiSection.style.display = 'none';
+                    }
+
+                    // 3. Render Final Prompt
+                    const promptBox = document.getElementById('sandbox-rendered-prompt');
+                    if (promptBox) {
+                        promptBox.textContent = data.rendered_prompt || '--';
+                    }
+
+                } else {
+                    throw new Error(resData.detail || "Gagal menjalankan simulasi");
+                }
+            } catch (err) {
+                if (statusMsg) {
+                    statusMsg.textContent = "❌ " + err.message;
+                    statusMsg.style.color = 'var(--danger)';
+                }
+            } finally {
+                if (btnRun) btnRun.disabled = false;
+            }
+        });
+
+        // Copy button handler
+        btnCopyPrompt?.addEventListener('click', () => {
+            const promptBox = document.getElementById('sandbox-rendered-prompt');
+            if (promptBox && promptBox.textContent) {
+                navigator.clipboard.writeText(promptBox.textContent).then(() => {
+                    btnCopyPrompt.textContent = "✅ Tersalin!";
+                    setTimeout(() => { btnCopyPrompt.textContent = "📋 Salin Prompt"; }, 2000);
+                });
             }
         });
     }
@@ -1779,7 +2023,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (historyPage && historyPage.classList.contains('active')) loadTradeHistoryAndAnalytics(false);
     }, 8000);
 
-    // Initial load config on start
+    // Initial load config & prompt studio on start
     loadConfig();
+    initPromptStudio();
+    initPromptSandbox();
 });
 
