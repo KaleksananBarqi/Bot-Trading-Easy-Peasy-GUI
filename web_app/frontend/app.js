@@ -868,12 +868,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                     }
 
-                    // 2. Render AI Decision
+                    // 2. Render AI Decision & Full Structured JSON
                     const aiSection = document.getElementById('sandbox-ai-decision-section');
                     const badgeDec = document.getElementById('sandbox-badge-decision');
                     const badgeConf = document.getElementById('sandbox-badge-confidence');
                     const badgeStrat = document.getElementById('sandbox-badge-strategy');
                     const reasonP = document.getElementById('sandbox-decision-reason');
+                    const jsonBox = document.getElementById('sandbox-ai-json');
 
                     if (data.ai_decision) {
                         if (aiSection) aiSection.style.display = 'block';
@@ -887,8 +888,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (badgeConf) badgeConf.textContent = `Confidence: ${d.confidence || 0}%`;
                         if (badgeStrat) badgeStrat.textContent = `Strategy: ${d.selected_strategy || '--'}`;
                         if (reasonP) reasonP.textContent = d.reason || 'Tidak ada penalaran yang disertakan.';
+                        if (jsonBox) jsonBox.textContent = JSON.stringify(d, null, 2);
                     } else {
                         if (aiSection) aiSection.style.display = 'none';
+                        if (jsonBox) jsonBox.textContent = '{}';
                     }
 
                     // 3. Render Final Prompt
@@ -910,7 +913,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Copy button handler
+        // Copy JSON button handler
+        document.getElementById('btn-copy-sandbox-json')?.addEventListener('click', () => {
+            const jsonBox = document.getElementById('sandbox-ai-json');
+            const btnCopy = document.getElementById('btn-copy-sandbox-json');
+            if (jsonBox && jsonBox.textContent) {
+                navigator.clipboard.writeText(jsonBox.textContent).then(() => {
+                    if (btnCopy) {
+                        btnCopy.textContent = "✅ Tersalin!";
+                        setTimeout(() => { btnCopy.textContent = "📋 Salin JSON"; }, 2000);
+                    }
+                });
+            }
+        });
+
+        // Copy Prompt button handler
         btnCopyPrompt?.addEventListener('click', () => {
             const promptBox = document.getElementById('sandbox-rendered-prompt');
             if (promptBox && promptBox.textContent) {
@@ -1978,11 +1995,44 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-ai-reason').textContent = ev.reason || 'No detailed reason provided.';
         document.getElementById('modal-ai-vision').textContent = ev.vision_summary || 'Vision AI analysis not recorded or disabled.';
         document.getElementById('modal-ai-tech').textContent = JSON.stringify(ev.technical_snapshot || {}, null, 2);
+        
+        // Full AI Decision JSON Viewer
+        const rawJsonBox = document.getElementById('modal-ai-raw-json');
+        if (rawJsonBox) {
+            const jsonToShow = (ev.raw_decision_json && Object.keys(ev.raw_decision_json).length > 0)
+                ? ev.raw_decision_json
+                : {
+                    decision: ev.decision,
+                    confidence: ev.confidence,
+                    selected_strategy: ev.strategy_mode,
+                    execution_mode: ev.execution_mode,
+                    reason: ev.reason,
+                    sentiment_score: ev.sentiment_score,
+                    sentiment_status: ev.sentiment_status,
+                    vision_summary: ev.vision_summary
+                };
+            rawJsonBox.textContent = JSON.stringify(jsonToShow, null, 2);
+        }
+
         document.getElementById('modal-ai-prompt').textContent = ev.prompt_snippet || 'Prompt snippet not available.';
 
         modal.classList.add('active');
         modal.style.display = 'block';
     };
+
+    // Copy Eval JSON button handler
+    document.getElementById('btn-copy-eval-json')?.addEventListener('click', () => {
+        const jsonBox = document.getElementById('modal-ai-raw-json');
+        const btnCopy = document.getElementById('btn-copy-eval-json');
+        if (jsonBox && jsonBox.textContent) {
+            navigator.clipboard.writeText(jsonBox.textContent).then(() => {
+                if (btnCopy) {
+                    btnCopy.textContent = "✅ Tersalin!";
+                    setTimeout(() => { btnCopy.textContent = "📋 Salin JSON"; }, 2000);
+                }
+            });
+        }
+    });
 
     // AI Eval Modal Closes
     document.getElementById('close-ai-modal')?.addEventListener('click', () => {

@@ -66,7 +66,8 @@ class AIEvaluationManager:
         sentiment_data: Optional[Dict[str, Any]] = None,
         sentiment_analysis: Optional[Dict[str, Any]] = None,
         execution_mode: str = "MARKET",
-        prompt: str = ""
+        prompt: str = "",
+        raw_decision_json: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Mencatat satu entri evaluasi AI dalam zona waktu WIB (UTC+7).
@@ -123,7 +124,8 @@ class AIEvaluationManager:
             "sentiment_score": sentiment_score,
             "sentiment_status": sentiment_status,
             "technical_snapshot": tech_snapshot,
-            "prompt_snippet": prompt[:500] if prompt else ""
+            "prompt_snippet": prompt[:500] if prompt else "",
+            "raw_decision_json": raw_decision_json or {}
         }
 
         # 1. Update in-memory & local cache

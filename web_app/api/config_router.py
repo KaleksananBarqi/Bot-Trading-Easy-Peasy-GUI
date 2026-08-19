@@ -254,24 +254,43 @@ async def test_prompt_sandbox(data: PromptTestRequest):
         if not symbol.endswith("/USDT"):
             symbol = f"{symbol}/USDT"
 
-        # 1. Fetch live market candles via public CCXT (dengan fallback jika koneksi terhambat)
+        # 1. Fetch live market candles via public CCXT & Direct Binance Futures API
         bars_exec = []
         bars_trend = []
+        tf_exec = bot_config.TIMEFRAME_EXEC
+        tf_trend = bot_config.TIMEFRAME_TREND
+        
+        # A. Coba lewat CCXT dengan ThreadedResolver Session
         try:
             import asyncio
-            exchange = ccxt_async.binance({'options': {'defaultType': 'future'}})
+            from src.utils.helper import create_aiohttp_session
+            exchange = ccxt_async.binance({'options': {'defaultType': 'future', 'adjustForTimeDifference': True}})
+            exchange.session = create_aiohttp_session(timeout_seconds=6.0)
             try:
-                tf_exec = bot_config.TIMEFRAME_EXEC
-                tf_trend = bot_config.TIMEFRAME_TREND
-                
-                bars_exec = await asyncio.wait_for(exchange.fetch_ohlcv(symbol, tf_exec, limit=100), timeout=3.0)
-                bars_trend = await asyncio.wait_for(exchange.fetch_ohlcv(symbol, tf_trend, limit=100), timeout=3.0)
+                bars_exec = await asyncio.wait_for(exchange.fetch_ohlcv(symbol, tf_exec, limit=100), timeout=5.0)
+                bars_trend = await asyncio.wait_for(exchange.fetch_ohlcv(symbol, tf_trend, limit=100), timeout=5.0)
             finally:
                 await exchange.close()
         except Exception:
-            pass
+            bars_exec, bars_trend = [], []
 
-        # Fallback simulation if exchange connection unreachable
+        # B. Fallback ke Direct Binance Futures Public REST API (fapi.binance.com) jika CCXT terhambat
+        if not bars_exec or len(bars_exec) < 30:
+            try:
+                import httpx
+                clean_sym = symbol.replace("/", "").upper()
+                async with httpx.AsyncClient(timeout=5.0) as http_client:
+                    r_exec = await http_client.get("https://fapi.binance.com/fapi/v1/klines", params={"symbol": clean_sym, "interval": tf_exec, "limit": 100})
+                    r_trend = await http_client.get("https://fapi.binance.com/fapi/v1/klines", params={"symbol": clean_sym, "interval": tf_trend, "limit": 100})
+                    if r_exec.status_code == 200 and r_trend.status_code == 200:
+                        raw_exec = r_exec.json()
+                        raw_trend = r_trend.json()
+                        bars_exec = [[int(k[0]), float(k[1]), float(k[2]), float(k[3]), float(k[4]), float(k[5])] for k in raw_exec]
+                        bars_trend = [[int(k[0]), float(k[1]), float(k[2]), float(k[3]), float(k[4]), float(k[5])] for k in raw_trend]
+            except Exception:
+                pass
+
+        # C. Fallback darurat jika koneksi internet terputus total
         if not bars_exec or len(bars_exec) < 30:
             import time
             import math

@@ -1191,6 +1191,14 @@
                 </div>
 
                 <div class="detail-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 style="margin: 0;">📦 Full AI Decision JSON Output</h4>
+                        <button id="btn-copy-eval-json" class="btn btn-secondary btn-xs">📋 Salin JSON</button>
+                    </div>
+                    <pre class="json-box" id="modal-ai-raw-json" style="max-height: 200px; overflow-y: auto; color: #a5f3fc; font-size: 11px;">{}</pre>
+                </div>
+
+                <div class="detail-section">
                     <h4>📝 Prompt Snippet</h4>
                     <div class="code-box" id="modal-ai-prompt" style="font-size: 0.75rem; max-height: 120px; overflow-y: auto;">--</div>
                 </div>
@@ -1228,7 +1236,7 @@
                     </div>
                     <div class="detail-card" style="grid-column: span 2;">
                         <span class="detail-label">Exit Type & Strategy</span>
-                        <strong id="modal-trade-exit-strat">--</strong>
+                        <strong id="modal-trade-exit-strategy">--</strong>
                     </div>
                     <div class="detail-card" style="grid-column: span 2;">
                         <span class="detail-label">Timeline Eksekusi (WIB)</span>
@@ -1237,12 +1245,12 @@
                 </div>
 
                 <div class="detail-section">
-                    <h4>🤖 AI Reasoning & Decision</h4>
+                    <h4>🤖 Full AI Decision & Trade Arguments</h4>
                     <div class="code-box" id="modal-trade-reason">No AI reasoning recorded.</div>
                 </div>
 
                 <div class="detail-section">
-                    <h4>📐 Technical Indicators & Conditions Snapshot</h4>
+                    <h4>📐 Technical Indicators at Entry Time</h4>
                     <pre class="json-box" id="modal-trade-tech">{}</pre>
                 </div>
             </div>
@@ -1256,36 +1264,36 @@
     <div id="prompt-sandbox-modal" class="modal">
         <div class="modal-content glass modal-lg">
             <div class="modal-header">
-                <h3>🧪 AI Prompt Sandbox / Live Market Tester</h3>
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <span>🧪 AI Prompt Sandbox / Live Market Tester</span>
+                </h3>
                 <span class="close-modal" id="close-prompt-sandbox-modal">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="sandbox-control-card glass-panel">
+                <p class="subtitle" style="margin-bottom: 14px; font-size: 0.85rem;">
+                    Uji prompt dan respon AI secara aman pada data pasar real-time tanpa membuat order trading sungguhan.
+                </p>
+
+                <!-- Sandbox Controls -->
+                <div class="sandbox-control-card">
                     <div class="sandbox-controls-row">
-                        <div class="form-group" style="margin-bottom: 0; min-width: 180px;">
-                            <label>Simbol Koin</label>
-                            <select id="sandbox-symbol-select" class="form-select">
-                                <option value="BTC/USDT">BTC/USDT</option>
-                                <option value="ETH/USDT">ETH/USDT</option>
-                                <option value="SOL/USDT">SOL/USDT</option>
-                                <option value="BNB/USDT">BNB/USDT</option>
-                                <option value="XRP/USDT">XRP/USDT</option>
-                                <option value="DOGE/USDT">DOGE/USDT</option>
-                            </select>
+                        <div class="form-group" style="flex: 1; min-width: 160px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem;">Simbol Koin</label>
+                            <select id="sandbox-symbol-select" class="form-select" style="padding: 8px 12px; font-size: 0.85rem;"></select>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: center; gap: 10px;">
-                            <div>
-                                <label style="margin-bottom: 2px;">Panggil AI Model Asli?</label>
-                                <small style="display: block; color: var(--text-muted); font-size: 0.72rem;">Jika aktif, AI akan mengevaluasi & mengembalikan respon JSON.</small>
+                        <div class="form-group" style="flex: 1.5; min-width: 220px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem;">Panggil AI Model Asli?</label>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                                <label class="switch">
+                                    <input type="checkbox" id="sandbox-call-ai" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                                <span style="font-size: 0.78rem; color: var(--text-muted);">Jika aktif, AI akan mengevaluasi & mengembalikan respon JSON.</span>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="sandbox-call-ai" checked>
-                                <span class="slider"></span>
-                            </label>
                         </div>
-                        <div style="display: flex; align-items: flex-end;">
-                            <button id="btn-run-sandbox" class="btn btn-primary">
-                                <span id="sandbox-btn-text">🚀 Jalankan Simulasi Sandbox</span>
+                        <div style="margin-bottom: 0;">
+                            <button id="btn-run-sandbox" class="btn btn-primary" style="padding: 9px 18px; font-size: 0.85rem;">
+                                🚀 JALANKAN SIMULASI SANDBOX
                             </button>
                         </div>
                     </div>
@@ -1313,6 +1321,14 @@
                                 <strong>📝 Alasan & Analisa AI:</strong>
                                 <p id="sandbox-decision-reason" style="margin-top: 4px; font-size: 0.88rem; line-height: 1.4; color: var(--text-main);">--</p>
                             </div>
+                        </div>
+                        
+                        <div class="detail-section" style="margin-top: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <h4 style="margin: 0; font-size: 13px; color: var(--neon-cyan);">📦 Output Respon JSON AI (Full Analysis & Strategy)</h4>
+                                <button id="btn-copy-sandbox-json" class="btn btn-secondary btn-xs">📋 Salin JSON</button>
+                            </div>
+                            <pre class="json-box" id="sandbox-ai-json" style="max-height: 220px; overflow-y: auto; color: #a5f3fc; font-size: 11px; margin-top: 4px;"></pre>
                         </div>
                     </div>
 

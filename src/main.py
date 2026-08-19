@@ -688,7 +688,8 @@ async def main():
                         sentiment_data=sentiment_data,
                         sentiment_analysis=sentiment_analysis,
                         execution_mode=ai_decision.get('execution_mode', 'MARKET'),
-                        prompt=prompt
+                        prompt=prompt,
+                        raw_decision_json=ai_decision
                     )
 
                 # --- STEP E: EXECUTION ---
