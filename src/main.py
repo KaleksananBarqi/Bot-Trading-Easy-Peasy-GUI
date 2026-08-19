@@ -574,156 +574,159 @@ async def main():
 
     logger.info("🚀 MAIN LOOP RUNNING...")
 
-    # 5. MAIN TRADING LOOP
-    ticker_idx = 0
-    from web_app.api import bot_control_flag
-    
-    while True:
-        if bot_control_flag.SHOULD_STOP:
-            logger.info("🛑 Menerima sinyal STOP dari Web Dashboard. Menghentikan bot...")
-            bot_control_flag.SHOULD_STOP = False # Reset
-            break
-            
-        try:
-            # --- STEP 0: PERIODIC UPDATE SCHEDULER ---
-            _run_periodic_updates(scheduler_state)
+    try:
+        # 5. MAIN TRADING LOOP
+        ticker_idx = 0
+        from web_app.api import bot_control_flag
+        
+        while True:
+            if bot_control_flag.SHOULD_STOP:
+                logger.info("🛑 Menerima sinyal STOP dari Web Dashboard. Menghentikan bot...")
+                bot_control_flag.SHOULD_STOP = False # Reset
+                break
+                
+            try:
+                # --- STEP 0: PERIODIC UPDATE SCHEDULER ---
+                _run_periodic_updates(scheduler_state)
 
-            # Round Robin Scan (One coin per loop)
-            coin_cfg = config.DAFTAR_KOIN[ticker_idx]
-            symbol = coin_cfg['symbol']
-            ticker_idx = (ticker_idx + 1) % len(config.DAFTAR_KOIN)
-            
-            # --- STEP A: COLLECT DATA ---
-            tech_data = await market_data.get_technical_data(symbol)
-            if not tech_data:
-                logger.warning(f"⚠️ No tech data or insufficient history for {symbol}")
-                await asyncio.sleep(config.LOOP_SKIP_DELAY)
-                continue
+                # Round Robin Scan (One coin per loop)
+                coin_cfg = config.DAFTAR_KOIN[ticker_idx]
+                symbol = coin_cfg['symbol']
+                ticker_idx = (ticker_idx + 1) % len(config.DAFTAR_KOIN)
+                
+                # --- STEP A: COLLECT DATA ---
+                tech_data = await market_data.get_technical_data(symbol)
+                if not tech_data:
+                    logger.warning(f"⚠️ No tech data or insufficient history for {symbol}")
+                    await asyncio.sleep(config.LOOP_SKIP_DELAY)
+                    continue
 
-            sentiment_data = sentiment.get_latest(symbol=symbol)
-            onchain_data = onchain.get_latest(symbol=symbol)
+                sentiment_data = sentiment.get_latest(symbol=symbol)
+                onchain_data = onchain.get_latest(symbol=symbol)
 
-            # --- STEP B: CHECK EXCLUSION ---
-            if _check_trade_exclusions(symbol, coin_cfg):
-                await asyncio.sleep(config.LOOP_SLEEP_DELAY)
-                continue
-            
-            # --- STEP C: TRADITIONAL FILTER ---
-            is_interesting, btc_corr, show_btc_context = await _apply_traditional_filters(symbol, tech_data, coin_cfg)
-            
-            if not is_interesting:
-                await asyncio.sleep(config.LOOP_SKIP_DELAY)
-                continue
+                # --- STEP B: CHECK EXCLUSION ---
+                if _check_trade_exclusions(symbol, coin_cfg):
+                    await asyncio.sleep(config.LOOP_SLEEP_DELAY)
+                    continue
+                
+                # --- STEP C: TRADITIONAL FILTER ---
+                is_interesting, btc_corr, show_btc_context = await _apply_traditional_filters(symbol, tech_data, coin_cfg)
+                
+                if not is_interesting:
+                    await asyncio.sleep(config.LOOP_SKIP_DELAY)
+                    continue
 
-            # Strategy Selection is now handled by AI
-            tech_data['strategy_mode'] = 'AI_DECISION'
+                # Strategy Selection is now handled by AI
+                tech_data['strategy_mode'] = 'AI_DECISION'
 
-            # --- STEP D: AI ANALYSIS ---
-            # Candle-Based Throttling
-            current_candle_ts = tech_data.get('candle_timestamp', 0)
-            last_analyzed_ts = analyzed_candle_ts.get(symbol, 0)
-            
-            if current_candle_ts <= last_analyzed_ts:
-                await asyncio.sleep(config.LOOP_SLEEP_DELAY)
-                continue
+                # --- STEP D: AI ANALYSIS ---
+                # Candle-Based Throttling
+                current_candle_ts = tech_data.get('candle_timestamp', 0)
+                last_analyzed_ts = analyzed_candle_ts.get(symbol, 0)
+                
+                if current_candle_ts <= last_analyzed_ts:
+                    await asyncio.sleep(config.LOOP_SLEEP_DELAY)
+                    continue
 
-            logger.info(f"🤖 Asking AI: {symbol} (Corr: {btc_corr:.2f}, Candle: {current_candle_ts}) ...")
-            
-            # Pattern Recognition (Vision)
-            pattern_ctx = await pattern_recognizer.analyze_pattern(symbol)
-            
-            if config.USE_PATTERN_RECOGNITION and not pattern_ctx.get('is_valid', True):
-                logger.warning(f"⚠️ Skipping {symbol} - Pattern analysis invalid/truncated")
-                await asyncio.sleep(config.LOOP_SKIP_DELAY)
-                continue
-            
-            # Order Book Depth Analysis
-            ob_depth = await market_data.get_order_book_depth(symbol)
-            tech_data['order_book'] = ob_depth
-            tech_data['btc_correlation'] = btc_corr
-            
-            # Calculate Trade Scenarios BEFORE AI Call
-            current_price = tech_data['price']
-            dual_scenarios = calculate_dual_scenarios(
-                price=current_price,
-                atr=tech_data.get('atr', 0)
-            )
-
-            # Get Cached Sentiment Analysis
-            sentiment_analysis = sentiment.get_analysis()
-
-            prompt = build_market_prompt(
-                symbol, 
-                tech_data, 
-                sentiment_data, 
-                onchain_data, 
-                pattern_ctx, 
-                dual_scenarios, 
-                show_btc_context=show_btc_context,
-                sentiment_analysis=sentiment_analysis
-            )
-            
-            logger.info(f"📝 AI PROMPT INPUT for {symbol}:\n{prompt}")
-
-            ai_decision = await ai_brain.analyze_market(prompt)
-            
-            # Update Candle ID Tracker
-            analyzed_candle_ts[symbol] = current_candle_ts
-            
-            decision = ai_decision.get('decision', 'WAIT').upper()
-            confidence = ai_decision.get('confidence', 0)
-            reason = html.escape(str(ai_decision.get('reason', '')))
-
-            # Record AI Evaluation to Manager
-            if ai_eval_manager:
-                ai_eval_manager.log_evaluation(
-                    symbol=symbol,
-                    decision=decision,
-                    confidence=confidence,
-                    strategy_mode=ai_decision.get('selected_strategy', 'STANDARD'),
-                    reason=ai_decision.get('reason', ''),
-                    tech_data=tech_data,
-                    pattern_analysis=pattern_ctx,
-                    sentiment_data=sentiment_data,
-                    sentiment_analysis=sentiment_analysis,
-                    execution_mode=ai_decision.get('execution_mode', 'MARKET'),
-                    prompt=prompt
+                logger.info(f"🤖 Asking AI: {symbol} (Corr: {btc_corr:.2f}, Candle: {current_candle_ts}) ...")
+                
+                # Pattern Recognition (Vision)
+                pattern_ctx = await pattern_recognizer.analyze_pattern(symbol)
+                
+                if config.USE_PATTERN_RECOGNITION and not pattern_ctx.get('is_valid', True):
+                    logger.warning(f"⚠️ Skipping {symbol} - Pattern analysis invalid/truncated")
+                    await asyncio.sleep(config.LOOP_SKIP_DELAY)
+                    continue
+                
+                # Order Book Depth Analysis
+                ob_depth = await market_data.get_order_book_depth(symbol)
+                tech_data['order_book'] = ob_depth
+                tech_data['btc_correlation'] = btc_corr
+                
+                # Calculate Trade Scenarios BEFORE AI Call
+                current_price = tech_data['price']
+                dual_scenarios = calculate_dual_scenarios(
+                    price=current_price,
+                    atr=tech_data.get('atr', 0)
                 )
 
-            # --- STEP E: EXECUTION ---
-            if decision in ['BUY', 'SELL', 'LONG', 'SHORT']:
-                side = 'buy' if decision in ['BUY', 'LONG'] else 'sell'
+                # Get Cached Sentiment Analysis
+                sentiment_analysis = sentiment.get_analysis()
+
+                prompt = build_market_prompt(
+                    symbol, 
+                    tech_data, 
+                    sentiment_data, 
+                    onchain_data, 
+                    pattern_ctx, 
+                    dual_scenarios, 
+                    show_btc_context=show_btc_context,
+                    sentiment_analysis=sentiment_analysis
+                )
                 
-                if confidence >= config.AI_CONFIDENCE_THRESHOLD:
-                    await _prepare_and_execute_trade(
+                logger.info(f"📝 AI PROMPT INPUT for {symbol}:\n{prompt}")
+
+                ai_decision = await ai_brain.analyze_market(prompt)
+                
+                # Update Candle ID Tracker
+                analyzed_candle_ts[symbol] = current_candle_ts
+                
+                decision = ai_decision.get('decision', 'WAIT').upper()
+                confidence = ai_decision.get('confidence', 0)
+                reason = html.escape(str(ai_decision.get('reason', '')))
+
+                # Record AI Evaluation to Manager
+                if ai_eval_manager:
+                    ai_eval_manager.log_evaluation(
                         symbol=symbol,
-                        side=side,
+                        decision=decision,
+                        confidence=confidence,
+                        strategy_mode=ai_decision.get('selected_strategy', 'STANDARD'),
+                        reason=ai_decision.get('reason', ''),
                         tech_data=tech_data,
-                        coin_cfg=coin_cfg,
-                        ai_decision=ai_decision,
-                        dual_scenarios=dual_scenarios,
-                        btc_corr=btc_corr,
-                        show_btc_context=show_btc_context,
-                        prompt=prompt,
-                        reason=reason
+                        pattern_analysis=pattern_ctx,
+                        sentiment_data=sentiment_data,
+                        sentiment_analysis=sentiment_analysis,
+                        execution_mode=ai_decision.get('execution_mode', 'MARKET'),
+                        prompt=prompt
                     )
-                else:
-                    logger.info(f"🛑 AI Vote Low Confidence: {confidence}% (Need {config.AI_CONFIDENCE_THRESHOLD}%)")
 
-            # Rate Limit Protection
-            await asyncio.sleep(config.ERROR_SLEEP_DELAY) 
+                # --- STEP E: EXECUTION ---
+                if decision in ['BUY', 'SELL', 'LONG', 'SHORT']:
+                    side = 'buy' if decision in ['BUY', 'LONG'] else 'sell'
+                    
+                    if confidence >= config.AI_CONFIDENCE_THRESHOLD:
+                        await _prepare_and_execute_trade(
+                            symbol=symbol,
+                            side=side,
+                            tech_data=tech_data,
+                            coin_cfg=coin_cfg,
+                            ai_decision=ai_decision,
+                            dual_scenarios=dual_scenarios,
+                            btc_corr=btc_corr,
+                            show_btc_context=show_btc_context,
+                            prompt=prompt,
+                            reason=reason
+                        )
+                    else:
+                        logger.info(f"🛑 AI Vote Low Confidence: {confidence}% (Need {config.AI_CONFIDENCE_THRESHOLD}%)")
 
+                # Rate Limit Protection
+                await asyncio.sleep(config.ERROR_SLEEP_DELAY) 
+
+            except Exception as e:
+                logger.error(f"Main Loop Error: {e}")
+                await asyncio.sleep(config.ERROR_SLEEP_DELAY)
+    finally:
+        # Cleanup resources on graceful exit or task cancellation
+        try:
+            logger.info("🧹 Cleaning up exchange connections...")
+            await exchange.close()
+            if hasattr(market_data, 'exchange_public') and market_data.exchange_public:
+                await market_data.exchange_public.close()
+            logger.info("✅ Exchange connections closed safely.")
         except Exception as e:
-            logger.error(f"Main Loop Error: {e}")
-            await asyncio.sleep(config.ERROR_SLEEP_DELAY)
-
-    # Cleanup resources on graceful exit
-    try:
-        await exchange.close()
-        if hasattr(market_data, 'exchange_public') and market_data.exchange_public:
-            await market_data.exchange_public.close()
-    except Exception:
-        pass
+            logger.warning(f"⚠️ Exchange cleanup warning: {e}")
 
 if __name__ == "__main__":
     try:

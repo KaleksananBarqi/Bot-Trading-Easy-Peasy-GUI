@@ -223,9 +223,9 @@ class MongoManager:
             return 'timestamp'
         return sort_by
 
-    def get_trades(self, filter_query: dict = {}, sort_by: str = "timestamp", ascending: bool = False, limit: int = 0):
+    def get_trades(self, filter_query: dict = {}, sort_by: str = "timestamp", ascending: bool = False, limit: int = 0, skip: int = 0):
         """
-        Retrieves trades based on filter.
+        Retrieves trades based on filter with native pagination support.
         """
         try:
             if self.db is None:
@@ -238,6 +238,8 @@ class MongoManager:
             direction = ASCENDING if ascending else DESCENDING
             cursor = self.trades_collection.find(sanitized_filter).sort(sanitized_sort, direction)
             
+            if skip > 0:
+                cursor = cursor.skip(skip)
             if limit > 0:
                 cursor = cursor.limit(limit)
                 

@@ -201,7 +201,7 @@ class TestExpiryFixProposal:
             result = await mock_exchange.cancel_order(order_id, symbol)
             return result
         
-        result = asyncio.get_event_loop().run_until_complete(cancel_expired_order())
+        result = asyncio.run(cancel_expired_order())
         
         mock_exchange.cancel_order.assert_called_once_with(order_id, symbol)
         assert result["status"] == "CANCELED"

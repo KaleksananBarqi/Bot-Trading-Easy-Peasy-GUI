@@ -3,28 +3,6 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-# Set environment variable BEFORE any imports to pass config validation
-os.environ['MONGO_URI'] = 'mongodb://localhost:27017/test'
-os.environ['BINANCE_API_KEY'] = 'test_key'
-os.environ['BINANCE_SECRET_KEY'] = 'test_secret'
-os.environ['AI_API_KEY'] = 'test_ai_key'
-
-# --- MOCK DEPENDENCIES ---
-# Mock only network/async libraries, keep pandas/numpy for calculations
-mock_modules = [
-    'ccxt', 'ccxt.async_support',
-    'websockets', 'dotenv', 'requests'
-]
-for mod in mock_modules:
-    sys.modules[mod] = MagicMock()
-
-# Mock scipy.signal to avoid import issues
-import numpy as np
-from scipy.signal import argrelextrema
-
-# Mock src.utils.helper to avoid its internal imports/logic
-sys.modules['src.utils.helper'] = MagicMock()
-
 # --- SETUP PATH ---
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
@@ -33,12 +11,7 @@ src_dir = os.path.join(project_root, 'src')
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
-# Import after path setup
 import src.config as config
-config.WICK_REJECTION_MULTIPLIER = 2.0
-config.WICK_REJECTION_MIN_BODY_RATIO = 0.01
-config.WICK_REJECTION_MIN_BODY_REF = 0.00000001
-
 from src.modules.market_data import _calculate_wick_rejection_static
 
 

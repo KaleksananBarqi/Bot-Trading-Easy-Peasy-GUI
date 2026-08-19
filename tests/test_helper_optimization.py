@@ -5,10 +5,15 @@ import os
 import importlib
 from unittest.mock import patch
 
-# Ensure src is in path
-sys.path.insert(0, os.path.abspath("src"))
+# Ensure root and src are in path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+src_path = os.path.join(project_root, "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
-import config
+from src import config
 from src.utils import helper
 
 class TestHelperOptimization(unittest.TestCase):
@@ -54,7 +59,7 @@ class TestHelperOptimization(unittest.TestCase):
         self.addCleanup(importlib.reload, helper)
 
         # Patch config.DAFTAR_KOIN
-        with patch('config.DAFTAR_KOIN', mock_coins):
+        with patch.object(config, 'DAFTAR_KOIN', mock_coins):
             # Reload helper to re-run the module-level code
             importlib.reload(helper)
 

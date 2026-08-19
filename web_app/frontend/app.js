@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Security Utilities ---
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     // --- Navigation ---
     const navItems = document.querySelectorAll('.nav-item');
     const pages = document.querySelectorAll('.page');
@@ -284,8 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const div = document.createElement('div');
             div.className = 'list-item';
             div.innerHTML = `
-                <span>${item}</span>
-                <button class="btn-del-item" onclick="deleteArrayItem('${configKey}', ${idx})">🗑️</button>
+                <span>${escapeHtml(item)}</span>
+                <button class="btn-del-item" onclick="deleteArrayItem('${escapeHtml(configKey)}', ${idx})">🗑️</button>
             `;
             container.appendChild(div);
         });
@@ -340,8 +351,8 @@ document.addEventListener('DOMContentLoaded', () => {
             div.className = 'coin-card';
             div.innerHTML = `
                 <div class="coin-info">
-                    <h4>${coin.symbol}</h4>
-                    <small>${coin.category} | ${coin.leverage}x | $${coin.amount}</small>
+                    <h4>${escapeHtml(coin.symbol)}</h4>
+                    <small>${escapeHtml(coin.category)} | ${escapeHtml(coin.leverage)}x | $${escapeHtml(coin.amount)}</small>
                 </div>
                 <div class="coin-actions">
                     <button onclick="editCoin(${idx})">✏️</button>
@@ -482,12 +493,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.className = 'preset-card';
                     card.innerHTML = `
                         <div class="preset-header">
-                            <div class="preset-title">${p.name || presetId}</div>
+                            <div class="preset-title">${escapeHtml(p.name || presetId)}</div>
                             <span class="preset-badge">${p.is_custom ? 'CUSTOM' : 'BUILT-IN'}</span>
                         </div>
-                        <p class="preset-desc">${p.description || 'No description available.'}</p>
+                        <p class="preset-desc">${escapeHtml(p.description || 'No description available.')}</p>
                         <div class="preset-actions">
-                            <button class="btn btn-primary btn-sm btn-apply-preset" data-id="${presetId}">🚀 Terapkan Preset</button>
+                            <button class="btn btn-primary btn-sm btn-apply-preset" data-id="${escapeHtml(presetId)}">🚀 Terapkan Preset</button>
                         </div>
                     `;
                     container.appendChild(card);
@@ -783,9 +794,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sideClass = side === 'LONG' || side === 'BUY' ? 'text-success' : 'text-danger';
                 
                 tr.innerHTML = `
-                    <td><strong>${pos.symbol}</strong></td>
-                    <td class="${sideClass}">${side}</td>
-                    <td>${pos.size || '--'}</td>
+                    <td><strong>${escapeHtml(pos.symbol)}</strong></td>
+                    <td class="${sideClass}">${escapeHtml(side)}</td>
+                    <td>${escapeHtml(String(pos.size || '--'))}</td>
                     <td>$${pos.entry_price ? parseFloat(pos.entry_price).toFixed(4) : '--'}</td>
                     <td class="${pnlClass}">${pnlSign}$${pnl.toFixed(2)}</td>
                     <td><span style="padding: 4px 8px; border-radius: 4px; background: rgba(59, 130, 246, 0.2); font-size: 11px;">ACTIVE</span></td>
@@ -1329,19 +1340,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (resText === 'WIN') resBadge = '<span class="badge-pill badge-win">WIN</span>';
                 else if (resText === 'LOSS') resBadge = '<span class="badge-pill badge-loss">LOSS</span>';
                 else if (resText === 'BREAKEVEN') resBadge = '<span class="badge-pill badge-be">BE</span>';
-                else resBadge = `<span class="badge-pill badge-cancelled">${resText}</span>`;
+                else resBadge = `<span class="badge-pill badge-cancelled">${escapeHtml(resText)}</span>`;
 
                 tr.innerHTML = `
-                    <td style="font-size: 11px; color: #94a3b8;">${timeStr}</td>
-                    <td><strong>${trade.symbol || '--'}</strong></td>
+                    <td style="font-size: 11px; color: #94a3b8;">${escapeHtml(timeStr)}</td>
+                    <td><strong>${escapeHtml(trade.symbol || '--')}</strong></td>
                     <td>${sideBadge}</td>
                     <td>$${parseFloat(trade.size_usdt || 0).toFixed(0)}</td>
                     <td>$${parseFloat(trade.entry_price || 0).toFixed(4)}</td>
                     <td>$${parseFloat(trade.exit_price || 0).toFixed(4)}</td>
                     <td>${pnlFormatted}</td>
                     <td>${resBadge}</td>
-                    <td><small style="color: #cbd5e1;">${trade.exit_type || '-'}</small></td>
-                    <td><span style="font-size: 10px; padding: 2px 6px; border-radius: 3px; background: rgba(255,255,255,0.06);">${trade.strategy_tag || 'MANUAL'}</span></td>
+                    <td><small style="color: #cbd5e1;">${escapeHtml(trade.exit_type || '-')}</small></td>
+                    <td><span style="font-size: 10px; padding: 2px 6px; border-radius: 3px; background: rgba(255,255,255,0.06);">${escapeHtml(trade.strategy_tag || 'MANUAL')}</span></td>
                     <td><button class="btn-detail" data-index="${idx}">👁️ Detail</button></td>
                 `;
 
@@ -1575,11 +1586,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const reasonSnippet = ev.reason ? (ev.reason.length > 75 ? ev.reason.substring(0, 75) + '...' : ev.reason) : '-';
 
                     tr.innerHTML = `
-                        <td style="font-size: 0.82rem; color: var(--text-muted);">${timeDisplay}</td>
-                        <td><strong>${ev.symbol || '--'}</strong></td>
+                        <td style="font-size: 0.82rem; color: var(--text-muted);">${escapeHtml(timeDisplay)}</td>
+                        <td><strong>${escapeHtml(ev.symbol || '--')}</strong></td>
                         <td>
                             <span class="badge" style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 600; padding: 4px 8px; border-radius: 4px;">
-                                ${dec}
+                                ${escapeHtml(dec)}
                             </span>
                         </td>
                         <td>
@@ -1590,9 +1601,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="font-size: 0.82rem;">${conf}%</span>
                             </div>
                         </td>
-                        <td style="font-size: 0.82rem;"><span class="badge" style="background: rgba(255,255,255,0.06); color: var(--neon-cyan);">${ev.strategy_mode || 'STANDARD'}</span></td>
-                        <td style="font-size: 0.82rem;">${ev.sentiment_status || 'NEUTRAL'} (${ev.sentiment_score || 50})</td>
-                        <td style="font-size: 0.82rem; color: #cbd5e1; max-width: 250px;">${reasonSnippet}</td>
+                        <td style="font-size: 0.82rem;"><span class="badge" style="background: rgba(255,255,255,0.06); color: var(--neon-cyan);">${escapeHtml(ev.strategy_mode || 'STANDARD')}</span></td>
+                        <td style="font-size: 0.82rem;">${escapeHtml(ev.sentiment_status || 'NEUTRAL')} (${ev.sentiment_score || 50})</td>
+                        <td style="font-size: 0.82rem; color: #cbd5e1; max-width: 250px;">${escapeHtml(reasonSnippet)}</td>
                         <td style="text-align: center;">
                             <button class="btn btn-outline btn-xs" onclick="openAIEvalDetail(${idx})" style="padding: 3px 8px; font-size: 0.75rem;">🔍 Detail</button>
                         </td>

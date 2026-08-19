@@ -3,48 +3,10 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-# --- MOCK DEPENDENCIES BEFORE IMPORT ---
-# We need to mock 'config' because market_data.py imports it and uses attributes 
-# in function defaults (e.g. CORRELATION_PERIOD) which are evaluated at import time.
-mock_config = MagicMock()
-mock_config.MIN_BARS_MARKET_STRUCTURE = 5
-mock_config.CORRELATION_PERIOD = 20
-mock_config.EMA_FAST = 9
-mock_config.EMA_SLOW = 21
-mock_config.RSI_PERIOD = 14
-mock_config.ADX_PERIOD = 14
-mock_config.STOCHRSI_LEN = 14
-mock_config.STOCHRSI_K = 3
-mock_config.STOCHRSI_D = 3
-mock_config.BB_LENGTH = 20
-mock_config.BB_STD = 2.0
-mock_config.ATR_PERIOD = 14
-mock_config.VOL_MA_PERIOD = 20
-mock_config.EMA_TREND_MAJOR = 200
-mock_config.BTC_SYMBOL = "BTC/USDT"
-mock_config.WS_URL_FUTURES_TESTNET = "wss://..."
-mock_config.WS_URL_FUTURES_LIVE = "wss://..."
-mock_config.PAKAI_DEMO = True
-mock_config.DAFTAR_KOIN = []
-mock_config.TIMEFRAME_EXEC = '1m'
-mock_config.TIMEFRAME_TREND = '1h'
-mock_config.TIMEFRAME_SETUP = '1d'
-mock_config.LIMIT_EXEC = 100
-mock_config.LIMIT_TREND = 100
-mock_config.LIMIT_SETUP = 100
-mock_config.CONCURRENCY_LIMIT = 5
-mock_config.WS_KEEP_ALIVE_INTERVAL = 60
-mock_config.WHALE_THRESHOLD_USDT = 100000
-mock_config.WICK_REJECTION_MIN_BODY_RATIO = 0.1
-mock_config.WICK_REJECTION_MIN_BODY_REF = 0.1
-mock_config.WICK_REJECTION_MULTIPLIER = 2.0
-mock_config.DEFAULT_CORRELATION_HIGH = 0.8
-
-sys.modules['config'] = mock_config
-
 # Add src to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from src import config
 from src.modules.market_data import _calculate_market_structure_static
 
 class TestMarketStructure(unittest.TestCase):
@@ -80,7 +42,7 @@ class TestMarketStructure(unittest.TestCase):
         """Test returning INSUFFICIENT_DATA if bars count < config limit"""
         # Config default is likely 50 based on original code check
         # Let's mock config.MIN_BARS_MARKET_STRUCTURE to be sure or use a very small list
-        with patch('config.MIN_BARS_MARKET_STRUCTURE', 10):
+        with patch.object(config, 'MIN_BARS_MARKET_STRUCTURE', 10):
             bars = self.create_bars([10] * 5) # Only 5 bars
             result = _calculate_market_structure_static(bars)
             self.assertEqual(result, "INSUFFICIENT_DATA")
@@ -104,7 +66,7 @@ class TestMarketStructure(unittest.TestCase):
         # Need config.MIN_BARS_MARKET_STRUCTURE to be met.
         # Let's assume we patch it to 10 for easier testing.
         
-        with patch('config.MIN_BARS_MARKET_STRUCTURE', 10):
+        with patch.object(config, 'MIN_BARS_MARKET_STRUCTURE', 10):
             # Construct a wave
             # Indices:  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
             highs =   [10, 20, 30, 40, 50,100, 90, 80, 50, 60, 70, 80,110, 90, 80, 60, 70, 75, 80]
@@ -135,37 +97,11 @@ class TestMarketStructure(unittest.TestCase):
 
     def test_bearish_structure(self):
         """Test LH + LL pattern"""
-        with patch('config.MIN_BARS_MARKET_STRUCTURE', 10):
-            # Indices: 0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16
-            highs =   [50, 60, 70,100, 90, 80, 70, 60, 90, 80, 70, 60, 50, 40, 30, 20, 10]
-            # Lower Highs needed.
-            # Let's try simpler manually crafted peaks with lookback=2
-            
-            # Values:
-            # 5: High=100
-            # 8: Low=50
-            # 11: High=90 (Lower High)
-            # 14: Low=40 (Lower Low)
-            
-            # H: 50,60,70,80,90,100,90,80,90,80,70,90,80,70,50,40,50
-            # Wait, let's be precise.
-            
-            # Trend Down:
-            # P1 (High): 100 (idx 3)
-            # T1 (Low): 50 (idx 6)
-            # P2 (High): 80 (idx 9) -> LH
-            # T2 (Low): 30 (idx 12) -> LL
-            
-            highs = [50, 60, 80, 100, 80, 70, 60, 70, 80, 90, 80, 70, 60, 40, 30, 40, 50]
-            lows =  [40, 50, 60,  90, 60, 50, 50, 60, 70, 80, 60, 50, 30, 20, 20, 30, 40]
-            
-            # idx 3 (100) is > 1,2 and 4,5 (lookback 2) -> Peak
-            # idx 9 (90) is > 7,8 and 10,11 -> Peak
-            # 90 < 100 -> Lower High
-            
-            # idx 6 (50) is < 4,5 and 7,8 -> Trough
-            # idx 13 (20) is < 11,12 and 14,15 -> Trough
-            # 20 < 50 -> Lower Low
+        with patch.object(config, 'MIN_BARS_MARKET_STRUCTURE', 10):
+            # Highs: peak at idx 2 (100) and idx 6 (90) -> 90 < 100 (LH)
+            highs = [60, 80, 100, 80, 60, 70, 90, 70, 50, 50, 50, 50]
+            # Lows: trough at idx 4 (40) and idx 8 (20) -> 20 < 40 (LL)
+            lows  = [50, 70,  90, 60, 40, 55, 75, 50, 20, 40, 40, 40]
             
             bars = []
             for h, l in zip(highs, lows):
@@ -176,23 +112,11 @@ class TestMarketStructure(unittest.TestCase):
 
     def test_expanding_structure_megaphone(self):
         """Test Higher High + Lower Low"""
-        with patch('config.MIN_BARS_MARKET_STRUCTURE', 10):
-            # HH + LL
-            # Peak 1: 100
-            # Peak 2: 110 (Higher)
-            # Trough 1: 50
-            # Trough 2: 40 (Lower)
-            
-            # Structure: 
-            # Up to 100, Down to 50, Up to 110, Down to 40
-            
-            # idx 3: 100 (Peak)
-            # idx 6: 50 (Trough)
-            # idx 9: 110 (Peak)
-            # idx 12: 40 (Trough)
-            
-            highs = [80, 90, 95, 100, 90, 80, 60, 80, 90, 110, 90, 80, 50, 45, 50, 60]
-            lows =  [70, 80, 85,  95, 80, 70, 50, 70, 80, 100, 80, 70, 40, 35, 40, 50]
+        with patch.object(config, 'MIN_BARS_MARKET_STRUCTURE', 10):
+            # Highs: peak at idx 2 (100) and idx 6 (120) -> 120 > 100 (HH)
+            highs = [60, 80, 100, 80, 70, 90, 120, 90, 50, 50, 50, 50]
+            # Lows: trough at idx 4 (60) and idx 8 (30) -> 30 < 60 (LL)
+            lows  = [50, 70,  85, 75, 60, 75, 100, 70, 30, 50, 50, 50]
             
             bars = []
             for h, l in zip(highs, lows):
@@ -203,7 +127,7 @@ class TestMarketStructure(unittest.TestCase):
 
     def test_consolidation_structure_triangle(self):
         """Test Lower High + Higher Low"""
-        with patch('config.MIN_BARS_MARKET_STRUCTURE', 10):
+        with patch.object(config, 'MIN_BARS_MARKET_STRUCTURE', 10):
             # LH + HL
             # Peak 1: 100
             # Peak 2: 90 (Lower)
@@ -227,7 +151,7 @@ class TestMarketStructure(unittest.TestCase):
 
     def test_unclear_few_swings(self):
         """Test return UNCLEAR if swings found < 2"""
-        with patch('config.MIN_BARS_MARKET_STRUCTURE', 10):
+        with patch.object(config, 'MIN_BARS_MARKET_STRUCTURE', 10):
             # Straight line up, no swings
             highs = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
             lows =  [ 5, 15, 25, 35, 45, 55, 65, 75, 85, 95]

@@ -9,26 +9,17 @@ try:
 except ImportError:
     import pandas_ta_classic as ta
 import ccxt.async_support as ccxt
-import websockets
-import config
+import src.config as config
 from collections import deque
 from typing import NamedTuple
 from scipy.signal import argrelextrema
-from src.utils.helper import logger, kirim_tele, wib_time, parse_timeframe_to_seconds, create_aiohttp_session
+from src.utils.helper import (
+    logger, kirim_tele, wib_time, parse_timeframe_to_seconds, 
+    create_aiohttp_session, normalize_binance_symbol
+)
 
-# --- SYMBOL NORMALIZATION HELPER ---
-
-def _normalize_binance_symbol(raw_sym: str) -> str:
-    """Konversi symbol Binance WS (BTCUSDT) ke format CCXT (BTC/USDT).
-    
-    Menggunakan pencocokan suffix yang aman, bukan string replace naif,
-    untuk menghindari kerusakan pada pair non-USDT atau token dengan
-    substring 'USDT' di namanya.
-    """
-    for quote in ('USDT', 'USDC', 'BUSD', 'FDUSD'):
-        if raw_sym.endswith(quote):
-            return f"{raw_sym[:-len(quote)]}/{quote}"
-    return raw_sym
+# Alias untuk backward compatibility internal
+_normalize_binance_symbol = normalize_binance_symbol
 
 # --- NAMED TUPLES FOR TYPE SAFETY ---
 

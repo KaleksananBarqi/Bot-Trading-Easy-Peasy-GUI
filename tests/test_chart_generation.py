@@ -72,19 +72,21 @@ def test_chart_generation():
     recognizer = PatternRecognizer(mock_manager)
     
     # Generate Chart
-    img_base64 = recognizer.generate_chart_image(symbol)
-    
-    if img_base64:
-        print("✅ Chart generated successfully!")
-        
-        # Save to file
-        output_file = os.path.join(current_dir, f"chart_{symbol.replace('/','-')}.png")
-        with open(output_file, "wb") as f:
-            f.write(base64.b64decode(img_base64))
-        print(f"✅ Saved chart to: {output_file}")
-        print("Please Check the image manually to verify colors (Green=Up, Red=Down) and MACD lines.")
+    result = recognizer.generate_chart_image(symbol)
+    if isinstance(result, tuple):
+        img_base64, raw_stats = result
     else:
-        print("❌ Failed to generate chart (result is None).")
+        img_base64 = result
+        raw_stats = None
+    
+    assert img_base64 is not None, "Failed to generate chart image"
+    assert raw_stats is not None, "Failed to extract raw stats"
+    
+    # Save to file
+    output_file = os.path.join(current_dir, f"chart_{symbol.replace('/','-')}.png")
+    with open(output_file, "wb") as f:
+        f.write(base64.b64decode(img_base64))
+    print(f"✅ Saved chart to: {output_file}")
 
 if __name__ == "__main__":
     test_chart_generation()

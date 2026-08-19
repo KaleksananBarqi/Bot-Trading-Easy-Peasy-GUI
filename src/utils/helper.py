@@ -174,6 +174,21 @@ def parse_timeframe_to_seconds(tf_str: str) -> int:
     else: return 60
 
 
+def normalize_binance_symbol(raw_sym: str) -> str:
+    """Konversi symbol Binance WS (BTCUSDT) ke format CCXT (BTC/USDT).
+    
+    Menggunakan pencocokan suffix yang aman, bukan string replace naif,
+    untuk menghindari kerusakan pada pair non-USDT atau token dengan
+    substring 'USDT' di namanya.
+    """
+    if not raw_sym or not isinstance(raw_sym, str):
+        return str(raw_sym or '')
+    for quote in ('USDT', 'USDC', 'BUSD', 'FDUSD'):
+        if raw_sym.endswith(quote):
+            return f"{raw_sym[:-len(quote)]}/{quote}"
+    return raw_sym
+
+
 # ==========================================
 # CONFIG HELPERS
 # ==========================================
@@ -182,16 +197,24 @@ def parse_timeframe_to_seconds(tf_str: str) -> int:
 # This maps symbol -> coin config ensuring O(1) lookup speed.
 # We iterate to preserve the first occurrence behavior if duplicates exist.
 _COIN_CONFIG_MAP = {}
-for coin in config.DAFTAR_KOIN:
-    if coin['symbol'] not in _COIN_CONFIG_MAP:
-        _COIN_CONFIG_MAP[coin['symbol']] = coin
+for coin in getattr(config, 'DAFTAR_KOIN', []):
+    sym = coin.get('symbol') if isinstance(coin, dict) else getattr(coin, 'symbol', None)
+    if sym and sym not in _COIN_CONFIG_MAP:
+        _COIN_CONFIG_MAP[sym] = coin
 
 def get_coin_config(symbol: str) -> dict | None:
     """
     Cari konfigurasi koin dari config.DAFTAR_KOIN.
     Return None jika tidak ditemukan.
     """
-    return _COIN_CONFIG_MAP.get(symbol)
+    # Check dynamic config if not found in precomputed map
+    if symbol in _COIN_CONFIG_MAP:
+        return _COIN_CONFIG_MAP[symbol]
+    for coin in getattr(config, 'DAFTAR_KOIN', []):
+        sym = coin.get('symbol') if isinstance(coin, dict) else getattr(coin, 'symbol', None)
+        if sym == symbol:
+            return coin
+    return None
 
 
 def get_coin_leverage(symbol: str) -> int:
@@ -201,5 +224,5 @@ def get_coin_leverage(symbol: str) -> int:
     """
     coin_cfg = get_coin_config(symbol)
     if coin_cfg:
-        return coin_cfg.get('leverage', config.DEFAULT_LEVERAGE)
-    return config.DEFAULT_LEVERAGE
+        return coin_cfg.get('leverage', getattr(config, 'DEFAULT_LEVERAGE', 10))
+    return getattr(config, 'DEFAULT_LEVERAGE', 10)

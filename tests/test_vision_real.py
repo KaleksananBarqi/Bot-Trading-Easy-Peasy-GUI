@@ -11,11 +11,13 @@ src_path = os.path.join(project_root, 'src')
 sys.path.insert(0, src_path)
 sys.path.insert(0, project_root)
 
+import pytest
 import config
 from src.utils.helper import logger
 from src.modules.market_data import MarketDataManager
 from src.modules.pattern_recognizer import PatternRecognizer
 
+@pytest.mark.asyncio
 async def test_vision_real_market():
     """
     Skrip khusus untuk mengetes AI VISION menggunakan data market sungguhan.
@@ -24,6 +26,9 @@ async def test_vision_real_market():
     3. Analisa oleh AI.
     4. Output nama pattern (jika ada).
     """
+    if not config.AI_API_KEY or not getattr(config, 'API_KEY_LIVE', None):
+        pytest.skip("Skipping real network vision test in offline test suite")
+        
     logger.info("🚀 Memulai Test AI Vision dengan Data Market Sungguhan...")
 
     # 1. Inisialisasi Exchange (Binance)

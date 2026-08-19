@@ -246,22 +246,20 @@ def get_trades_history(
         # Hitung total dokumen yang cocok
         total_items = mongo.get_trade_count(filter_query)
         
-        # Hitung total pages
+        # Hitung pagination
         page = max(1, page)
         limit = max(1, min(100, limit))
+        skip = (page - 1) * limit
         total_pages = max(1, (total_items + limit - 1) // limit)
         
-        # Ambil trades dengan filter dan sorting
-        all_matched = mongo.get_trades(
+        # Ambil trades dengan filter, sorting, limit dan skip native
+        paginated_trades = mongo.get_trades(
             filter_query=filter_query,
             sort_by=sort_by,
             ascending=ascending,
-            limit=5000
+            limit=limit,
+            skip=skip
         )
-        
-        start_idx = (page - 1) * limit
-        end_idx = start_idx + limit
-        paginated_trades = all_matched[start_idx:end_idx]
         
         # Sanitasi _id menjadi string
         cleaned_trades = []

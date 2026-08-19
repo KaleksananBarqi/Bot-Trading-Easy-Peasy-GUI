@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 import config
-from src.utils.helper import logger, kirim_tele, get_coin_leverage
+from src.utils.helper import logger, kirim_tele, get_coin_leverage, normalize_binance_symbol
 
 
 class OrderUpdateHandler:
@@ -31,16 +31,13 @@ class OrderUpdateHandler:
         self.journal = journal
 
     # ------------------------------------------------------------------
-    # SYMBOL HELPER
+    # SYMBOL HELPER (Delegated to centralized helper)
     # ------------------------------------------------------------------
 
     @staticmethod
     def _normalize_binance_symbol(raw_sym: str) -> str:
         """Konversi symbol Binance WS (BTCUSDT) ke format CCXT (BTC/USDT)."""
-        for quote in ('USDT', 'USDC', 'BUSD', 'FDUSD'):
-            if raw_sym.endswith(quote):
-                return f"{raw_sym[:-len(quote)]}/{quote}"
-        return raw_sym
+        return normalize_binance_symbol(raw_sym)
 
     # ------------------------------------------------------------------
     # PUBLIC CALLBACK (entry point untuk WebSocket)

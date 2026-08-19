@@ -8,16 +8,6 @@ import asyncio
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# Mock config
-class MockConfig:
-    TRACKER_FILENAME = "test_tracker.json"
-    TRAP_SAFETY_SL = 1.0
-    ATR_MULTIPLIER_TP1 = 2.0
-    DEFAULT_SL_PERCENT = 0.01
-    DEFAULT_TP_PERCENT = 0.02
-
-sys.modules['config'] = MockConfig
-
 # Mimic the logic in main.py logic
 def should_install_safety(status):
     return status in ['NONE', 'PENDING', 'WAITING_ENTRY']

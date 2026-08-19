@@ -63,7 +63,7 @@ class TestAPIAnalytics(unittest.TestCase):
     def test_history_endpoint_pagination(self, mock_get_trades, mock_get_count, mock_connect):
         """Memastikan endpoint /api/data/trades/history mengembalikan data dengan pagination yang benar."""
         mock_get_count.return_value = 25
-        mock_get_trades.return_value = [{"symbol": f"COIN{i}/USDT", "pnl_usdt": 10.0, "timestamp": "2026-08-18"} for i in range(25)]
+        mock_get_trades.return_value = [{"symbol": f"COIN{i}/USDT", "pnl_usdt": 10.0, "timestamp": "2026-08-18"} for i in range(10)]
         
         response = self.client.get("/api/data/trades/history?page=1&limit=10")
         self.assertEqual(response.status_code, 200)

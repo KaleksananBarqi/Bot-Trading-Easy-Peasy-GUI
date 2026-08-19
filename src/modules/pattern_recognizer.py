@@ -143,13 +143,19 @@ class PatternRecognizer:
             return False
         
         # Cek panjang minimal
-        if len(analysis_text.strip()) < config.PATTERN_MIN_ANALYSIS_LENGTH:
+        trimmed = analysis_text.strip()
+        if len(trimmed) < config.PATTERN_MIN_ANALYSIS_LENGTH:
             return False
         
         # Cek keyword bias
-        text_upper = analysis_text.upper()
+        text_upper = trimmed.upper()
         has_bias = any(kw in text_upper for kw in config.PATTERN_REQUIRED_KEYWORDS)
         if not has_bias:
+            return False
+        
+        # Cek apakah teks diakhiri dengan tanda baca / penutup yang valid (bukan terpotong di tengah kalimat)
+        valid_endings = ('.', '!', '?', '*', '"', "'", ')', ']', '}', ':', '%', '`', '>', '\n')
+        if not trimmed.endswith(valid_endings):
             return False
         
         # Cek finish_reason dari API - cara paling akurat deteksi truncation

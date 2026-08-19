@@ -1,19 +1,6 @@
 import sys
 import os
 import unittest
-from unittest.mock import MagicMock
-
-# --- MOCK DEPENDENCIES ---
-# Internet is unreachable, so we mock libraries used in market_data.py
-mock_modules = [
-    'numpy', 'pandas', 'pandas_ta', 'ccxt', 'ccxt.async_support',
-    'websockets', 'scipy', 'scipy.signal', 'dotenv', 'requests'
-]
-for mod in mock_modules:
-    sys.modules[mod] = MagicMock()
-
-# Mock src.utils.helper to avoid its internal imports/logic
-sys.modules['src.utils.helper'] = MagicMock()
 
 # --- SETUP PATH ---
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

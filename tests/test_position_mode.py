@@ -1,7 +1,8 @@
 import asyncio
 import sys
 import os
-from unittest.mock import AsyncMock, patch
+import pytest
+from unittest.mock import AsyncMock, MagicMock, patch
 
 # Add project root and src to path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -14,6 +15,7 @@ os.environ["MONGO_URI"] = "mongodb://dummy:27017/test"
 import config
 from src.modules.executor import OrderExecutor
 
+@pytest.mark.asyncio
 async def test_ensure_position_mode():
     print("🧪 Starting Position Mode Sync Tests...")
 
